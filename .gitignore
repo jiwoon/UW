@@ -22,3 +22,4 @@ hs_err_pid*
 /uw_server/.settings
 /.metadata/
 /RemoteSystemsTempFiles
+/target/
