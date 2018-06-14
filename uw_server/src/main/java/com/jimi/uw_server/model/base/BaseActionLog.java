@@ -36,6 +36,24 @@ public abstract class BaseActionLog<M extends BaseActionLog<M>> extends Model<M>
 		return getStr("uid");
 	}
 
+	public M setUrl(java.lang.String url) {
+		set("url", url);
+		return (M)this;
+	}
+	
+	public java.lang.String getUrl() {
+		return getStr("url");
+	}
+
+	public M setParameters(java.lang.String parameters) {
+		set("parameters", parameters);
+		return (M)this;
+	}
+	
+	public java.lang.String getParameters() {
+		return getStr("parameters");
+	}
+
 	public M setAction(java.lang.String action) {
 		set("action", action);
 		return (M)this;
@@ -45,22 +63,13 @@ public abstract class BaseActionLog<M extends BaseActionLog<M>> extends Model<M>
 		return getStr("action");
 	}
 
-	public M setTime(java.lang.Long time) {
+	public M setTime(java.util.Date time) {
 		set("time", time);
 		return (M)this;
 	}
 	
-	public java.lang.Long getTime() {
-		return getLong("time");
-	}
-
-	public M setTimeString(java.util.Date timeString) {
-		set("timeString", timeString);
-		return (M)this;
-	}
-	
-	public java.util.Date getTimeString() {
-		return get("timeString");
+	public java.util.Date getTime() {
+		return get("time");
 	}
 
 }

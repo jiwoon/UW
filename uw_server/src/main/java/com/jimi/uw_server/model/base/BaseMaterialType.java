@@ -63,13 +63,13 @@ public abstract class BaseMaterialType<M extends BaseMaterialType<M>> extends Mo
 		return getInt("height");
 	}
 
-	public M setEnabled(boolean b) {
-		set("enabled", b);
+	public M setEnabled(java.lang.Boolean enabled) {
+		set("enabled", enabled);
 		return (M)this;
 	}
 	
 	public java.lang.Boolean getEnabled() {
-		return getBoolean("enabled");
+		return get("enabled");
 	}
 
 }
