@@ -22,5 +22,5 @@ hs_err_pid*
 /uw_server/.settings
 /.metadata/
 /RemoteSystemsTempFiles
-/target/
 /.recommenders/
+/uw_server/target
