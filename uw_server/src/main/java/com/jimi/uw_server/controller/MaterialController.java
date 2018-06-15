@@ -19,6 +19,10 @@ public class MaterialController extends Controller {
 	public void count(Integer pageNo, Integer pageSize) {
 		renderJson(ResultUtil.succeed(materialService.count(pageNo, pageSize)));
 	}
+	
+//	public void count(MaterialType materialType) {
+//		renderJson(ResultUtil.succeed(materialService.count(materialType)));
+//	}
 
 	// 获取物料实体
 	public void getEntities(Integer type) {

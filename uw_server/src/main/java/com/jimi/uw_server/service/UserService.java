@@ -1,10 +1,10 @@
 package com.jimi.uw_server.service;
 
-import java.util.Date;
+//import java.util.Date;
 
 import com.jimi.uw_server.exception.OperationException;
 import com.jimi.uw_server.exception.ParameterException;
-import com.jimi.uw_server.model.Material;
+//import com.jimi.uw_server.model.Material;
 import com.jimi.uw_server.model.User;
 import com.jimi.uw_server.model.UserType;
 import com.jimi.uw_server.service.base.SelectService;
@@ -12,10 +12,10 @@ import com.jimi.uw_server.service.base.SelectService;
 import cc.darhao.dautils.api.MD5Util;
 
 /**
- * 用户业务层
+ * 鐢ㄦ埛涓氬姟灞�
  * <br>
- * <b>2018年5月29日</b>
- * @author 沫熊工作室 <a href="http://www.darhao.cc">www.darhao.cc</a>
+ * <b>2018骞�5鏈�29鏃�</b>
+ * @author 娌唺宸ヤ綔瀹� <a href="http://www.darhao.cc">www.darhao.cc</a>
  */
 public class UserService extends SelectService{
 	
