@@ -16,37 +16,31 @@ import com.jimi.uw_server.service.base.SelectService;
  */
 public class MaterialService extends SelectService{
 	
+	private static final String countSelectSql = "SELECT material_type.*, SUM(material.remainder_quantity) AS quantity";
+	
+	private	static final String countNonSelectSql = " FROM material_type,material WHERE material_type.id=material.type AND material_type.enabled=1"
+			+ " group by material_type.id";
+	
+	private	static final String getEntitiesSql = "SELECT material.* FROM material, material_type WHERE type=? "
+			+ "AND material_type.id=material.type AND material_type.enabled=1";
+	
+	private	static final String entitySearchSql = "SELECT * FROM material WHERE type=? ";
+	
 	private static final String uniqueCheckSql = "SELECT * FROM material_type WHERE no = ?";
-	
-	private static final String countSql = "select material_type.*, sum(material.remainder_quantity) as quantity" +
-			" from material_type,material where material_type.id=material.type and material_type.enabled=1"
-			+ " group by material_type.id";
-	
-	private static final String countSelectSql = "select material_type.*, sum(material.remainder_quantity) as quantity";
-	
-	private	static final String countNonSelectSql = " from material_type,material where material_type.id=material.type and material_type.enabled=1"
-			+ " group by material_type.id";
-	
-	private	static final String getEntitiesSql = "SELECT material.* FROM material, material_type where type=? "
-			+ "and material_type.id=material.type and material_type.enabled=1";
-
-//	public List<MaterialType> count(MaterialType materialType) {
-//		List<MaterialType> materialCount;
-//		materialCount = materialType.dao.find(countSql);
-//		return materialCount;
-//	}
 
 	public Object count(Integer pageNo, Integer pageSize) {
 		return Db.paginate(pageNo, pageSize, true, countSelectSql, countNonSelectSql);
 	}
 	
-	public List<Material> getEntities(Integer type) {
+	public List<Material> getEntities(Material material, Integer type) {
 		List<Material> materialEntities;
+		if(Material.dao.find(entitySearchSql, material.getType()).size() == 0) {
+			throw new OperationException("material doesn't exist");
+		}
 		materialEntities = Material.dao.find(getEntitiesSql, type);
 		return materialEntities;
 	}
-	
-	// 需要同步到 material表
+
 	public boolean add(MaterialType materialType) {
 		materialType.setEnabled(true);
 		if(MaterialType.dao.find(uniqueCheckSql, materialType.getNo()).size() != 0) {
@@ -55,7 +49,6 @@ public class MaterialService extends SelectService{
 		return materialType.save();
 	}
 	
-	// 需要同步到 material表
 	public boolean update(MaterialType materialType) {
 		materialType.keep("id","no","area","row","col","height","enabled");
 		return materialType.update();

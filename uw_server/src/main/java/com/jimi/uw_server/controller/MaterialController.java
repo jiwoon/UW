@@ -3,6 +3,7 @@ package com.jimi.uw_server.controller;
 import com.jfinal.aop.Enhancer;
 import com.jfinal.core.Controller;
 import com.jfinal.core.paragetter.Para;
+import com.jimi.uw_server.model.Material;
 import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.service.MaterialService;
 import com.jimi.uw_server.util.ResultUtil;
@@ -19,14 +20,10 @@ public class MaterialController extends Controller {
 	public void count(Integer pageNo, Integer pageSize) {
 		renderJson(ResultUtil.succeed(materialService.count(pageNo, pageSize)));
 	}
-	
-//	public void count(MaterialType materialType) {
-//		renderJson(ResultUtil.succeed(materialService.count(materialType)));
-//	}
 
 	// 获取物料实体
-	public void getEntities(Integer type) {
-		renderJson(ResultUtil.succeed(materialService.getEntities(type)));
+	public void getEntities(@Para("") Material material, Integer type) {
+		renderJson(ResultUtil.succeed(materialService.getEntities(material, type)));
 	}
 	
 	// 添加物料类型#

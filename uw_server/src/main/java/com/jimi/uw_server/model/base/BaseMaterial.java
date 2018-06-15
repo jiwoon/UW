@@ -46,12 +46,12 @@ public abstract class BaseMaterial<M extends BaseMaterial<M>> extends Model<M> i
 	}
 
 	public M setRemainderQuantity(java.lang.Integer remainderQuantity) {
-		set("remainderQuantity", remainderQuantity);
+		set("remainder_quantity", remainderQuantity);
 		return (M)this;
 	}
 	
 	public java.lang.Integer getRemainderQuantity() {
-		return getInt("remainderQuantity");
+		return getInt("remainder_quantity");
 	}
 
 }

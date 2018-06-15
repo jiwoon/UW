@@ -72,4 +72,13 @@ public abstract class BaseMaterialType<M extends BaseMaterialType<M>> extends Mo
 		return get("enabled");
 	}
 
+	public M setIsOnShelf(java.lang.Boolean isOnShelf) {
+		set("is_on_shelf", isOnShelf);
+		return (M)this;
+	}
+	
+	public java.lang.Boolean getIsOnShelf() {
+		return get("is_on_shelf");
+	}
+
 }
