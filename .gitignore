@@ -21,6 +21,7 @@
 hs_err_pid*
 /uw_server/.settings
 /.metadata/
+/.recommenders
 /RemoteSystemsTempFiles
 /uw_server/target
 /uw_server/target/classes/.gitignore
