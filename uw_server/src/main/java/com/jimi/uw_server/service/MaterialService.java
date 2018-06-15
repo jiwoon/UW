@@ -18,7 +18,11 @@ public class MaterialService extends SelectService{
 	
 	private static final String uniqueCheckSql = "SELECT * FROM material_type WHERE no = ?";
 	
-	private static final String countSelectSql = "select material_type.*, sum(material.remainderQuantity) as quantity";
+	private static final String countSql = "select material_type.*, sum(material.remainder_quantity) as quantity" +
+			" from material_type,material where material_type.id=material.type and material_type.enabled=1"
+			+ " group by material_type.id";
+	
+	private static final String countSelectSql = "select material_type.*, sum(material.remainder_quantity) as quantity";
 	
 	private	static final String countNonSelectSql = " from material_type,material where material_type.id=material.type and material_type.enabled=1"
 			+ " group by material_type.id";
@@ -33,7 +37,7 @@ public class MaterialService extends SelectService{
 //	}
 
 	public Object count(Integer pageNo, Integer pageSize) {
-		return Db.paginate(pageNo, pageSize, countSelectSql, countNonSelectSql);
+		return Db.paginate(pageNo, pageSize, true, countSelectSql, countNonSelectSql);
 	}
 	
 	public List<Material> getEntities(Integer type) {

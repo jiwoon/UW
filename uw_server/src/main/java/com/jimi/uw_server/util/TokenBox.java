@@ -90,6 +90,7 @@ public class TokenBox {
 		/**
 		 * 根据tokenId和key获取值
 		 */
+		@SuppressWarnings("unchecked")
 		public static <T> T get(String tokenId, String key) {
 			Map<String, Object> session = sessions.get(tokenId);
 			//如果没有该id的session则返回null

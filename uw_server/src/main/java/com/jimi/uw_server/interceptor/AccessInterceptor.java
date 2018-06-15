@@ -17,6 +17,7 @@ import com.jimi.uw_server.util.TokenBox;
  */
 public class AccessInterceptor implements Interceptor {
 
+	@SuppressWarnings("unlikely-arg-type")
 	@Override
 	public void intercept(Invocation invocation) {
 		 Access access = invocation.getMethod().getAnnotation(Access.class);

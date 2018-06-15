@@ -19,6 +19,7 @@ import com.jimi.uw_server.controller.RobotController;
 import com.jimi.uw_server.controller.TaskController;
 import com.jimi.uw_server.controller.UserController;
 import com.jimi.uw_server.interceptor.AccessInterceptor;
+import com.jimi.uw_server.interceptor.ActionLogInterceptor;
 import com.jimi.uw_server.interceptor.CORSInterceptor;
 import com.jimi.uw_server.interceptor.ErrorLogInterceptor;
 import com.jimi.uw_server.model.MappingKit;
@@ -48,6 +49,7 @@ public class UwConfig extends JFinalConfig {
 		me.addGlobalActionInterceptor(new ErrorLogInterceptor());
 		me.addGlobalActionInterceptor(new CORSInterceptor());
 		me.addGlobalActionInterceptor(new AccessInterceptor());
+		me.addGlobalActionInterceptor(new ActionLogInterceptor());
 		me.addGlobalActionInterceptor(new Tx());
 	}
 
