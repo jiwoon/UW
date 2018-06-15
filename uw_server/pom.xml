@@ -1,40 +1,47 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  
-  <groupId>com.jimi</groupId>
-  <artifactId>uw_server</artifactId>
-  <packaging>war</packaging>
-  <version>1.0</version>
-  
-  <name>uw_server</name>
-  <url>http://maven.apache.org</url>
-  
-  <properties>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.jimi</groupId>
+	<artifactId>uw_server</artifactId>
+	<packaging>war</packaging>
+	<version>1.0</version>
+
+	<name>uw_server</name>
+	<url>http://maven.apache.org</url>
+
+	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
-  
-  <dependencies>
-  
+
+	<dependencies>
+
 		<dependency>
 			<groupId>cc.darhao</groupId>
 			<artifactId>DaUtils</artifactId>
 			<version>1.0-SNAPHOT</version>
 		</dependency>
-    
-    <!-- https://mvnrepository.com/artifact/com.jfinal/jfinal-java8 -->
+
+		<!-- https://mvnrepository.com/artifact/com.jfinal/jfinal-java8 -->
 		<dependency>
 			<groupId>com.jfinal</groupId>
 			<artifactId>jfinal-java8</artifactId>
 			<version>3.4</version>
 		</dependency>
-		
+
 		<!-- javaee-web-api包 注意和项目使用的JDK版本对应 -->
 		<dependency>
 			<groupId>javax</groupId>
 			<artifactId>javaee-web-api</artifactId>
 			<version>8.0</version>
 			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.glassfish.tyrus.bundles</groupId>
+			<artifactId>tyrus-standalone-client</artifactId>
+			<version>1.13</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
@@ -64,12 +71,20 @@
 			<artifactId>mysql-connector-java</artifactId>
 			<version>5.1.35</version>
 		</dependency>
-    
-  </dependencies>
-  <build>
-    <finalName>uw_server</finalName>
-    
-    <plugins>
+
+		<!-- https://mvnrepository.com/artifact/com.alibaba/fastjson -->
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>fastjson</artifactId>
+			<version>1.2.40</version>
+		</dependency>
+
+
+	</dependencies>
+	<build>
+		<finalName>uw_server</finalName>
+
+		<plugins>
 			<!-- 修改默认JRE -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -89,6 +104,6 @@
 			</plugin>
 
 		</plugins>
-		
-  </build>
+
+	</build>
 </project>

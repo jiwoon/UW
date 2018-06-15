@@ -12,6 +12,7 @@ import com.jfinal.plugin.activerecord.dialect.MysqlDialect;
 import com.jfinal.plugin.activerecord.tx.Tx;
 import com.jfinal.plugin.druid.DruidPlugin;
 import com.jfinal.template.Engine;
+import com.jimi.uw_server.agv.AGVCommunicator;
 import com.jimi.uw_server.controller.LogController;
 import com.jimi.uw_server.controller.MaterialController;
 import com.jimi.uw_server.controller.RobotController;
@@ -76,6 +77,7 @@ public class UwConfig extends JFinalConfig {
 	@Override
 	public void afterJFinalStart() {
 		TokenBox.start(PropKit.use("properties.ini").getInt("sessionTimeout"));
+		AGVCommunicator.connect(PropKit.use("properties.ini").get("AGVServerURI"));
 		System.out.println("Uw Server is Running now...");
 	}
 	
