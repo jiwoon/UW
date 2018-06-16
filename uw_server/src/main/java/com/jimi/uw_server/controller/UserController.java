@@ -17,8 +17,8 @@ public class UserController extends Controller {
 	
 	public static final String SESSION_KEY_LOGIN_USER = "loginUser";
 	
-	public void login(String userName, String password) {
-		User user = userService.login(userName, password);
+	public void login(String uid, String password) {
+		User user = userService.login(uid, password);
 		//判断是否重复登录
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		if(tokenId != null) {
@@ -29,7 +29,7 @@ public class UserController extends Controller {
 		}
 
 		user.put(TokenBox.TOKEN_ID_KEY_NAME, TokenBox.createTokenId());
-		TokenBox.put(TokenBox.createTokenId(), SESSION_KEY_LOGIN_USER, user);
+		TokenBox.put(TokenBox.createTokenId(), SESSION_KEY_LOGIN_USER, user);		
 		renderJson(ResultUtil.succeed(user));
 	}
 
@@ -69,6 +69,7 @@ public class UserController extends Controller {
 		renderJson(ResultUtil.succeed(userService.getTypes(pageNo, pageSize)));
 	}
 	
+//	@Access({"SuperAdmin"})
 	public void logout() {
 		//判断是否未登录
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
@@ -80,15 +81,4 @@ public class UserController extends Controller {
 		renderJson(ResultUtil.succeed());
 	}
 	
-//	public void logout() {
-//		//判断是否未登录
-//		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
-//		User user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
-//		if(user == null) {
-//			throw new ParameterException("do not need to logout when not login");
-//		}
-//		TokenBox.remove(tokenId);
-//		renderJson(ResultUtil.succeed());
-//	}
-
 }

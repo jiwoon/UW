@@ -43,6 +43,7 @@ public class MaterialService extends SelectService{
 
 	public boolean add(MaterialType materialType) {
 		materialType.setEnabled(true);
+		materialType.setIsOnShelf(true);
 		if(MaterialType.dao.find(uniqueCheckSql, materialType.getNo()).size() != 0) {
 			throw new OperationException("material is already exist");
 		}
@@ -50,7 +51,7 @@ public class MaterialService extends SelectService{
 	}
 	
 	public boolean update(MaterialType materialType) {
-		materialType.keep("id","no","area","row","col","height","enabled");
+		materialType.keep("id","no","area","row","col","height","enabled", "is_on_shelf");
 		return materialType.update();
 	}
 	

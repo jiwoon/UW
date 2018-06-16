@@ -11,10 +11,6 @@ import com.jimi.uw_server.util.ResultUtil;
 public class MaterialController extends Controller {
 	
 	private static MaterialService materialService = Enhancer.enhance(MaterialService.class);
-	
-//	public void select(String table, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
-//		renderJson(ResultUtil.succeed(materialService.select(table, pageNo, pageSize, ascBy, descBy, filter)));
-//	}
 
 	// 统计物料类型信息
 	public void count(Integer pageNo, Integer pageSize) {
