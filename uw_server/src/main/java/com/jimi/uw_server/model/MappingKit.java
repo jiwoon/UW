@@ -19,7 +19,10 @@ public class MappingKit {
 		arp.addMapping("action_log", "id", ActionLog.class);
 		arp.addMapping("material", "id", Material.class);
 		arp.addMapping("material_type", "id", MaterialType.class);
+		arp.addMapping("packing_list_item", "id", PackingListItem.class);
 		arp.addMapping("robot", "id", Robot.class);
+		arp.addMapping("task", "id", Task.class);
+		arp.addMapping("task_log", "id", TaskLog.class);
 		arp.addMapping("user", "uid", User.class);
 		arp.addMapping("user_type", "id", UserType.class);
 	}
