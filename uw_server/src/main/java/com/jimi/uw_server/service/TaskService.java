@@ -21,6 +21,9 @@ public class TaskService {
 //	+ "AND packing_list_item.material_type_id = material_type.id";
 	
 	public boolean create(Task task, Integer type, String fileName) {
+		// 逐条判断库存是否足够，若是，则插入套料单数据；否则，提示库存不足
+		
+		
 		task.setType(type);
 		task.setFileName(fileName);
 		task.setWindow(1);
@@ -30,19 +33,27 @@ public class TaskService {
 	}
 	
 	public boolean pass(Task task, Integer id) {
-//		task.dao().
 		task.setState(1);
 		task.keep("id", "type", "file_name", "window", "state", "createtime");
 		return task.update();
 	}
 	
 	public boolean start(Task task, Integer id, Integer window) {
+		// 根据套料单、物料类型表生成任务条目
+		
+		//把任务条目均匀插入到队列til中（线程同步方法）
+		
+		
 		task.setState(2);
 		task.keep("id", "type", "file_name", "window", "state", "createtime");
 		return task.update();
 	}
 	
 	public boolean cancel(Task task, Integer id) {
+		// 判断任务是否处于进行中状态，若是，则把相关的任务条目从til中剔除（线程同步方法） 并 更新任务状态为作废；否则，更新任务状态为作废
+		// 任务条目til存放在redis中
+		
+		
 		task.setState(4);
 		task.keep("id", "type", "file_name", "window", "state", "creattime");
 		return task.update();
