@@ -3,6 +3,8 @@ package com.jimi.uw_server.controller;
 import com.jfinal.aop.Enhancer;
 import com.jfinal.core.Controller;
 import com.jfinal.core.paragetter.Para;
+import com.jimi.uw_server.model.MaterialType;
+import com.jimi.uw_server.model.PackingListItem;
 import com.jimi.uw_server.model.Task;
 import com.jimi.uw_server.service.TaskService;
 import com.jimi.uw_server.service.base.SelectService;
@@ -14,14 +16,10 @@ public class TaskController extends Controller {
 	
 	private static TaskService taskService = Enhancer.enhance(TaskService.class);
 	
-//	private static String checkTaskSql = "SELECT material_type.no as materialNo, packing_list_item.quantity as requestQuantity,"
-//			+ "task_log.quantity as actualQuantity, task_log.time as finishTime FROM material_type,packing_list_item,task_log "
-//			+ "where task_log.id = ? material_type.id = packing_list_item.material_type_id"
-//			+ "and packing_list_item.task_id = task_log.task_id";
-	
 	//@Access({"SuperAdmin"})
-	public void create(@Para("") Task task, Integer type, String fileName) {
+	public void create(@Para("") Task task, @Para("") PackingListItem packingListItem, @Para("") MaterialType materialType, Integer type, String fileName) {
 		if(taskService.create(task, type, fileName)) {
+			taskService.insertPackingList(task, packingListItem, materialType, type, fileName);
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());

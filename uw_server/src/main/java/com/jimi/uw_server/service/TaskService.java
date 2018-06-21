@@ -1,35 +1,128 @@
 package com.jimi.uw_server.service;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 
+import com.jimi.uw_server.material.entity.PackingList;
+import com.jimi.uw_server.model.Material;
+import com.jimi.uw_server.model.MaterialType;
+import com.jimi.uw_server.model.PackingListItem;
 import com.jimi.uw_server.model.Task;
+import com.jimi.uw_server.util.ExcelHelper;
 
 public class TaskService {
 	
-//	private static String checkTaskSelectSql = "SELECT material_type.no as materialNo, packing_list_item.quantity as requestQuantity,"
-//			+ "task_log.quantity as actualQuantity, task_log.time as finishTime";
-//	
-//	private static String checkTaskNonSelectSql = "FROM material_type,packing_list_item,task_log "
-//			+ "where task_log.id = ? and material_type.id = packing_list_item.material_type_id"
-//			+ "and packing_list_item.task_id = task_log.task_id";
-	
-//	private static String checkTaskSql = 
-//			"SELECT material_type.no as materialNo, packing_list_item.quantity as requestQuantity,"
-//	+ "task_log.quantity as actualQuantity, task_log.time as finishTime "
-//	+ "FROM material_type,packing_list_item,task_log "
-//	+ "WHERE task_log.task_id = ? AND task_log.task_id = packing_list_item.task_id" 
-//	+ "AND packing_list_item.material_type_id = material_type.id";
+	private static List<PackingList> packingLists;
 	
 	public boolean create(Task task, Integer type, String fileName) {
-		// 逐条判断库存是否足够，若是，则插入套料单数据；否则，提示库存不足
-		
-		
+		// 根据文件名（excel表格的绝对路径）导入数据
 		task.setType(type);
 		task.setFileName(fileName);
 		task.setWindow(1);
 		task.setState(0);
 		task.setCreateTime(new Date());
+
 		return task.save();
+	}
+	
+	public void insertPackingList(Task task, PackingListItem packingListItem, MaterialType materialType, Integer type, String fileName) {
+		File file = new File(fileName);
+		// 获取新任务id
+		Task newTaskIdSql = task.findFirst("SELECT MAX(id) as newId FROM task");
+		Integer newTaskId = newTaskIdSql.get("newId");
+		// 获取新建任务类型
+		Task taskTypeSql = task.findFirst("SELECT type FROM task WHERE id = ?", newTaskId);
+		Integer taskType = taskTypeSql.get("type");
+		
+		Material material = new Material();
+
+		try {
+			ExcelHelper fileReader = ExcelHelper.from(file);
+			try {
+				packingLists = fileReader.unfill(PackingList.class, 2);
+				for (PackingList packingList : packingLists) {
+					
+					// 计划出库数量
+					Integer planQuantity = Integer.parseInt(packingList.getQuantity());
+					
+					// 获取该物料的库存数量
+					MaterialType checkQuantitySql = materialType.findFirst("SELECT remainder_quantity FROM material WHERE type = ("
+							+ "SELECT id FROM material_type WHERE no = ?)", packingList.getNo());
+					Integer remainderQuantity = checkQuantitySql.get("remainder_quantity");
+					
+					if(taskType == 1) {
+						// 逐条判断库存是否足够，若是，则插入套料单数据；
+						if (remainderQuantity > Integer.parseInt(packingList.getQuantity())) {
+							
+							System.out.println("该物料库存充足，可以出库！");
+							// 添加物料类型id
+							MaterialType findNoSql = materialType.findFirst("SELECT id FROM material_type WHERE no = ?", packingList.getNo());
+							Integer materialId = findNoSql.get("id");
+							packingListItem.setMaterialTypeId(materialId);
+							// 添加计划出入库数量
+							packingListItem.setQuantity(planQuantity);
+							// 添加任务id
+							packingListItem.setTaskId(newTaskId);
+							// 保存该记录到套料单表
+							packingListItem.save();
+							
+							// 更新物料数量
+							updateMaterialQuantity(material, taskType, remainderQuantity, planQuantity, materialId);
+							
+							// new一个PackingListItem，否则前面的记录会被覆盖掉
+							packingListItem = new PackingListItem();
+						} else {	// 否则，提示库存不足
+							System.out.println("该物料库存不足！");
+							packingListItem = new PackingListItem();
+							continue;
+						}					
+					} else {
+						// 添加物料类型id
+						MaterialType findNoSql = materialType.findFirst("SELECT id FROM material_type WHERE no = ?", packingList.getNo());
+						Integer materialId = findNoSql.get("id");
+						packingListItem.setMaterialTypeId(materialId);
+						// 添加计划出入库数量
+						packingListItem.setQuantity(planQuantity);
+						// 添加任务id
+						packingListItem.setTaskId(newTaskId);
+						// 保存该记录到套料单表
+						packingListItem.save();
+						
+						// 更新物料数量
+						updateMaterialQuantity(material, taskType, remainderQuantity, planQuantity, materialId);
+						
+						// new一个PackingListItem，否则前面的记录会被覆盖掉
+						packingListItem = new PackingListItem();
+						}
+						
+					}
+					
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		
+	}
+	
+	public void updateMaterialQuantity(Material material, Integer taskType, Integer remainderQuantity, Integer planQuantity, Integer materialTypeId) {
+		if (taskType == 1) {
+			remainderQuantity -= planQuantity;
+			material = material.findFirst("SELECT id FROM material WHERE type = (SELECT type FROM material WHERE type = ?)", materialTypeId);
+			String materialId = material.get("id");
+			material.findById(materialId).set("remainder_quantity", remainderQuantity).update();
+		} else if (taskType == 0) {
+			remainderQuantity += planQuantity;
+			material = material.findFirst("SELECT id FROM material WHERE type = (SELECT type FROM material WHERE type = ?)", materialTypeId);
+			String materialId = material.get("id");
+			material.findById(materialId).set("remainder_quantity", remainderQuantity).update();
+		} else {
+			return ;
+		}
 	}
 	
 	public boolean pass(Task task, Integer id) {
@@ -41,7 +134,7 @@ public class TaskService {
 	public boolean start(Task task, Integer id, Integer window) {
 		// 根据套料单、物料类型表生成任务条目
 		
-		//把任务条目均匀插入到队列til中（线程同步方法）
+		// 把任务条目均匀插入到队列til中（线程同步方法）
 		
 		
 		task.setState(2);
