@@ -19,6 +19,17 @@ public class TaskService {
 	
 	private static final String getWindowsSql = "SELECT id FROM window";
 	
+	private static final String getNewTaskIdSql = "SELECT MAX(id) as newId FROM task";
+	
+	private static final String getTaskTypeSql = "SELECT type FROM task WHERE id = ?";
+	
+	private static final String getQuantitySql = "SELECT remainder_quantity FROM material WHERE type = ("
+			+ "SELECT id FROM material_type WHERE no = ?)";
+	
+	private static final String getNoSql = "SELECT id FROM material_type WHERE no = ?";
+	
+	private static final String getMaterialId = "SELECT id FROM material WHERE type = (SELECT type FROM material WHERE type = ?)";
+	
 	public boolean create(Task task, Integer type, String fileName) {
 		// 根据文件名（excel表格的绝对路径）导入数据
 		task.setType(type);
@@ -33,10 +44,10 @@ public class TaskService {
 	public void insertPackingList(Task task, PackingListItem packingListItem, MaterialType materialType, Integer type, String fileName) {
 		File file = new File(fileName);
 		// 获取新任务id
-		Task newTaskIdSql = task.findFirst("SELECT MAX(id) as newId FROM task");
+		Task newTaskIdSql = task.findFirst(getNewTaskIdSql);
 		Integer newTaskId = newTaskIdSql.get("newId");
 		// 获取新建任务类型
-		Task taskTypeSql = task.findFirst("SELECT type FROM task WHERE id = ?", newTaskId);
+		Task taskTypeSql = task.findFirst(getTaskTypeSql, newTaskId);
 		Integer taskType = taskTypeSql.get("type");
 		
 		Material material = new Material();
@@ -51,8 +62,7 @@ public class TaskService {
 					Integer planQuantity = Integer.parseInt(packingList.getQuantity());
 					
 					// 获取该物料的库存数量
-					MaterialType checkQuantitySql = materialType.findFirst("SELECT remainder_quantity FROM material WHERE type = ("
-							+ "SELECT id FROM material_type WHERE no = ?)", packingList.getNo());
+					MaterialType checkQuantitySql = materialType.findFirst(getQuantitySql, packingList.getNo());
 					Integer remainderQuantity = checkQuantitySql.get("remainder_quantity");
 					
 					if(taskType == 1) {
@@ -61,7 +71,7 @@ public class TaskService {
 							
 							System.out.println("该物料库存充足，可以出库！");
 							// 添加物料类型id
-							MaterialType findNoSql = materialType.findFirst("SELECT id FROM material_type WHERE no = ?", packingList.getNo());
+							MaterialType findNoSql = materialType.findFirst(getNoSql, packingList.getNo());
 							Integer materialId = findNoSql.get("id");
 							packingListItem.setMaterialTypeId(materialId);
 							// 添加计划出入库数量
@@ -83,7 +93,7 @@ public class TaskService {
 						}					
 					} else {
 						// 添加物料类型id
-						MaterialType findNoSql = materialType.findFirst("SELECT id FROM material_type WHERE no = ?", packingList.getNo());
+						MaterialType findNoSql = materialType.findFirst(getNoSql, packingList.getNo());
 						Integer materialId = findNoSql.get("id");
 						packingListItem.setMaterialTypeId(materialId);
 						// 添加计划出入库数量
@@ -115,12 +125,12 @@ public class TaskService {
 	public void updateMaterialQuantity(Material material, Integer taskType, Integer remainderQuantity, Integer planQuantity, Integer materialTypeId) {
 		if (taskType == 1) {
 			remainderQuantity -= planQuantity;
-			material = material.findFirst("SELECT id FROM material WHERE type = (SELECT type FROM material WHERE type = ?)", materialTypeId);
+			material = material.findFirst(getMaterialId, materialTypeId);
 			String materialId = material.get("id");
 			material.findById(materialId).set("remainder_quantity", remainderQuantity).update();
 		} else if (taskType == 0) {
 			remainderQuantity += planQuantity;
-			material = material.findFirst("SELECT id FROM material WHERE type = (SELECT type FROM material WHERE type = ?)", materialTypeId);
+			material = material.findFirst(getMaterialId, materialTypeId);
 			String materialId = material.get("id");
 			material.findById(materialId).set("remainder_quantity", remainderQuantity).update();
 		} else {
