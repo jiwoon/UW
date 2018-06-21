@@ -10,11 +10,14 @@ import com.jimi.uw_server.model.Material;
 import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.model.PackingListItem;
 import com.jimi.uw_server.model.Task;
+import com.jimi.uw_server.model.Window;
 import com.jimi.uw_server.util.ExcelHelper;
 
 public class TaskService {
 	
 	private static List<PackingList> packingLists;
+	
+	private static final String getWindowsSql = "SELECT id FROM window";
 	
 	public boolean create(Task task, Integer type, String fileName) {
 		// 根据文件名（excel表格的绝对路径）导入数据
@@ -157,5 +160,11 @@ public class TaskService {
 //		taskLog.findFirst(checkTaskSql, id);
 //		return taskLog;
 //	}
+	
+	public List<Window> getWindows(Window window) {
+		List<Window> windowId;
+		windowId = Window.dao.find(getWindowsSql);
+		return windowId;
+	}
 
 }

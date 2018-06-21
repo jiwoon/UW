@@ -25,6 +25,7 @@ public class MappingKit {
 		arp.addMapping("task_log", "id", TaskLog.class);
 		arp.addMapping("user", "uid", User.class);
 		arp.addMapping("user_type", "id", UserType.class);
+		arp.addMapping("window", "id", Window.class);
 	}
 }
 

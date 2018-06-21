@@ -6,6 +6,7 @@ import com.jfinal.core.paragetter.Para;
 import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.model.PackingListItem;
 import com.jimi.uw_server.model.Task;
+import com.jimi.uw_server.model.Window;
 import com.jimi.uw_server.service.TaskService;
 import com.jimi.uw_server.service.base.SelectService;
 import com.jimi.uw_server.util.ResultUtil;
@@ -60,6 +61,10 @@ public class TaskController extends Controller {
 	public void select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
 		String table = "task";
 		renderJson(ResultUtil.succeed(daoService.select(table, pageNo, pageSize, ascBy, descBy, filter)));
+	}
+	
+	public void getWindows(@Para("") Window window) {
+		renderJson(ResultUtil.succeed(taskService.getWindows(window)));
 	}
 	
 }
