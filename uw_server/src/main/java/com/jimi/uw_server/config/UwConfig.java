@@ -6,6 +6,7 @@ import com.jfinal.config.Interceptors;
 import com.jfinal.config.JFinalConfig;
 import com.jfinal.config.Plugins;
 import com.jfinal.config.Routes;
+import com.jfinal.json.FastJsonFactory;
 import com.jfinal.kit.PropKit;
 import com.jfinal.plugin.activerecord.ActiveRecordPlugin;
 import com.jfinal.plugin.activerecord.dialect.MysqlDialect;
@@ -34,6 +35,7 @@ public class UwConfig extends JFinalConfig {
 	@Override
 	public void configConstant(Constants me) {
 		me.setDevMode(true);
+		me.setJsonFactory(new FastJsonFactory());
 	}
 
 	@Override
@@ -88,5 +90,6 @@ public class UwConfig extends JFinalConfig {
 	public void beforeJFinalStop() {
 		TokenBox.stop();
 	}
+	
 
 }

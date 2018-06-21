@@ -29,7 +29,7 @@ public class MaterialService extends SelectService{
 	private static final String uniqueCheckSql = "SELECT * FROM material_type WHERE no = ?";
 
 	public Object count(Integer pageNo, Integer pageSize) {
-		return Db.paginate(pageNo, pageSize, true, countSelectSql, countNonSelectSql);
+		return Db.paginate(pageNo, pageSize, countSelectSql, countNonSelectSql);
 	}
 	
 	public List<Material> getEntities(Material material, Integer type) {
