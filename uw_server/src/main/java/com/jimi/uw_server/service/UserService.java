@@ -24,13 +24,12 @@ public class UserService extends SelectService{
 	public User login(String uid, String password) {
 		User user = User.dao.findFirst(loginSql, uid, MD5Util.MD5(password));
 		if(user == null) {
-			throw new OperationException("userName or password is not correct");
+			throw new OperationException("userId or password is not correct");
 		} 
 		if(!user.getEnabled()) {
 			System.out.println("user.getEnabled(): " + user.getEnabled());
 			throw new OperationException("this user is disabled");
 		}
-//		user.update();
 		return user;
 	}
 
@@ -43,7 +42,7 @@ public class UserService extends SelectService{
 		user.setPassword(MD5Util.MD5(user.getPassword()));
 		return user.save();
 	}
-	
+
 	public boolean update(User user) {
 		user.keep("uid","name","password","type","enabled");
 		return user.update();
