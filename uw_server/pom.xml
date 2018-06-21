@@ -92,6 +92,14 @@
 		    <version>3.9</version>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/redis.clients/jedis -->
+		<dependency>
+			<groupId>redis.clients</groupId>
+			<artifactId>jedis</artifactId>
+			<version>2.9.0</version>
+		</dependency>
+
+
 	</dependencies>
 	<build>
 		<finalName>uw_server</finalName>

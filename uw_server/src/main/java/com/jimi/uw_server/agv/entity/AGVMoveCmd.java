@@ -3,7 +3,7 @@ package com.jimi.uw_server.agv.entity;
 import java.util.List;
 
 /**
- * AGV指令任务状态指令
+ * AGV移动、拣料、回库等相关指令类
  * <br>
  * <b>2018年6月15日</b>
  * @author 沫熊工作室 <a href="http://www.darhao.cc">www.darhao.cc</a>

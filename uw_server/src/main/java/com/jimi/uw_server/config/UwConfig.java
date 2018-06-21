@@ -1,5 +1,7 @@
 package com.jimi.uw_server.config;
 
+import java.io.File;
+
 import com.jfinal.config.Constants;
 import com.jfinal.config.Handlers;
 import com.jfinal.config.Interceptors;
@@ -12,6 +14,7 @@ import com.jfinal.plugin.activerecord.ActiveRecordPlugin;
 import com.jfinal.plugin.activerecord.dialect.MysqlDialect;
 import com.jfinal.plugin.activerecord.tx.Tx;
 import com.jfinal.plugin.druid.DruidPlugin;
+import com.jfinal.plugin.redis.RedisPlugin;
 import com.jfinal.template.Engine;
 import com.jimi.uw_server.agv.AGVCommunicator;
 import com.jimi.uw_server.controller.LogController;
@@ -58,9 +61,20 @@ public class UwConfig extends JFinalConfig {
 	@Override
 	public void configPlugin(Plugins me) {
 		PropKit.use("properties.ini");
-		//配置数据连接池
-		DruidPlugin dp = new DruidPlugin(PropKit.get("url"), PropKit.get("user"), PropKit.get("password"));
+		//判断是否是生产环境
+		DruidPlugin dp = null;
+		RedisPlugin rp = null;
+		if(isProductionEnvironment()) {
+			dp = new DruidPlugin(PropKit.get("p_url"), PropKit.get("p_user"), PropKit.get("p_password"));
+			rp = new RedisPlugin("uw", PropKit.get("p_redisIp"), PropKit.get("p_redisPassword"));
+			System.out.println("System is in production envrionment");
+		}else {
+			dp = new DruidPlugin(PropKit.get("d_url"), PropKit.get("d_user"), PropKit.get("d_password"));
+			rp = new RedisPlugin("uw", PropKit.get("d_redisIp"), PropKit.get("d_redisPassword"));
+			System.out.println("System is in development envrionment");
+		}
 		me.add(dp);
+		me.add(rp);
 		//配置ORM
 	    ActiveRecordPlugin arp = new ActiveRecordPlugin(dp);
 	    arp.setDialect(new MysqlDialect());	// 用什么数据库，就设置什么Dialect
@@ -91,5 +105,15 @@ public class UwConfig extends JFinalConfig {
 		TokenBox.stop();
 	}
 	
+	
+	private boolean isProductionEnvironment() {
+		File[] roots = File.listRoots();
+        for (int i=0; i < roots.length; i++) {
+            if(new File(roots[i].toString() + "PRODUCTION_ENVIRONMENT_FLAG").exists()) {
+            	return true;
+            }
+        }
+        return false;
+	}
 
 }
