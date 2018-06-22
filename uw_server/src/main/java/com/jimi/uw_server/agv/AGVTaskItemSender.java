@@ -120,8 +120,8 @@ public class AGVTaskItemSender {
 	 */
 	public synchronized static void removeTaskItemByTaskId(int taskId) {
 		for (int i = 0; i < Redis.use().llen("til"); i++) {
-			String item = Redis.use().lindex("til", i);
-			if(AGVIOTaskItem.fromString(item).getTaskId() == taskId){
+			byte[] item = Redis.use().lindex("til", i);
+			if(AGVIOTaskItem.fromString(new String(item)).getTaskId() == taskId){
 				Redis.use().lrem("til", 1, item);
 				i--;
 			}
@@ -134,7 +134,7 @@ public class AGVTaskItemSender {
 	 * 该方法由AGVWebSocket进行调用，请勿在其他地方调用
 	 */
 	public synchronized static void removeTaskItem(AGVIOTaskItem taskItem) {
-		Redis.use().lrem("til", -1, taskItem.toString());
+		Redis.use().lrem("til", -1, taskItem.toString().getBytes());
 	}
 	
 
