@@ -27,13 +27,13 @@ public abstract class BaseWindow<M extends BaseWindow<M>> extends Model<M> imple
 		return getInt("area");
 	}
 
-	public M setRow(java.lang.String row) {
+	public M setRow(java.lang.Integer row) {
 		set("row", row);
 		return (M)this;
 	}
 	
-	public java.lang.String getRow() {
-		return getStr("row");
+	public java.lang.Integer getRow() {
+		return getInt("row");
 	}
 
 	public M setCol(java.lang.Integer col) {

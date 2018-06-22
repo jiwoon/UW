@@ -2,9 +2,12 @@ package com.jimi.uw_server.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.jimi.uw_server.agv.AGVTaskItemSender;
+import com.jimi.uw_server.agv.entity.AGVIOTaskItem;
 import com.jimi.uw_server.material.entity.PackingList;
 import com.jimi.uw_server.model.Material;
 import com.jimi.uw_server.model.MaterialType;
@@ -30,8 +33,9 @@ public class TaskService {
 	
 	private static final String getMaterialId = "SELECT id FROM material WHERE type = (SELECT type FROM material WHERE type = ?)";
 	
+	private static final String getTaskMaterialIdSql = "SELECT material_type_id FROM packing_list_item WHERE task_id = ?";
+	
 	public boolean create(Task task, Integer type, String fileName) {
-		// 根据文件名（excel表格的绝对路径）导入数据
 		task.setType(type);
 		task.setFileName(fileName);
 		task.setWindow(1);
@@ -41,8 +45,8 @@ public class TaskService {
 		return task.save();
 	}
 	
-	public void insertPackingList(Task task, PackingListItem packingListItem, MaterialType materialType, Integer type, String fileName) {
-		File file = new File(fileName);
+	public void insertPackingList(Task task, PackingListItem packingListItem, MaterialType materialType, Integer type, String fullFileName) {
+		File file = new File(fullFileName);
 		// 获取新任务id
 		Task newTaskIdSql = task.findFirst(getNewTaskIdSql);
 		Integer newTaskId = newTaskIdSql.get("newId");
@@ -120,16 +124,25 @@ public class TaskService {
 			e1.printStackTrace();
 		}
 		
+		if (file.exists()) {
+			if (file.delete()) {
+				System.out.println("文件删除成功！");
+			} else {
+				System.out.println("文件删除失败！");
+			}
+		} 
 	}
 	
 	public void updateMaterialQuantity(Material material, Integer taskType, Integer remainderQuantity, Integer planQuantity, Integer materialTypeId) {
 		if (taskType == 1) {
 			remainderQuantity -= planQuantity;
+			System.out.println("remainderQuantity: " + remainderQuantity);
 			material = material.findFirst(getMaterialId, materialTypeId);
 			String materialId = material.get("id");
 			material.findById(materialId).set("remainder_quantity", remainderQuantity).update();
 		} else if (taskType == 0) {
 			remainderQuantity += planQuantity;
+			System.out.println("remainderQuantity: " + remainderQuantity);
 			material = material.findFirst(getMaterialId, materialTypeId);
 			String materialId = material.get("id");
 			material.findById(materialId).set("remainder_quantity", remainderQuantity).update();
@@ -145,10 +158,16 @@ public class TaskService {
 	}
 	
 	public boolean start(Task task, Integer id, Integer window) {
+		Window getwindow = Window.dao.findById(window);
+		PackingListItem getMaterialTypeId = PackingListItem.dao.findFirst(getTaskMaterialIdSql, id);
 		// 根据套料单、物料类型表生成任务条目
-		
+		List<AGVIOTaskItem> taskItems = new ArrayList<>();
+		AGVIOTaskItem a = new AGVIOTaskItem(getMaterialTypeId.getMaterialTypeId(), getwindow.getRow(), getwindow.getCol(), id);
+		taskItems.add(a);
+//		System.out.println(a);
+//		getMaterialTypeId.getMaterialTypeId(), getwindow.getRow(), getwindow.getCol(), id
 		// 把任务条目均匀插入到队列til中（线程同步方法）
-		
+		AGVTaskItemSender.addTaskItem(taskItems);
 		
 		task.setState(2);
 		task.keep("id", "type", "file_name", "window", "state", "createtime");
@@ -156,10 +175,13 @@ public class TaskService {
 	}
 	
 	public boolean cancel(Task task, Integer id) {
-		// 判断任务是否处于进行中状态，若是，则把相关的任务条目从til中剔除（线程同步方法） 并 更新任务状态为作废；否则，更新任务状态为作废
-		// 任务条目til存放在redis中
-		
-		
+		// 判断任务是否处于进行中状态，若是，则把相关的任务条目从til中剔除（线程同步方法） 并 更新任务状态为作废；
+		int state = task.findById(id).getState();
+		if (state == 2) {
+			System.out.println("taskId: " + id);
+			AGVTaskItemSender.removeTaskItemByTaskId(id);
+		}
+		// 更新任务状态为作废
 		task.setState(4);
 		task.keep("id", "type", "file_name", "window", "state", "creattime");
 		return task.update();
@@ -176,5 +198,10 @@ public class TaskService {
 		windowId = Window.dao.find(getWindowsSql);
 		return windowId;
 	}
+	
+//	public static void main(String[] args) {
+//		AGVIOTaskItem taskItems = new AGVIOTaskItem(1,2,3,4);	// id, x, y, materialTypeId
+//			System.out.println(taskItems);
+//	}
 
 }
