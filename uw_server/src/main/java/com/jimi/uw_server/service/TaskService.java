@@ -8,6 +8,7 @@ import java.util.List;
 
 import com.jimi.uw_server.agv.AGVTaskItemSender;
 import com.jimi.uw_server.agv.entity.AGVIOTaskItem;
+import com.jimi.uw_server.exception.OperationException;
 import com.jimi.uw_server.material.entity.PackingList;
 import com.jimi.uw_server.model.Material;
 import com.jimi.uw_server.model.MaterialType;
@@ -41,7 +42,7 @@ public class TaskService {
 		task.setWindow(1);
 		task.setState(0);
 		task.setCreateTime(new Date());
-
+		System.out.println("task: " + task);
 		return task.save();
 	}
 	
@@ -50,12 +51,12 @@ public class TaskService {
 		// 获取新任务id
 		Task newTaskIdSql = task.findFirst(getNewTaskIdSql);
 		Integer newTaskId = newTaskIdSql.get("newId");
-		// 获取新建任务类型
+		// 获取新建任务类型：0入库 1出库 2盘点 3位置优化
 		Task taskTypeSql = task.findFirst(getTaskTypeSql, newTaskId);
 		Integer taskType = taskTypeSql.get("type");
 		
 		Material material = new Material();
-
+		
 		try {
 			ExcelHelper fileReader = ExcelHelper.from(file);
 			try {
@@ -65,14 +66,13 @@ public class TaskService {
 					// 计划出库数量
 					Integer planQuantity = Integer.parseInt(packingList.getQuantity());
 					
-					// 获取该物料的库存数量
+					// 获取将要入库/出库的物料的库存数量
 					MaterialType checkQuantitySql = materialType.findFirst(getQuantitySql, packingList.getNo());
 					Integer remainderQuantity = checkQuantitySql.get("remainder_quantity");
 					
 					if(taskType == 1) {
 						// 逐条判断库存是否足够，若是，则插入套料单数据；
 						if (remainderQuantity > Integer.parseInt(packingList.getQuantity())) {
-							
 							System.out.println("该物料库存充足，可以出库！");
 							// 添加物料类型id
 							MaterialType findNoSql = materialType.findFirst(getNoSql, packingList.getNo());
@@ -91,9 +91,8 @@ public class TaskService {
 							// new一个PackingListItem，否则前面的记录会被覆盖掉
 							packingListItem = new PackingListItem();
 						} else {	// 否则，提示库存不足
-							System.out.println("该物料库存不足！");
 							packingListItem = new PackingListItem();
-							continue;
+							throw new OperationException("该物料库存不足！");
 						}					
 					} else {
 						// 添加物料类型id
@@ -159,16 +158,18 @@ public class TaskService {
 	
 	public boolean start(Task task, Integer id, Integer window) {
 		Window getwindow = Window.dao.findById(window);
-		PackingListItem getMaterialTypeId = PackingListItem.dao.findFirst(getTaskMaterialIdSql, id);
+		List<PackingListItem> items = PackingListItem.dao.find(getTaskMaterialIdSql, id);
 		// 根据套料单、物料类型表生成任务条目
 		List<AGVIOTaskItem> taskItems = new ArrayList<>();
-		AGVIOTaskItem a = new AGVIOTaskItem(getMaterialTypeId.getMaterialTypeId(), getwindow.getRow(), getwindow.getCol(), id);
-		taskItems.add(a);
-//		System.out.println(a);
-//		getMaterialTypeId.getMaterialTypeId(), getwindow.getRow(), getwindow.getCol(), id
-		// 把任务条目均匀插入到队列til中（线程同步方法）
-		AGVTaskItemSender.addTaskItem(taskItems);
-		
+		for (PackingListItem item : items) {
+			AGVIOTaskItem a = new AGVIOTaskItem(item.getMaterialTypeId(), getwindow.getRow(), getwindow.getCol(), id);
+//			AGVIOTaskItem a = new AGVIOTaskItem(1, 2, 3, 4);
+			taskItems.add(a);
+			System.out.println("taskItems: " + taskItems);
+			// 把任务条目均匀插入到队列til中（线程同步方法）
+			AGVTaskItemSender.addTaskItem(taskItems);
+			taskItems.clear();
+		}
 		task.setState(2);
 		task.keep("id", "type", "file_name", "window", "state", "createtime");
 		return task.update();
@@ -198,10 +199,5 @@ public class TaskService {
 		windowId = Window.dao.find(getWindowsSql);
 		return windowId;
 	}
-	
-//	public static void main(String[] args) {
-//		AGVIOTaskItem taskItems = new AGVIOTaskItem(1,2,3,4);	// id, x, y, materialTypeId
-//			System.out.println(taskItems);
-//	}
 
 }

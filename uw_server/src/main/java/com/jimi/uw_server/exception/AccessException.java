@@ -1,5 +1,9 @@
 package com.jimi.uw_server.exception;
 
+import java.util.Date;
+
+import com.jimi.uw_server.model.ErrorLog;
+
 /**
  * 权限不足异常，result：401
  * <br>
@@ -15,6 +19,11 @@ public class AccessException extends RuntimeException {
 
 	public AccessException(String message) {
 		super(message);
+		
+		ErrorLog errorLog = new ErrorLog();
+		errorLog.setMessage(message);
+		errorLog.setTime(new Date());
+		errorLog.save();
 	}
 	
 }

@@ -1,5 +1,9 @@
 package com.jimi.uw_server.exception;
 
+import java.util.Date;
+
+import com.jimi.uw_server.model.ErrorLog;
+
 /**
  * 请求的参数异常，result：400
  * <br>
@@ -15,6 +19,11 @@ public class ParameterException extends RuntimeException {
 
 	public ParameterException(String message) {
 		super(message);
+		
+		ErrorLog errorLog = new ErrorLog();
+		errorLog.setMessage(message);
+		errorLog.setTime(new Date());
+		errorLog.save();
 	}
 	
 }

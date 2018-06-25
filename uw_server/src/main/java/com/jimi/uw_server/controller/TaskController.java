@@ -20,11 +20,11 @@ public class TaskController extends Controller {
 	private static TaskService taskService = Enhancer.enhance(TaskService.class);
 	
 	//@Access({"SuperAdmin"})
-	public void create(@Para("") Task task, @Para("") PackingListItem packingListItem, @Para("") MaterialType materialType, Integer type, UploadFile file) {
+	public void create(@Para("") Task task, @Para("") PackingListItem packingListItem, @Para("") MaterialType materialType, UploadFile file, Integer type) {
 		file = getFile();
 		String fileName = file.getFileName();
 		String fullFileName = file.getUploadPath() + "\\" + file.getFileName();
-		type = 0;
+		System.out.println("type: " + type);
 		if(taskService.create(task, type, fileName)) {
 			taskService.insertPackingList(task, packingListItem, materialType, type, fullFileName);
 			renderJson(ResultUtil.succeed());

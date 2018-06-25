@@ -29,7 +29,7 @@ public class UserController extends Controller {
 		}
 
 		user.put(TokenBox.TOKEN_ID_KEY_NAME, TokenBox.createTokenId());
-//		System.out.println("user: " + user.toString());
+		System.out.println("user: " + user.toString());
 		TokenBox.put(TokenBox.createTokenId(), SESSION_KEY_LOGIN_USER, user);
 		renderJson(ResultUtil.succeed(user));
 	}
