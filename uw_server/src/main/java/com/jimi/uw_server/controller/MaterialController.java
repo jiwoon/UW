@@ -19,7 +19,11 @@ public class MaterialController extends Controller {
 
 	// 获取物料实体
 	public void getEntities(@Para("") Material material, Integer type) {
-		renderJson(ResultUtil.succeed(materialService.getEntities(material, type)));
+		if (materialService.getEntities(material, type) != null) {
+			renderJson(ResultUtil.succeed(materialService.getEntities(material, type)));
+		} else {
+			renderJson(ResultUtil.failed());
+		}
 	}
 	
 	// 添加物料类型#

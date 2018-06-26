@@ -35,7 +35,7 @@ public class MaterialService extends SelectService{
 	public List<Material> getEntities(Material material, Integer type) {
 		List<Material> materialEntities;
 		if(Material.dao.find(entitySearchSql, material.getType()).size() == 0) {
-			throw new OperationException("material doesn't exist");
+			throw new OperationException("该物料不存在！");
 		}
 		materialEntities = Material.dao.find(getEntitiesSql, type);
 		return materialEntities;

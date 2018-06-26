@@ -1,8 +1,10 @@
 package com.jimi.uw_server.controller;
 
+
 import com.jfinal.aop.Enhancer;
 import com.jfinal.core.Controller;
 import com.jfinal.core.paragetter.Para;
+import com.jfinal.upload.UploadFile;
 import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.model.PackingListItem;
 import com.jimi.uw_server.model.Task;
@@ -18,9 +20,13 @@ public class TaskController extends Controller {
 	private static TaskService taskService = Enhancer.enhance(TaskService.class);
 	
 	//@Access({"SuperAdmin"})
-	public void create(@Para("") Task task, @Para("") PackingListItem packingListItem, @Para("") MaterialType materialType, Integer type, String fileName) {
+	public void create(@Para("") Task task, @Para("") PackingListItem packingListItem, @Para("") MaterialType materialType, UploadFile file, Integer type) {
+		file = getFile();
+		String fileName = file.getFileName();
+		String fullFileName = file.getUploadPath() + "\\" + file.getFileName();
+		System.out.println("type: " + type);
 		if(taskService.create(task, type, fileName)) {
-			taskService.insertPackingList(task, packingListItem, materialType, type, fileName);
+			taskService.insertPackingList(task, packingListItem, materialType, type, fullFileName);
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
