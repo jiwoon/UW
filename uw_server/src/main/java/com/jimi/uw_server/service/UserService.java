@@ -4,6 +4,7 @@ import com.jfinal.plugin.activerecord.Db;
 import com.jimi.uw_server.exception.OperationException;
 import com.jimi.uw_server.model.User;
 import com.jimi.uw_server.service.base.SelectService;
+import com.jimi.uw_server.util.ErrorLogWritter;
 
 import cc.darhao.dautils.api.MD5Util;
 
@@ -28,7 +29,7 @@ public class UserService extends SelectService{
 		} 
 		if(!user.getEnabled()) {
 			System.out.println("user.getEnabled(): " + user.getEnabled());
-			throw new OperationException("this user is disabled");
+			ErrorLogWritter.saveErrorLog("该用户已被禁用！");
 		}
 		return user;
 	}
@@ -36,7 +37,7 @@ public class UserService extends SelectService{
 	public boolean add(User user) {
 		user.setEnabled(true);
 		if(User.dao.find(uniqueCheckSql, user.getUid()).size() != 0) {
-			throw new OperationException("user is already exist");
+			ErrorLogWritter.saveErrorLog("该用户已存在！");
 		}
 		user.keep("uid","name","password","type", "enabled");
 		user.setPassword(MD5Util.MD5(user.getPassword()));

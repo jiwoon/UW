@@ -3,7 +3,6 @@ package com.jimi.uw_server.service;
 import java.util.List;
 
 import com.jfinal.plugin.activerecord.Db;
-import com.jimi.uw_server.exception.OperationException;
 import com.jimi.uw_server.model.Material;
 import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.service.base.SelectService;
@@ -35,7 +34,7 @@ public class MaterialService extends SelectService{
 	public List<Material> getEntities(Material material, Integer type) {
 		List<Material> materialEntities;
 		if(Material.dao.find(entitySearchSql, material.getType()).size() == 0) {
-			throw new OperationException("该物料不存在！");
+			return null;
 		}
 		materialEntities = Material.dao.find(getEntitiesSql, type);
 		return materialEntities;
@@ -45,7 +44,7 @@ public class MaterialService extends SelectService{
 		materialType.setEnabled(true);
 		materialType.setIsOnShelf(true);
 		if(MaterialType.dao.find(uniqueCheckSql, materialType.getNo()).size() != 0) {
-			throw new OperationException("material is already exist");
+			return false;
 		}
 		return materialType.save();
 	}

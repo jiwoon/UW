@@ -1,8 +1,5 @@
 package com.jimi.uw_server.exception;
 
-import java.util.Date;
-import com.jimi.uw_server.model.ErrorLog;
-
 /**
  * 操作失败异常，result：412
  * <br>
@@ -18,11 +15,6 @@ public class OperationException extends RuntimeException {
 
 	public OperationException(String message) {
 		super(message);
-		ErrorLog errorLog = new ErrorLog();
-		errorLog.setMessage(message);
-		errorLog.setTime(new Date());
-		errorLog.save();
-		System.out.println("record: " + errorLog);
 	}
 	
 }
