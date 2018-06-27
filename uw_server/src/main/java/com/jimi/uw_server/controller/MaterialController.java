@@ -26,7 +26,7 @@ public class MaterialController extends Controller {
 		if (entities != null) {
 			renderJson(ResultUtil.succeed(entities));
 		} else {
-			ErrorLogWritter.saveErrorLog("该物料不存在，请输入正确的物料类型号！");
+			ErrorLogWritter.save("该物料不存在，请输入正确的物料类型号！");
 			renderJson(ResultUtil.failed());
 		}
 	}
@@ -37,7 +37,7 @@ public class MaterialController extends Controller {
 		if(materialService.add(materialType)) {
 			renderJson(ResultUtil.succeed());
 		}else {
-			ErrorLogWritter.saveErrorLog("该物料已存在，请不要输入重复的物料类型号！");
+			ErrorLogWritter.save("该物料已存在，请不要输入重复的物料类型号！");
 			renderJson(ResultUtil.failed());
 		}
 	}

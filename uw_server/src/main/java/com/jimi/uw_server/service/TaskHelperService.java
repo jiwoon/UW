@@ -5,18 +5,18 @@ import java.io.IOException;
 import java.util.List;
 
 import com.jimi.uw_server.exception.OperationException;
-import com.jimi.uw_server.material.entity.PackingList;
 import com.jimi.uw_server.model.Material;
 import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.model.PackingListItem;
 import com.jimi.uw_server.model.Task;
+import com.jimi.uw_server.model.bo.PackingListItemBO;
 import com.jimi.uw_server.util.ErrorLogWritter;
 import com.jimi.uw_server.util.ExcelHelper;
 
 //用于将excel表格的物料相关信息写入套料单数据表，并更新物料实体表中的库存数量
 public class TaskHelperService {
 	
-	private static List<PackingList> packingLists;
+	private static List<PackingListItemBO> item;
 	
 	private static final String getNewTaskIdSql = "SELECT MAX(id) as newId FROM task";
 	
@@ -45,8 +45,8 @@ public class TaskHelperService {
 		try {
 			ExcelHelper fileReader = ExcelHelper.from(file);
 			try {
-				packingLists = fileReader.unfill(PackingList.class, 2);
-				for (PackingList packingList : packingLists) {
+				item = fileReader.unfill(PackingListItemBO.class, 2);
+				for (PackingListItemBO packingList : item) {
 					
 					// 计划出库数量
 					Integer planQuantity = Integer.parseInt(packingList.getQuantity());
@@ -77,7 +77,7 @@ public class TaskHelperService {
 							packingListItem = new PackingListItem();
 						} else {	// 否则，提示库存不足
 							packingListItem = new PackingListItem();
-							ErrorLogWritter.saveErrorLog("该物料库存不足！");
+							ErrorLogWritter.save("该物料库存不足！");
 							throw new OperationException("该物料库存不足！");
 						}					
 					} else {
@@ -114,7 +114,7 @@ public class TaskHelperService {
 			if (file.delete()) {
 				System.out.println("文件删除成功！");
 			} else {
-				ErrorLogWritter.saveErrorLog("文件删除失败！");
+				ErrorLogWritter.save("文件删除失败！");
 				System.out.println("文件删除失败！");
 			}
 		}

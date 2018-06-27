@@ -1,8 +1,8 @@
-package com.jimi.uw_server.material.entity;
+package com.jimi.uw_server.model.bo;
 
 import com.jimi.uw_server.util.ExcelHelper.Excel;
 
-public class PackingList {
+public class PackingListItemBO {
 	
 	@Excel(col=1, head="料号")
 	private String no;

@@ -29,7 +29,7 @@ public class UserService extends SelectService{
 		} 
 		if(!user.getEnabled()) {
 			System.out.println("user.getEnabled(): " + user.getEnabled());
-			ErrorLogWritter.saveErrorLog("该用户已被禁用！");
+			ErrorLogWritter.save("该用户已被禁用！");
 		}
 		return user;
 	}
@@ -37,7 +37,7 @@ public class UserService extends SelectService{
 	public boolean add(User user) {
 		user.setEnabled(true);
 		if(User.dao.find(uniqueCheckSql, user.getUid()).size() != 0) {
-			ErrorLogWritter.saveErrorLog("该用户已存在！");
+			ErrorLogWritter.save("该用户已存在！");
 		}
 		user.keep("uid","name","password","type", "enabled");
 		user.setPassword(MD5Util.MD5(user.getPassword()));
