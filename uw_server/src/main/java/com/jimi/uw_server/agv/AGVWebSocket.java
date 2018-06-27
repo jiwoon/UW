@@ -36,10 +36,8 @@ public class AGVWebSocket {
 	private static final String ENABLED_ROBOT_SQL = "SELECT * FROM robot WHERE enabled = ?";
 	private static final String SPECIFIED_ID_MATERIAL_TYPE_SQL = "SELECT * FROM material_type WHERE id IN()";
 	
-	public static final Object LOCK = new Object();
-	
 	//指令序列号
-	private static int cmdId;
+	private int cmdId;
 	//会话
 	private Session session;
 	
@@ -56,6 +54,7 @@ public class AGVWebSocket {
 	
 	@OnOpen
 	public void onOpen(Session userSession) {
+		session = userSession;
 		System.out.println("AGVCommunicator is Running Now...");
 		//调用指令发送方法，下达数目与有效机器数相等的指令
 		sendIOCmd();
@@ -116,14 +115,14 @@ public class AGVWebSocket {
 
 	private AGVWebSocket(URI endpointURI) throws Exception {
 		WebSocketContainer container = ContainerProvider.getWebSocketContainer();
-		session = container.connectToServer(this, endpointURI);
+		container.connectToServer(this, endpointURI);
 	}
 
 
 	/**
 	 * 获取一个新的CmdId
 	 */
-	private int getCmdId() {
+	private synchronized int getCmdId() {
 		cmdId%=999999;
 		cmdId++;
 		return cmdId;
@@ -151,8 +150,8 @@ public class AGVWebSocket {
 		int b = cn;
 		cn = cn - lcn;
 		lcn = b - 1;
-		Redis.use().getJedis().set("lcn", lcn + "");
 		int a = 0;
+		Redis.use().getJedis().set("lcn", lcn + "");
 		//根据materialType表生成物料是否在架情况映射msm
 		Map<Integer, Boolean> msm = new HashMap<>();
 		StringBuffer sb = new StringBuffer(SPECIFIED_ID_MATERIAL_TYPE_SQL);
@@ -166,11 +165,8 @@ public class AGVWebSocket {
 			msm.put(materialType.getId(), materialType.getIsOnShelf());
 		}
 		//获取第a个元素
-		for (int i = 0; i < a; i++) {
+		while(cn != 0) {
 			AGVIOTaskItem item = taskItems.get(a);
-			if (cn == 0) {
-				return;
-			}
 			//判断是否在架
 			if (msm.get(item.getMaterialTypeId()) == true) {
 				//标记为不在架
