@@ -8,7 +8,6 @@ import com.jfinal.config.Interceptors;
 import com.jfinal.config.JFinalConfig;
 import com.jfinal.config.Plugins;
 import com.jfinal.config.Routes;
-import com.jfinal.json.FastJsonFactory;
 import com.jfinal.kit.PropKit;
 import com.jfinal.plugin.activerecord.ActiveRecordPlugin;
 import com.jfinal.plugin.activerecord.dialect.MysqlDialect;
@@ -16,7 +15,7 @@ import com.jfinal.plugin.activerecord.tx.Tx;
 import com.jfinal.plugin.druid.DruidPlugin;
 import com.jfinal.plugin.redis.RedisPlugin;
 import com.jfinal.template.Engine;
-import com.jimi.uw_server.agv.AGVCommunicator;
+import com.jimi.uw_server.agv.AGVWebSocket;
 import com.jimi.uw_server.controller.LogController;
 import com.jimi.uw_server.controller.MaterialController;
 import com.jimi.uw_server.controller.RobotController;
@@ -38,7 +37,6 @@ public class UwConfig extends JFinalConfig {
 	@Override
 	public void configConstant(Constants me) {
 		me.setDevMode(true);
-		me.setJsonFactory(new FastJsonFactory());
 	}
 
 	@Override
@@ -95,7 +93,7 @@ public class UwConfig extends JFinalConfig {
 	@Override
 	public void afterJFinalStart() {
 		TokenBox.start(PropKit.use("properties.ini").getInt("sessionTimeout"));
-		AGVCommunicator.connect(PropKit.use("properties.ini").get("AGVServerURI"));
+		AGVWebSocket.connect(PropKit.use("properties.ini").get("agvServerURI"));
 		System.out.println("Uw Server is Running now...");
 	}
 	
@@ -106,7 +104,7 @@ public class UwConfig extends JFinalConfig {
 	}
 	
 	
-	private boolean isProductionEnvironment() {
+	public static boolean isProductionEnvironment() {
 		File[] roots = File.listRoots();
         for (int i=0; i < roots.length; i++) {
             if(new File(roots[i].toString() + "PRODUCTION_ENVIRONMENT_FLAG").exists()) {
