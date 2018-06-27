@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import com.jimi.uw_server.agv.AGVTaskItemSender;
+import com.jimi.uw_server.agv.AGVTaskItemRedisDAO;
 import com.jimi.uw_server.agv.entity.AGVIOTaskItem;
 import com.jimi.uw_server.model.PackingListItem;
 import com.jimi.uw_server.model.Task;
@@ -43,7 +43,7 @@ public class TaskService {
 			taskItems.add(a);
 			System.out.println("taskItems: " + taskItems);
 			// 把任务条目均匀插入到队列til中（线程同步方法）
-			AGVTaskItemSender.addTaskItem(taskItems);
+			AGVTaskItemRedisDAO.addTaskItem(taskItems);
 			taskItems.clear();
 		}
 		task.setState(2);
@@ -56,7 +56,7 @@ public class TaskService {
 		int state = task.findById(id).getState();
 		if (state == 2) {
 			System.out.println("taskId: " + id);
-			AGVTaskItemSender.removeTaskItemByTaskId(id);
+			AGVTaskItemRedisDAO.removeTaskItemByTaskId(id);
 		}
 		// 更新任务状态为作废
 		task.setState(4);
