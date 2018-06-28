@@ -17,10 +17,11 @@ import javax.websocket.WebSocketContainer;
 
 import com.jfinal.json.Json;
 import com.jfinal.plugin.redis.Redis;
+import com.jimi.uw_server.agv.entity.AGVBaseCmd;
+import com.jimi.uw_server.agv.entity.AGVIOTaskItem;
 import com.jimi.uw_server.agv.entity.AGVMissionGroup;
 import com.jimi.uw_server.agv.entity.AGVMoveCmd;
 import com.jimi.uw_server.agv.entity.AGVStatusCmd;
-import com.jimi.uw_server.agv.entity.AGVIOTaskItem;
 import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.model.Robot;
 
@@ -56,9 +57,48 @@ public class AGVWebSocket {
 	public void onOpen(Session userSession) {
 		session = userSession;
 		System.out.println("AGVCommunicator is Running Now...");
-		//调用指令发送方法，下达数目与有效机器数相等的指令
-		sendIOCmd();
+		getLocationTest();
+		getStationTest();
+		LLTest();
+//		//调用指令发送方法，下达数目与有效机器数相等的指令 
+//		sendIOCmd();
 	}
+
+	private void getLocationTest() {
+		AGVBaseCmd baseCmd = new AGVBaseCmd();
+		baseCmd.setCmdcode("getlocations");
+		baseCmd.setCmdid(getCmdId());
+		sendMessage(Json.getJson().toJson(baseCmd));
+	}
+	
+	private void getStationTest() {
+		AGVBaseCmd baseCmd = new AGVBaseCmd();
+		baseCmd.setCmdcode("getstations");
+		baseCmd.setCmdid(getCmdId());
+		sendMessage(Json.getJson().toJson(baseCmd));
+	}
+	
+	private void LLTest() {
+		//构建SL指令，令指定robot把料送回原仓位
+		AGVMoveCmd moveCmd = new AGVMoveCmd();
+		List<AGVMissionGroup> groups = new ArrayList<>();
+		AGVMissionGroup group = new AGVMissionGroup();
+		group.setMissiongroupid("test");
+		group.setRobotid(0);
+		group.setStartx(22);
+		group.setStarty(5);
+		group.setStartz(1);
+		group.setEndx(22);
+		group.setEndy(5);
+		group.setEndz(2);
+		groups.add(group);
+		moveCmd.setCmdcode("LL");
+		moveCmd.setCmdid(getCmdId());
+		moveCmd.setMissiongroups(groups);
+		//发送LL
+		sendMessage(Json.getJson().toJson(moveCmd));
+	}
+
 
 	@OnClose
 	public void onClose(Session userSession, CloseReason reason) {
@@ -109,6 +149,7 @@ public class AGVWebSocket {
 	 * 使用websocket发送一条消息到AGV服务器
 	 */
 	private void sendMessage(String message) {
+		System.out.println("send message: " + message);
 		session.getAsyncRemote().sendText(message);
 	}
 
