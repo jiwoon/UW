@@ -107,7 +107,7 @@
 			<version>26Dec2008</version>
 		</dependency>
 		
-		<!-- jfinal文件上传支持 -->
+		<!-- 性能序列化框架FST,jfinal文件上传也需要这个依赖包 -->
 		<dependency>
 			<groupId>de.ruedigermoeller</groupId>
 			<artifactId>fst</artifactId>
