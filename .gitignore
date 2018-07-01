@@ -50,3 +50,4 @@ hs_err_pid*
 Servers/
 uw_server/.classpath
 uw_server/.project
+uw_server/bin/

@@ -98,12 +98,14 @@
 			<version>2.9.0</version>
 		</dependency>
 
+		<!-- jfinal文件上传支持 -->
 		<dependency>
 			<groupId>com.jfinal</groupId>
 			<artifactId>cos</artifactId>
 			<version>26Dec2008</version>
 		</dependency>
-
+		
+		<!-- jfinal文件上传支持 -->
 		<dependency>
 			<groupId>de.ruedigermoeller</groupId>
 			<artifactId>fst</artifactId>
