@@ -23,6 +23,11 @@ public class AGVTaskItemRedisDAO {
 	 * 该方法由任务业务层的开始任务方法调用，请勿在其他地方调用
 	 */
 	public synchronized static void addTaskItem(List<AGVIOTaskItem> taskItems) {
+		//判断如果原先的任务队列为空，则在添加任务条目完成后调用sendIOCmd方法
+		boolean callSendIOCmdMethod = false;
+		if(Redis.use().llen("til") == 0) {
+			callSendIOCmdMethod = true;
+		}
 		appendTaskItems(taskItems);
 		Map<Integer, Queue<AGVIOTaskItem>> groupByTaskIdMap = new HashMap<>();
 		for (AGVIOTaskItem item : taskItems) {
@@ -46,6 +51,9 @@ public class AGVTaskItemRedisDAO {
 		}
 		Redis.use().del("til");
 		Redis.use().lpush("til", items.toArray());
+		if(callSendIOCmdMethod) {
+			AGVWebSocket.me.sendIOCmd();
+		}
 	}
 	
 	

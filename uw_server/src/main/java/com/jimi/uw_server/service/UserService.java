@@ -1,7 +1,10 @@
 package com.jimi.uw_server.service;
 
+import java.util.Date;
+
 import com.jfinal.plugin.activerecord.Db;
 import com.jimi.uw_server.exception.OperationException;
+import com.jimi.uw_server.model.ErrorLog;
 import com.jimi.uw_server.model.User;
 import com.jimi.uw_server.service.base.SelectService;
 import com.jimi.uw_server.util.ErrorLogWritter;
@@ -23,6 +26,10 @@ public class UserService extends SelectService{
 	private static final String userTypeNonSelectSql = "FROM user_type";
 	
 	public User login(String uid, String password) {
+		ErrorLog errorLog = new ErrorLog();
+		errorLog.setTime(new Date());
+		errorLog.setMessage("123");
+		errorLog.save();
 		User user = User.dao.findFirst(loginSql, uid, MD5Util.MD5(password));
 		if(user == null) {
 			throw new OperationException("userId or password is not correct");
