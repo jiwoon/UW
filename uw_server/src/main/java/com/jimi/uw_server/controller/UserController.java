@@ -72,6 +72,7 @@ public class UserController extends Controller {
 	
 //	@Access({"SuperAdmin"})
 	public void logout() {
+		new RuntimeException("OOPS");
 		//判断是否未登录
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		User user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
