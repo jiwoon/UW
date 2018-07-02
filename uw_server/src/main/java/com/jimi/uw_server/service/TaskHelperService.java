@@ -58,7 +58,7 @@ public class TaskHelperService {
 					if(taskType == 1) {
 						// 逐条判断库存是否足够，若是，则插入套料单数据；
 						if (remainderQuantity >= Integer.parseInt(packingList.getQuantity())) {
-							System.out.println("该物料库存充足，可以出库！");
+							System.out.println("料号为：" + packingList.getNo() +  "的物料库存充足，可以出库！");
 							// 添加物料类型id
 							MaterialType findNoSql = materialType.findFirst(getNoSql, packingList.getNo());
 							Integer materialId = findNoSql.get("id");
@@ -77,8 +77,8 @@ public class TaskHelperService {
 							packingListItem = new PackingListItem();
 						} else {	// 否则，提示库存不足
 							packingListItem = new PackingListItem();
-							ErrorLogWritter.save("该物料库存不足！");
-							throw new OperationException("该物料库存不足！");
+							ErrorLogWritter.save("料号为：" + packingList.getNo() +  "的物料库存不足！");
+							throw new OperationException("料号为：" + packingList.getNo() +  "的物料库存不足！");
 						}					
 					} else {
 						// 添加物料类型id
@@ -112,10 +112,10 @@ public class TaskHelperService {
 		
 		if (file.exists()) {
 			if (file.delete()) {
-				System.out.println("文件删除成功！");
+				System.out.println("文件" + file.getName() + "删除成功！");
 			} else {
-				ErrorLogWritter.save("文件删除失败！");
-				System.out.println("文件删除失败！");
+				ErrorLogWritter.save("文件" + file.getName() + "删除失败！");
+				System.out.println("文件" + file.getName() + "删除失败！");
 			}
 		}
 	}

@@ -16,7 +16,7 @@ public class MaterialController extends Controller {
 	private static MaterialService materialService = Enhancer.enhance(MaterialService.class);
 
 	// 统计物料类型信息
-	public void count(Integer pageNo, Integer pageSize) {
+	public void count(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
 		renderJson(ResultUtil.succeed(materialService.count(pageNo, pageSize)));
 	}
 
