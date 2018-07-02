@@ -55,7 +55,7 @@ public class UwConfig extends JFinalConfig {
 		me.addGlobalActionInterceptor(new CORSInterceptor());
 		me.addGlobalActionInterceptor(new AccessInterceptor());
 		me.addGlobalActionInterceptor(new ActionLogInterceptor());
-		me.addGlobalActionInterceptor(new Tx());
+		me.addGlobalServiceInterceptor(new Tx());
 	}
 
 	@Override
