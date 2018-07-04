@@ -17,8 +17,8 @@ public class MaterialController extends Controller {
 
 	// 统计物料类型信息
 	public void count(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
-//		System.out.println("testRusult: " + materialService.count(pageNo, pageSize).toString());
-		renderJson(ResultUtil.succeed(materialService.count(pageNo, pageSize, ascBy, descBy, filter)));
+		Object countResult = materialService.count(pageNo, pageSize, ascBy, descBy, filter);
+		renderJson(ResultUtil.succeed(countResult));
 	}
 
 	// 获取物料实体
