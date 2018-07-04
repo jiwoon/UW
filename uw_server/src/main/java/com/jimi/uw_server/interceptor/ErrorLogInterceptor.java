@@ -2,7 +2,6 @@ package com.jimi.uw_server.interceptor;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -10,7 +9,7 @@ import org.apache.log4j.PropertyConfigurator;
 
 import com.jfinal.aop.Interceptor;
 import com.jfinal.aop.Invocation;
-import com.jimi.uw_server.model.ErrorLog;
+import com.jimi.uw_server.util.ErrorLogWritter;
 import com.jimi.uw_server.util.ResultUtil;
 
 import cc.darhao.dautils.api.ResourcesUtil;
@@ -56,10 +55,7 @@ public class ErrorLogInterceptor implements Interceptor {
 				break;
 			}
 			e.printStackTrace();
-			ErrorLog errorLog = new ErrorLog();
-			errorLog.setTime(new Date());
-			errorLog.setMessage(e.getMessage());
-			errorLog.save();
+			ErrorLogWritter.save(e.getMessage());
 			logger.error(e.getMessage());
 			invocation.getController().renderJson(ResultUtil.failed(result, e.getMessage()));
 		}

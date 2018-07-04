@@ -16,8 +16,6 @@ import com.jimi.uw_server.util.ExcelHelper;
 //用于将excel表格的物料相关信息写入套料单数据表，并更新物料实体表中的库存数量
 public class TaskHelperService {
 	
-	private static List<PackingListItemBO> item;
-	
 	private static final String getNewTaskIdSql = "SELECT MAX(id) as newId FROM task";
 	
 	private static final String getTaskTypeSql = "SELECT type FROM task WHERE id = ?";
@@ -31,6 +29,8 @@ public class TaskHelperService {
 	
 	//将excel表格的物料相关信息写入套料单数据表
 	public static void insertPackingList(Task task, PackingListItem packingListItem, MaterialType materialType, Integer type, String fullFileName) {
+		List<PackingListItemBO> item;
+		
 		File file = new File(fullFileName);
 		// 获取新任务id
 		Task newTaskIdSql = task.findFirst(getNewTaskIdSql);
@@ -115,7 +115,7 @@ public class TaskHelperService {
 				System.out.println("文件" + file.getName() + "删除成功！");
 			} else {
 				ErrorLogWritter.save("文件" + file.getName() + "删除失败！");
-				System.out.println("文件" + file.getName() + "删除失败！");
+				throw new OperationException("文件" + file.getName() + "删除失败！");
 			}
 		}
 	}

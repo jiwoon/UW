@@ -1,13 +1,9 @@
 package com.jimi.uw_server.service;
 
-import java.util.Date;
-
 import com.jfinal.plugin.activerecord.Db;
 import com.jimi.uw_server.exception.OperationException;
-import com.jimi.uw_server.model.ErrorLog;
 import com.jimi.uw_server.model.User;
 import com.jimi.uw_server.service.base.SelectService;
-import com.jimi.uw_server.util.ErrorLogWritter;
 
 import cc.darhao.dautils.api.MD5Util;
 
@@ -26,17 +22,13 @@ public class UserService extends SelectService{
 	private static final String userTypeNonSelectSql = "FROM user_type";
 	
 	public User login(String uid, String password) {
-		ErrorLog errorLog = new ErrorLog();
-		errorLog.setTime(new Date());
-		errorLog.setMessage("123");
-		errorLog.save();
 		User user = User.dao.findFirst(loginSql, uid, MD5Util.MD5(password));
 		if(user == null) {
 			throw new OperationException("userId or password is not correct");
 		} 
 		if(!user.getEnabled()) {
 			System.out.println("user.getEnabled(): " + user.getEnabled());
-			ErrorLogWritter.save("用户" + user.getName() + "已被禁用！");
+			throw new OperationException("用户" + user.getName() + "已被禁用！");
 		}
 		return user;
 	}
@@ -44,7 +36,7 @@ public class UserService extends SelectService{
 	public boolean add(User user) {
 		user.setEnabled(true);
 		if(User.dao.find(uniqueCheckSql, user.getUid()).size() != 0) {
-			ErrorLogWritter.save("用户" + user.getName() + "已存在！");
+			throw new OperationException("用户" + user.getName() + "已存在！");
 		}
 		user.keep("uid","name","password","type", "enabled");
 		user.setPassword(MD5Util.MD5(user.getPassword()));
