@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import com.jimi.uw_server.agv.AGVTaskItemRedisDAO;
+import com.jimi.uw_server.agv.dao.AGVTaskItemRedisDAO;
 import com.jimi.uw_server.agv.entity.AGVIOTaskItem;
 import com.jimi.uw_server.model.PackingListItem;
 import com.jimi.uw_server.model.Task;

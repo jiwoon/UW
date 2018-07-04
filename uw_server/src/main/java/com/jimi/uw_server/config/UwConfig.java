@@ -16,7 +16,7 @@ import com.jfinal.plugin.activerecord.tx.Tx;
 import com.jfinal.plugin.druid.DruidPlugin;
 import com.jfinal.plugin.redis.RedisPlugin;
 import com.jfinal.template.Engine;
-import com.jimi.uw_server.agv.AGVWebSocket;
+import com.jimi.uw_server.agv.socket.AGVWebSocket;
 import com.jimi.uw_server.controller.LogController;
 import com.jimi.uw_server.controller.MaterialController;
 import com.jimi.uw_server.controller.RobotController;

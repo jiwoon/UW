@@ -2,6 +2,7 @@ package com.jimi.uw_server.interceptor;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -9,7 +10,7 @@ import org.apache.log4j.PropertyConfigurator;
 
 import com.jfinal.aop.Interceptor;
 import com.jfinal.aop.Invocation;
-import com.jimi.uw_server.util.ErrorLogWritter;
+import com.jimi.uw_server.model.ErrorLog;
 import com.jimi.uw_server.util.ResultUtil;
 
 import cc.darhao.dautils.api.ResourcesUtil;

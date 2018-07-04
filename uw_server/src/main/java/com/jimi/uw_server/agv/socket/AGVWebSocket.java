@@ -1,4 +1,4 @@
-package com.jimi.uw_server.agv;
+package com.jimi.uw_server.agv.socket;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -17,6 +17,7 @@ import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
 
 import com.jfinal.json.Json;
+import com.jimi.uw_server.agv.dao.AGVTaskItemRedisDAO;
 import com.jimi.uw_server.agv.entity.AGVBaseCmd;
 import com.jimi.uw_server.agv.entity.AGVIOTaskItem;
 import com.jimi.uw_server.agv.entity.AGVMissionGroup;
@@ -78,7 +79,7 @@ public class AGVWebSocket {
 	@OnMessage
 	public void onMessage(String message) {
 		try {
-			System.out.println("["+ new Date().toString() +"]" + "receiver message:" + message);
+			System.err.println("["+ new Date().toString() +"]" + "receiver message:" + message);
 			
 			//发送ack
 			AGVBaseCmd baseCmd;
@@ -98,7 +99,7 @@ public class AGVWebSocket {
 			//转换成实体类
 			AGVStatusCmd statusCmd = Json.getJson().parse(message, AGVStatusCmd.class);
 			
-			//判断是否是LS第二动作完成
+			//判断是否是第二动作完成
 			if(statusCmd.getStatus() != 2) {
 				return;
 			}
@@ -136,6 +137,72 @@ public class AGVWebSocket {
 
 
 	/**
+		 * 发送出入库条目指令
+		 */
+		public void sendIOCmd() {
+			//判断til是否为空
+			List<AGVIOTaskItem> taskItems = new ArrayList<>();
+			AGVTaskItemRedisDAO.appendTaskItems(taskItems);
+			if (taskItems.isEmpty()) {
+				AGVTaskItemRedisDAO.setLcn(0);
+				return;
+			}
+			//统计当前有效robot数目赋值到cn
+			int cn = Robot.dao.find(ENABLED_ROBOT_SQL, 1).size();
+			int lcn = Integer.valueOf(AGVTaskItemRedisDAO.getLcn());
+			if (lcn > cn - 1) {
+				lcn = cn - 1;
+				AGVTaskItemRedisDAO.setLcn(lcn);
+				return;
+			}
+			int b = cn;
+			cn = cn - lcn;
+			lcn = b - 1;
+			int a = 0;
+			AGVTaskItemRedisDAO.setLcn(lcn);
+			//根据materialType表生成物料是否在架情况映射mtc
+			Map<Integer, MaterialType> mtc = new HashMap<>();
+			for (AGVIOTaskItem item : taskItems) {
+				mtc.put(item.getMaterialTypeId(), null);
+			}
+			StringBuffer sb = new StringBuffer(SPECIFIED_ID_MATERIAL_TYPE_SQL);
+			for (int i = 0; i < mtc.size(); i++) {
+				sb.insert(sb.indexOf(")"), "?,");
+			}
+			sb.delete(sb.lastIndexOf(","), sb.lastIndexOf(",") + 1);
+			List<MaterialType> materialTypes = MaterialType.dao.find(sb.toString(), mtc.keySet().toArray());
+			for (MaterialType materialType : materialTypes) {
+				mtc.put(materialType.getId(), materialType);
+			}
+			//获取第a个元素
+			while(cn != 0 && a != taskItems.size()) {
+				AGVIOTaskItem item = taskItems.get(a);
+				MaterialType materialType = mtc.get(item.getMaterialTypeId());
+				//判断是否在架
+				if (materialType.getIsOnShelf()) {
+					//获取所有和该物料的坐标相同的物料
+					List<MaterialType> specifiedPositionMaterialTypes = MaterialType.dao.find(SPECIFIED_POSITION_MATERIAL_TYEP_SQL,
+							materialType.getRow(), materialType.getCol(), materialType.getHeight());
+					for (MaterialType mt: specifiedPositionMaterialTypes) {
+						//标记所有处于该坐标的物料为不在架
+						mt.setId(item.getMaterialTypeId());
+	//					mt.setIsOnShelf(false);
+						mt.update();
+						mtc.put(item.getMaterialTypeId(), mt);
+					}
+					//发送LS
+					AGVMoveCmd cmd = createLSCmd(materialType, item);
+					sendMessage(Json.getJson().toJson(cmd));
+					//更新任务条目状态为已分配
+					AGVTaskItemRedisDAO.updateTaskItemState(item, 1);
+					cn--;
+				}
+				a++;
+			}
+		}
+
+
+	/**
 	 * 使用websocket发送一条消息到AGV服务器
 	 */
 	private void sendMessage(String message) {
@@ -150,73 +217,6 @@ public class AGVWebSocket {
 	}
 
 
-
-	
-	
-	/**
-	 * 发送出入库条目指令
-	 */
-	public void sendIOCmd() {
-		//判断til是否为空
-		List<AGVIOTaskItem> taskItems = new ArrayList<>();
-		AGVTaskItemRedisDAO.appendTaskItems(taskItems);
-		if (taskItems.isEmpty()) {
-			AGVTaskItemRedisDAO.setLcn(0);
-			return;
-		}
-		//统计当前有效robot数目赋值到cn
-		int cn = Robot.dao.find(ENABLED_ROBOT_SQL, 1).size();
-		int lcn = Integer.valueOf(AGVTaskItemRedisDAO.getLcn());
-		if (lcn > cn - 1) {
-			lcn = cn - 1;
-			AGVTaskItemRedisDAO.setLcn(lcn);
-			return;
-		}
-		int b = cn;
-		cn = cn - lcn;
-		lcn = b - 1;
-		int a = 0;
-		AGVTaskItemRedisDAO.setLcn(lcn);
-		//根据materialType表生成物料是否在架情况映射mtc
-		Map<Integer, MaterialType> mtc = new HashMap<>();
-		for (AGVIOTaskItem item : taskItems) {
-			mtc.put(item.getMaterialTypeId(), null);
-		}
-		StringBuffer sb = new StringBuffer(SPECIFIED_ID_MATERIAL_TYPE_SQL);
-		for (int i = 0; i < mtc.size(); i++) {
-			sb.insert(sb.indexOf(")"), "?,");
-		}
-		sb.delete(sb.lastIndexOf(","), sb.lastIndexOf(",") + 1);
-		List<MaterialType> materialTypes = MaterialType.dao.find(sb.toString(), mtc.keySet().toArray());
-		for (MaterialType materialType : materialTypes) {
-			mtc.put(materialType.getId(), materialType);
-		}
-		//获取第a个元素
-		while(cn != 0 && a != taskItems.size()) {
-			AGVIOTaskItem item = taskItems.get(a);
-			MaterialType materialType = mtc.get(item.getMaterialTypeId());
-			//判断是否在架
-			if (materialType.getIsOnShelf()) {
-				//获取所有和该物料的坐标相同的物料
-				List<MaterialType> specifiedPositionMaterialTypes = MaterialType.dao.find(SPECIFIED_POSITION_MATERIAL_TYEP_SQL,
-						materialType.getRow(), materialType.getCol(), materialType.getHeight());
-				for (MaterialType mt: specifiedPositionMaterialTypes) {
-					//标记所有处于该坐标的物料为不在架
-					mt.setId(item.getMaterialTypeId());
-//					mt.setIsOnShelf(false);
-					mt.update();
-					mtc.put(item.getMaterialTypeId(), mt);
-				}
-				//发送LS
-				AGVMoveCmd cmd = createLSCmd(materialType, item);
-				sendMessage(Json.getJson().toJson(cmd));
-				cn--;
-			}
-			a++;
-		}
-	}
-
-	
 	private AGVMoveCmd createSLCmd(AGVStatusCmd statusCmd, String groupid, MaterialType materialType,
 			AGVIOTaskItem item) {
 		List<AGVMissionGroup> groups = new ArrayList<>();
