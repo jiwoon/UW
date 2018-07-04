@@ -108,12 +108,12 @@ public class AGVWebSocket {
 			String groupid = statusCmd.getMissiongroupid();
 			
 			//查询对应物料类型
-			MaterialType materialType = MaterialType.dao.findById(AGVIOTaskItem.fromString(groupid).getMaterialTypeId());
+			MaterialType materialType = MaterialType.dao.findById(groupid.split(":")[0]);
 			
 			//判断是LS指令还是SL指令第二动作完成，能在taskitems找到说明是LS，反之是SL
 			//LS:
 			for (AGVIOTaskItem item : AGVTaskItemRedisDAO.getTaskItems()) {
-				if(groupid.equals(item.toString())) {
+				if(groupid.equals(item.toString().split("#")[0]) && item.getState() == 1) {
 					//移除taskitems里对应item
 					AGVTaskItemRedisDAO.removeTaskItem(item);
 					//构建SL指令，令指定robot把料送回原仓位
@@ -124,9 +124,13 @@ public class AGVWebSocket {
 				}
 			}
 			//SL:
-			//更新taskItems对应的物料类型为在架
-			materialType.setIsOnShelf(true);
-			materialType.update();
+			//在数据库标记所有处于该坐标的物料为在架
+			List<MaterialType> specifiedPositionMaterialTypes = MaterialType.dao.find(SPECIFIED_POSITION_MATERIAL_TYEP_SQL,
+					materialType.getRow(), materialType.getCol(), materialType.getHeight());
+			for (MaterialType mt: specifiedPositionMaterialTypes) {
+				mt.setIsOnShelf(true);
+				mt.update();
+			}
 			//调用指令发送发方法发送下一条指令
 			sendIOCmd();
 		} catch (Exception e) {
@@ -180,15 +184,20 @@ public class AGVWebSocket {
 				MaterialType materialType = mtc.get(item.getMaterialTypeId());
 				//判断是否在架
 				if (materialType.getIsOnShelf()) {
-					//获取所有和该物料的坐标相同的物料
+					//在mtc内标记所有处于该坐标的物料不在架
+					for (MaterialType mt : mtc.values()) {
+						if(materialType.getRow() == mt.getRow() && 
+								materialType.getCol() == mt.getCol() && 
+								materialType.getHeight() == mt.getHeight()) {
+							mt.setIsOnShelf(false);
+						}
+					}
+					//在数据库标记所有处于该坐标的物料为不在架
 					List<MaterialType> specifiedPositionMaterialTypes = MaterialType.dao.find(SPECIFIED_POSITION_MATERIAL_TYEP_SQL,
 							materialType.getRow(), materialType.getCol(), materialType.getHeight());
 					for (MaterialType mt: specifiedPositionMaterialTypes) {
-						//标记所有处于该坐标的物料为不在架
-						mt.setId(item.getMaterialTypeId());
-	//					mt.setIsOnShelf(false);
+						mt.setIsOnShelf(false);
 						mt.update();
-						mtc.put(item.getMaterialTypeId(), mt);
 					}
 					//发送LS
 					AGVMoveCmd cmd = createLSCmd(materialType, item);
@@ -239,7 +248,7 @@ public class AGVWebSocket {
 
 	private AGVMoveCmd createLSCmd(MaterialType materialType, AGVIOTaskItem item) {
 		AGVMissionGroup group = new AGVMissionGroup();
-		group.setMissiongroupid(item.toString());
+		group.setMissiongroupid(item.toString().split("#")[0]);
 		group.setRobotid(0);//让AGV系统自动分配
 		group.setStartx(materialType.getRow());//物料Row
 		group.setStarty(materialType.getCol());//物料Col

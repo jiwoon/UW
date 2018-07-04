@@ -77,7 +77,7 @@ public class AGVIOTaskItem {
 	 */
 	@Override
 	public String toString() {
-		return materialTypeId + ":" + windowPositionX + ":" + windowPositionY + ":" + taskId + "|" + state;
+		return materialTypeId + ":" + windowPositionX + ":" + windowPositionY + ":" + taskId + "#" + state;
 	}
 	
 	
@@ -85,7 +85,7 @@ public class AGVIOTaskItem {
 	 * 把Item转成GroupId
 	 */
 	public static AGVIOTaskItem fromString(String string) {
-		String[] attrsAndState = string.split("|");
+		String[] attrsAndState = string.split("#");
 		String[] attrs = attrsAndState[0].split(":");
 		AGVIOTaskItem item = new AGVIOTaskItem(Integer.valueOf(attrs[0]), Integer.valueOf(attrs[1]), Integer.valueOf(attrs[2]), Integer.valueOf(attrs[3]));
 		item.setState(Integer.valueOf(attrsAndState[1]));
