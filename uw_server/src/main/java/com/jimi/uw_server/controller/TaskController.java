@@ -48,6 +48,7 @@ public class TaskController extends Controller {
 		}
 	}
 	
+	
 	//@Access({"SuperAdmin"})
 	public void cancel(@Para("") Task task, Integer id) {
 		if(taskService.cancel(task, id)) {

@@ -55,8 +55,11 @@ public class ErrorLogInterceptor implements Interceptor {
 				break;
 			}
 			e.printStackTrace();
-			ErrorLogWritter.save(e.getMessage());
-			logger.error(e.getMessage());
+			ErrorLog errorLog = new ErrorLog();
+			errorLog.setTime(new Date());
+			errorLog.setMessage(e.getClass().getSimpleName() + ":" + e.getMessage());
+			errorLog.save();
+			logger.error(e.getClass().getSimpleName() + ":" + e.getMessage());
 			invocation.getController().renderJson(ResultUtil.failed(result, e.getMessage()));
 		}
 	}
