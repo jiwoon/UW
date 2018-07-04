@@ -1,4 +1,4 @@
-package com.jimi.uw_server.agv.entity;
+package com.jimi.agv_mock.entity;
 
 /**
  * AGV出入库任务条目

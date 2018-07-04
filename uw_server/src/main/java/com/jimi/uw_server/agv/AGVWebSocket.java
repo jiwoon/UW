@@ -1,13 +1,11 @@
 package com.jimi.uw_server.agv;
 
-import java.net.Socket;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import javax.websocket.ClientEndpoint;
 import javax.websocket.CloseReason;
@@ -19,7 +17,6 @@ import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
 
 import com.jfinal.json.Json;
-import com.jfinal.plugin.redis.Redis;
 import com.jimi.uw_server.agv.entity.AGVBaseCmd;
 import com.jimi.uw_server.agv.entity.AGVIOTaskItem;
 import com.jimi.uw_server.agv.entity.AGVMissionGroup;
@@ -44,8 +41,6 @@ public class AGVWebSocket {
 	private static final String SPECIFIED_ID_MATERIAL_TYPE_SQL = "SELECT * FROM material_type WHERE id IN()";
 	private static final String SPECIFIED_POSITION_MATERIAL_TYEP_SQL = "SELECT * FROM material_type WHERE row = ? AND col = ? AND height = ?";
 	
-	//指令序列号
-	private int cmdId;
 	//会话
 	private Session session;
 	
@@ -65,110 +60,13 @@ public class AGVWebSocket {
 		try {
 			session = userSession;
 			System.out.println("AGVCommunicator is Running Now...");
-//			cancelTest();
-//			getLocationTest();
-//			getStationTest();
-//			LLTest();
-//			LLTest2();
-//			SLTest();
-//			LSTest();
 			//调用指令发送方法，下达数目与有效机器数相等的指令 
 			sendIOCmd();
 		} catch (Exception e) {
-			ErrorLogWritter.save(e.getMessage());
+			ErrorLogWritter.save(e.getClass().getSimpleName() + ":" + e.getMessage());
 			e.printStackTrace();
 		}
 	}
-	
-	
-	private void LSTest() {
-		int id = new Random().nextInt() % 1000;
-		
-		AGVMoveCmd moveCmd = new AGVMoveCmd();
-		List<AGVMissionGroup> groups = new ArrayList<>();
-		AGVMissionGroup group = new AGVMissionGroup();
-		group.setMissiongroupid(id + "");
-		group.setRobotid(3111);
-		group.setStartx(16);
-		group.setStarty(11);
-		group.setStartz(1);
-		group.setEndx(18);
-		group.setEndy(4);
-		groups.add(group);
-		moveCmd.setCmdcode("LS");
-		moveCmd.setCmdid(getCmdId());
-		moveCmd.setMissiongroups(groups);
-		sendMessage(Json.getJson().toJson(moveCmd));
-	}
-
-
-	private void getLocationTest() {
-		AGVBaseCmd baseCmd = new AGVBaseCmd();
-		baseCmd.setCmdcode("getlocations");
-		baseCmd.setCmdid(getCmdId());
-		sendMessage(Json.getJson().toJson(baseCmd));
-	}
-	
-	private void getStationTest() {
-		AGVBaseCmd baseCmd = new AGVBaseCmd();
-		baseCmd.setCmdcode("getstations");
-		baseCmd.setCmdid(getCmdId());
-		sendMessage(Json.getJson().toJson(baseCmd));
-	}
-	
-	private void LLTest() {
-		//构建SL指令，令指定robot把料送回原仓位
-		AGVMoveCmd moveCmd = new AGVMoveCmd();
-		List<AGVMissionGroup> groups = new ArrayList<>();
-		AGVMissionGroup group = new AGVMissionGroup();
-		group.setMissiongroupid("test");
-		group.setRobotid(0);
-		group.setStartx(16);
-		group.setStarty(11);
-		group.setStartz(1);
-		group.setEndx(16);
-		group.setEndy(8);
-		group.setEndz(2);
-		groups.add(group);
-		moveCmd.setCmdcode("LL");
-		moveCmd.setCmdid(getCmdId());
-		moveCmd.setMissiongroups(groups);
-		//发送LL
-		sendMessage(Json.getJson().toJson(moveCmd));
-	}
-	
-	private void LLTest2() {
-		//构建SL指令，令指定robot把料送回原仓位
-		AGVMoveCmd moveCmd = new AGVMoveCmd();
-		List<AGVMissionGroup> groups = new ArrayList<>();
-		AGVMissionGroup group = new AGVMissionGroup();
-		group.setMissiongroupid("test");
-		group.setRobotid(0);
-		group.setStartx(16);
-		group.setStarty(8);
-		group.setStartz(2);
-		group.setEndx(16);
-		group.setEndy(11);
-		group.setEndz(1);
-		groups.add(group);
-		moveCmd.setCmdcode("LL");
-		moveCmd.setCmdid(getCmdId());
-		moveCmd.setMissiongroups(groups);
-		//发送LL
-		sendMessage(Json.getJson().toJson(moveCmd));
-	}
-	
-	
-//	private void cancelTest() {
-//		for (int i = 0; i < 1000; i++) {
-//			AGVCancelCmd cancelCmd = new AGVCancelCmd();
-//			cancelCmd.setCmdcode("cancel");
-//			cancelCmd.setCmdid(getCmdId());
-//			cancelCmd.setMissiongroupid(i+"");
-//			//发送Cancel
-//			sendMessage(Json.getJson().toJson(cancelCmd));
-//		}
-//	}
 
 
 	@OnClose
@@ -200,32 +98,17 @@ public class AGVWebSocket {
 			//转换成实体类
 			AGVStatusCmd statusCmd = Json.getJson().parse(message, AGVStatusCmd.class);
 			
-//			//判断是否是LS第二动作完成
-//			if(statusCmd.getStatus() != 2) {
-//				return;
-//			}
-//			
-//			
-//			AGVMoveCmd moveCmd2 = new AGVMoveCmd();
-//			List<AGVMissionGroup> groups2 = new ArrayList<>();
-//			AGVMissionGroup group2 = new AGVMissionGroup();
-//			group2.setMissiongroupid(statusCmd.getMissiongroupid());
-//			group2.setRobotid(statusCmd.getRobotid());
-//			group2.setStartx(18);
-//			group2.setStarty(4);
-//			group2.setEndx(16);
-//			group2.setEndy(11);
-//			group2.setEndz(1);
-//			groups2.add(group2);
-//			moveCmd2.setCmdcode("SL");
-//			moveCmd2.setCmdid(getCmdId());
-//			moveCmd2.setMissiongroups(groups2);
-//			sendMessage(Json.getJson().toJson(moveCmd2));
+			//判断是否是LS第二动作完成
+			if(statusCmd.getStatus() != 2) {
+				return;
+			}
 			
 			//获取groupid
 			String groupid = statusCmd.getMissiongroupid();
+			
 			//查询对应物料类型
 			MaterialType materialType = MaterialType.dao.findById(AGVIOTaskItem.fromString(groupid).getMaterialTypeId());
+			
 			//判断是LS指令还是SL指令第二动作完成，能在taskitems找到说明是LS，反之是SL
 			//LS:
 			for (AGVIOTaskItem item : AGVTaskItemRedisDAO.getTaskItems()) {
@@ -267,14 +150,7 @@ public class AGVWebSocket {
 	}
 
 
-	/**
-	 * 获取一个新的CmdId
-	 */
-	private synchronized int getCmdId() {
-		cmdId%=999999;
-		cmdId++;
-		return cmdId;
-	}
+
 	
 	
 	/**
@@ -285,26 +161,29 @@ public class AGVWebSocket {
 		List<AGVIOTaskItem> taskItems = new ArrayList<>();
 		AGVTaskItemRedisDAO.appendTaskItems(taskItems);
 		if (taskItems.isEmpty()) {
+			AGVTaskItemRedisDAO.setLcn(0);
 			return;
 		}
 		//统计当前有效robot数目赋值到cn
 		int cn = Robot.dao.find(ENABLED_ROBOT_SQL, 1).size();
-		int lcn = Integer.valueOf(Redis.use().getJedis().get("lcn"));
+		int lcn = Integer.valueOf(AGVTaskItemRedisDAO.getLcn());
 		if (lcn > cn - 1) {
 			lcn = cn - 1;
-			Redis.use().set("lcn", lcn);
+			AGVTaskItemRedisDAO.setLcn(lcn);
 			return;
 		}
 		int b = cn;
 		cn = cn - lcn;
 		lcn = b - 1;
 		int a = 0;
-		Redis.use().getJedis().set("lcn", lcn + "");
+		AGVTaskItemRedisDAO.setLcn(lcn);
 		//根据materialType表生成物料是否在架情况映射mtc
 		Map<Integer, MaterialType> mtc = new HashMap<>();
-		StringBuffer sb = new StringBuffer(SPECIFIED_ID_MATERIAL_TYPE_SQL);
 		for (AGVIOTaskItem item : taskItems) {
 			mtc.put(item.getMaterialTypeId(), null);
+		}
+		StringBuffer sb = new StringBuffer(SPECIFIED_ID_MATERIAL_TYPE_SQL);
+		for (int i = 0; i < mtc.size(); i++) {
 			sb.insert(sb.indexOf(")"), "?,");
 		}
 		sb.delete(sb.lastIndexOf(","), sb.lastIndexOf(",") + 1);
@@ -313,7 +192,7 @@ public class AGVWebSocket {
 			mtc.put(materialType.getId(), materialType);
 		}
 		//获取第a个元素
-		while(cn != 0) {
+		while(cn != 0 && a != taskItems.size()) {
 			AGVIOTaskItem item = taskItems.get(a);
 			MaterialType materialType = mtc.get(item.getMaterialTypeId());
 			//判断是否在架
@@ -324,22 +203,19 @@ public class AGVWebSocket {
 				for (MaterialType mt: specifiedPositionMaterialTypes) {
 					//标记所有处于该坐标的物料为不在架
 					mt.setId(item.getMaterialTypeId());
-					mt.setIsOnShelf(false);
+//					mt.setIsOnShelf(false);
 					mt.update();
 					mtc.put(item.getMaterialTypeId(), mt);
 				}
 				//发送LS
 				AGVMoveCmd cmd = createLSCmd(materialType, item);
 				sendMessage(Json.getJson().toJson(cmd));
-				a = 0;
 				cn--;
-			} else {
-				a++;
-				a %= taskItems.size();
 			}
+			a++;
 		}
 	}
-	
+
 	
 	private AGVMoveCmd createSLCmd(AGVStatusCmd statusCmd, String groupid, MaterialType materialType,
 			AGVIOTaskItem item) {
@@ -355,7 +231,7 @@ public class AGVWebSocket {
 		groups.add(group);
 		AGVMoveCmd moveCmd = new AGVMoveCmd();
 		moveCmd.setCmdcode("SL");
-		moveCmd.setCmdid(getCmdId());
+		moveCmd.setCmdid(AGVTaskItemRedisDAO.getCmdId());
 		moveCmd.setMissiongroups(groups);
 		return moveCmd;
 	}
@@ -374,7 +250,7 @@ public class AGVWebSocket {
 		groups.add(group);
 		AGVMoveCmd cmd = new AGVMoveCmd();
 		cmd.setCmdcode("LS");
-		cmd.setCmdid(getCmdId());
+		cmd.setCmdid(AGVTaskItemRedisDAO.getCmdId());
 		cmd.setMissiongroups(groups);
 		return cmd;
 	}
