@@ -8,7 +8,6 @@ import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.model.PackingListItem;
 import com.jimi.uw_server.model.Task;
 import com.jimi.uw_server.model.Window;
-import com.jimi.uw_server.service.TaskHelperService;
 import com.jimi.uw_server.service.TaskService;
 import com.jimi.uw_server.util.ResultUtil;
 
@@ -23,7 +22,7 @@ public class TaskController extends Controller {
 		String fullFileName = file.getUploadPath() + "\\" + file.getFileName();
 		System.out.println("type: " + type);
 		if(taskService.create(task, type, fileName)) {
-			TaskHelperService.insertPackingList(task, packingListItem, materialType, type, fullFileName);
+			TaskService.insertPackingList(task, packingListItem, materialType, type, fullFileName);
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
