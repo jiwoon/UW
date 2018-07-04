@@ -1,16 +1,12 @@
 package com.jimi.uw_server.service;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-
-import org.apache.poi.hssf.record.Record;
 
 import com.jimi.uw_server.service.entity.Page;
 import com.jimi.uw_server.model.Material;
 import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.model.vo.MaterialTypeVO;
-//import com.jimi.uw_server.model.filter.MaterialTypeToMaterialTypeVOFilter;
 import com.jimi.uw_server.service.base.SelectService;
 
 /**
@@ -21,11 +17,6 @@ import com.jimi.uw_server.service.base.SelectService;
  */
 public class MaterialService extends SelectService{
 	
-//	private static final String countSelectSql = "SELECT material_type.*, SUM(material.remainder_quantity) AS quantity";
-//	
-//	private	static final String countNonSelectSql = " FROM material_type,material WHERE material_type.id=material.type AND material_type.enabled=1"
-//			+ " group by material_type.id";
-	
 	private	static final String getEntitiesSql = "SELECT material.id, material.type, material.row, material.col, "
 			+ "material.remainder_quantity as remainderQuantity FROM material, material_type WHERE type=? "
 			+ "AND material_type.id=material.type AND material_type.enabled=1";
@@ -34,57 +25,51 @@ public class MaterialService extends SelectService{
 	
 	private static final String uniqueCheckSql = "SELECT * FROM material_type WHERE no = ?";
 	
-	private static final String countSql = "SELECT material_type.*, SUM(material.remainder_quantity) AS quantity"
+	private static final String countNoSortSql = "SELECT material_type.*, SUM(material.remainder_quantity) AS quantity"
 			+ " FROM material_type,material WHERE material_type.id=material.type AND material_type.enabled=1"
-			+ " group by material_type.id";		//  order by id desc limit ?,?
+			+ " group by material_type.id limit ?,?";
 	
 	private static final String doPaginateSql = "SELECT COUNT(*) as total FROM material_type WHERE material_type.enabled=1";
 
-	public List<MaterialTypeVO> count(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
-		List<MaterialType> countMaterial;
+	public Object count(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
+		List<MaterialType> countMaterial = null;
 		List<MaterialTypeVO> materialTypeVO = new ArrayList<MaterialTypeVO>();
-		countMaterial = MaterialType.dao.find(countSql);
-//		System.out.println("count: " + countMaterial);
-		
-//		List logList = list.getList();
-//		System.out.println("logList: " + logList);
-		
-		for (MaterialType item : countMaterial) {
-			MaterialTypeVO m = new MaterialTypeVO();
-			m.setId(item.getId());
-			m.setNo(item.getNo());
-			m.setArea(item.getArea());
-			m.setRow(item.getRow());
-			m.setCol(item.getCol());
-			m.setHeight(item.getHeight());
-			m.setEnabled(item.getEnabled());
-			m.setEnabledString(item.getEnabled() ? "是" : "否");
-			m.setIsOnShelf(item.getIsOnShelf());
-			m.setQuantity(Integer.parseInt(item.get("quantity").toString()));
-			materialTypeVO.add(m);
-			System.out.println("materialTypeVO: " + materialTypeVO);
-		}
-		
-//		Long totalRecord = MaterialType.dao.findFirst(doPaginateSql).get("total");
-//		System.out.println("totalRecord: " + totalRecord);
-		
-		MaterialTypeVO m = new MaterialTypeVO();
-		
-		m.setPageNumber(1);
-		
-		materialTypeVO.add(m);
 		
 		Page page = new Page();
-		page.setCurrentPage(pageNo);
+		page.setPageNumber(pageNo);
 		page.setPageSize(pageSize);
-//		page.getFirstIndex();
 		Integer totallyRow = Integer.parseInt(MaterialType.dao.findFirst(doPaginateSql).get("total").toString());
-		page.setTotallyData(totallyRow);
-//		Integer totallyPage = Integer.parseInt(totalRecord.toString()) / pageSize;
-		Integer totallyPage = page.getTotallyPage();
-		System.out.println("totallyPage: " + totallyPage);
+		page.setTotalRow(totallyRow);
+		Integer firstIndex = (page.getPageNumber()-1)*page.getPageSize();
 		
-		return materialTypeVO;
+//		原本想用以下的几个逻辑判断增加排序，筛选功能，可是sql语句将筛选条件一起执行，但是不会报错
+		// 判断是否有添加其他筛选条件，包括按某个字段排序，筛选等
+//		if (ascBy == null && descBy == null && filter == null) {
+//			countMaterial = MaterialType.dao.find(countNoSortSql, firstIndex, page.getPageSize());
+//		} else if (!(ascBy == null) && !(filter == null)) {
+//			countMaterial =  MaterialType.dao.find(countSortFilterSql, filter, ascBy, "asc", firstIndex, page.getPageSize());
+//		} else if (!(descBy == null) && !(filter == null)) {
+//			countMaterial =  MaterialType.dao.find(countSortFilterSql, filter, descBy.toString(), "desc", firstIndex, page.getPageSize());
+//		} else if (!(ascBy == null)) {
+//			countMaterial =  MaterialType.dao.find(countSortAscSql, ascBy, firstIndex, page.getPageSize());
+//		} else if (!(descBy == null)) {
+//			countMaterial =  MaterialType.dao.find(countSortDescSql, descBy.toString(), firstIndex, page.getPageSize());	//
+//		} else if (!(filter == null)) {
+//			countMaterial =  MaterialType.dao.find(countFilterSql, filter, firstIndex, page.getPageSize());
+//		}
+		
+		countMaterial = MaterialType.dao.find(countNoSortSql, firstIndex, page.getPageSize());
+		System.out.println("countMaterial: " + countMaterial);
+		
+		for (MaterialType item : countMaterial) {
+			MaterialTypeVO m = new MaterialTypeVO(item.getId(), item.getNo(), item.getArea(), item.getRow(), item.getCol(),
+					item.getHeight(), item.getEnabled(), item.getIsOnShelf(), Integer.parseInt(item.get("quantity").toString()));
+			materialTypeVO.add(m);
+		}
+		
+		page.setList(materialTypeVO);
+
+		return page;
 	}
 	
 	public List<Material> getEntities(Material material, Integer type) {
@@ -93,7 +78,6 @@ public class MaterialService extends SelectService{
 			return null;
 		}
 		materialEntities = Material.dao.find(getEntitiesSql, type);
-//		System.out.println("materialEntities: " + materialEntities);
 		return materialEntities;
 	}
 

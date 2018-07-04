@@ -10,12 +10,9 @@ import com.jimi.uw_server.model.Task;
 import com.jimi.uw_server.model.Window;
 import com.jimi.uw_server.service.TaskHelperService;
 import com.jimi.uw_server.service.TaskService;
-import com.jimi.uw_server.service.base.SelectService;
 import com.jimi.uw_server.util.ResultUtil;
 
 public class TaskController extends Controller {
-
-	private static SelectService daoService = Enhancer.enhance(SelectService.class);
 	
 	private static TaskService taskService = Enhancer.enhance(TaskService.class);
 	
@@ -65,8 +62,7 @@ public class TaskController extends Controller {
 //	}
 	
 	public void select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
-		String table = "task";
-		renderJson(ResultUtil.succeed(daoService.select(table, pageNo, pageSize, ascBy, descBy, filter)));
+		renderJson(ResultUtil.succeed(taskService.select(pageNo, pageSize, ascBy, descBy, filter)));
 	}
 	
 	public void getWindows(@Para("") Window window) {

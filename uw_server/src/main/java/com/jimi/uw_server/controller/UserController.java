@@ -61,9 +61,8 @@ public class UserController extends Controller {
 		}
 	}
 	
-	public void select(String table, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
-		table = "user";
-		renderJson(ResultUtil.succeed(userService.select(table, pageNo, pageSize, ascBy, descBy, filter)));
+	public void select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
+		renderJson(ResultUtil.succeed(userService.select(pageNo, pageSize, ascBy, descBy, filter)));
 	}
 	
 	public void getTypes(Integer pageNo, Integer pageSize) {

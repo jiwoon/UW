@@ -5,18 +5,17 @@ import com.jfinal.core.ActionKey;
 import com.jfinal.core.Controller;
 //import com.jimi.uw_server.annotation.Access;
 import com.jimi.uw_server.service.RobotService;
-import com.jimi.uw_server.service.base.SelectService;
+//import com.jimi.uw_server.service.base.SelectService;
 import com.jimi.uw_server.util.ResultUtil;
 
 public class RobotController extends Controller {
 
-	private static SelectService daoService = Enhancer.enhance(SelectService.class);
+//	private static SelectService daoService = Enhancer.enhance(SelectService.class);
 	
 	private static RobotService robotService = Enhancer.enhance(RobotService.class);
 	
-	public void select(String table, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
-		table = "robot";
-		renderJson(ResultUtil.succeed(daoService.select(table, pageNo, pageSize, ascBy, descBy, filter)));
+	public void select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
+		renderJson(ResultUtil.succeed(robotService.select(pageNo, pageSize, ascBy, descBy, filter)));
 	}
 	
 //	@Access({"SuperAdmin"})

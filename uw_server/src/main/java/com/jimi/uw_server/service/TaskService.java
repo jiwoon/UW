@@ -8,13 +8,20 @@ import com.jimi.uw_server.agv.AGVTaskItemRedisDAO;
 import com.jimi.uw_server.agv.entity.AGVIOTaskItem;
 import com.jimi.uw_server.model.PackingListItem;
 import com.jimi.uw_server.model.Task;
+import com.jimi.uw_server.model.User;
 import com.jimi.uw_server.model.Window;
+import com.jimi.uw_server.model.vo.TaskVO;
+import com.jimi.uw_server.service.entity.Page;
 
 public class TaskService {
 	
 	private static final String getWindowsSql = "SELECT id FROM window";
 	
 	private static final String getTaskMaterialIdSql = "SELECT material_type_id FROM packing_list_item WHERE task_id = ?";
+	
+	private static final String taskSql = "SELECT * FROM task limit ?, ?";
+	
+	private static final String doPaginateSql = "SELECT COUNT(*) as total FROM task";
 	
 	public boolean create(Task task, Integer type, String fileName) {
 		task.setType(type);
@@ -36,16 +43,13 @@ public class TaskService {
 		Window getwindow = Window.dao.findById(window);
 		List<PackingListItem> items = PackingListItem.dao.find(getTaskMaterialIdSql, id);
 		// 根据套料单、物料类型表生成任务条目
-		List<AGVIOTaskItem> taskItems = new ArrayList<>();
+		List<AGVIOTaskItem> taskItems = new ArrayList<AGVIOTaskItem>();
 		for (PackingListItem item : items) {
 			AGVIOTaskItem a = new AGVIOTaskItem(item.getMaterialTypeId(), getwindow.getRow(), getwindow.getCol(), id);
-//			AGVIOTaskItem a = new AGVIOTaskItem(1, 2, 3, 4);
 			taskItems.add(a);
-			System.out.println("taskItems: " + taskItems);
-			// 把任务条目均匀插入到队列til中（线程同步方法）
-			AGVTaskItemRedisDAO.addTaskItem(taskItems);
-			taskItems.clear();
 		}
+		// 把任务条目均匀插入到队列til中（线程同步方法）
+		AGVTaskItemRedisDAO.addTaskItem(taskItems);
 		task.setState(2);
 		task.keep("id", "type", "file_name", "window", "state", "createtime");
 		return task.update();
@@ -74,6 +78,28 @@ public class TaskService {
 		List<Window> windowId;
 		windowId = Window.dao.find(getWindowsSql);
 		return windowId;
+	}
+	
+	public Object select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
+		List<Task> task;
+		List<TaskVO> taskVO = new ArrayList<TaskVO>();
+		
+		Page page = new Page();
+		page.setPageSize(pageSize);
+		page.setPageNumber(pageNo);
+		Integer totallyRow = Integer.parseInt(User.dao.findFirst(doPaginateSql).get("total").toString());
+		page.setTotalRow(totallyRow);
+		Integer firstIndex = (page.getPageNumber()-1)*page.getPageSize();
+		task= Task.dao.find(taskSql, firstIndex, page.getPageSize());
+		
+		for (Task item : task) {
+			TaskVO t = new TaskVO(item.getId(), item.getState(), item.getType(), item.getFileName(), item.getCreateTime());
+			taskVO.add(t);
+		}
+		
+		page.setList(taskVO);
+		
+		return page;
 	}
 
 }
