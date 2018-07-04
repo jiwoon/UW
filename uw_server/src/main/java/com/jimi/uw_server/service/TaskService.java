@@ -77,11 +77,14 @@ public class TaskService {
 	public boolean cancel(Task task, Integer id) {
 		// 判断任务是否处于进行中状态，若是，则把相关的任务条目从til中剔除（线程同步方法） 并 更新任务状态为作废；
 		int state = task.findById(id).getState();
-		if (state == 2) {
+		
+		// 如果任务状态为已完成或者已作废，就那么就不能再作废它
+		if (state == 3 || state == 4) {
+			throw new OperationException("该任务已完成或已作废，不能再作废它！");
+		} else if (state == 2) {
 			System.out.println("taskId: " + id);
 			AGVTaskItemRedisDAO.removeTaskItemByTaskId(id);
 		}
-		// 更新任务状态为作废
 		task.setState(4);
 		task.keep("id", "type", "file_name", "window", "state", "creattime");
 		return task.update();
