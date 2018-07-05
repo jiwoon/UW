@@ -33,7 +33,6 @@ public class SelectService {
 		createFrom(table, sql);
 		createWhere(filter, questionValues, sql);
 		createOrderBy(ascBy, descBy, sql);
-//		System.out.println("sql test2:" + sql.toString());
 		return paginateAndFillWhereValues(pageNo, pageSize, sql, questionValues);
 	}
 	
@@ -106,7 +105,6 @@ public class SelectService {
 		if(pageNo == null && pageSize == null) {
 			return Db.paginate(1, PropKit.use("properties.ini").getInt("defaultPageSize"), "SELECT *", sql.toString(), questionValues.toArray());
 		}else {
-//			System.out.println("sqlString:" + sql.toString() + "\nquestionValuesString" + questionValues.toArray());
 			return Db.paginate(pageNo, pageSize, "SELECT *", sql.toString(), questionValues.toArray());
 		}
 	}

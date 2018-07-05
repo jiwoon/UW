@@ -2,6 +2,10 @@ package com.jimi.uw_server.service.entity;
 
 import java.util.List;
 
+/**
+ * @author HardyYao
+ * @createTime 2018年7月5日 上午11:26:39 
+ */
 public class Page {
 	
 	private Integer pageNumber;
@@ -81,5 +85,5 @@ public class Page {
 	public void setList(List<?> materialTypeVO) {
 		this.list = materialTypeVO;
 	}
-
 }
+ 

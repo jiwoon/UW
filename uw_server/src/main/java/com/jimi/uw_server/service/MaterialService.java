@@ -25,9 +25,9 @@ public class MaterialService extends SelectService{
 	
 	private static final String uniqueCheckSql = "SELECT * FROM material_type WHERE no = ?";
 	
-	private static final String countNoSortSql = "SELECT material_type.*, SUM(material.remainder_quantity) AS quantity"
+	private static final String countNoSortSql = "SELECT material_type.*, material.remainder_quantity AS quantity"
 			+ " FROM material_type,material WHERE material_type.id=material.type AND material_type.enabled=1"
-			+ " group by material_type.id limit ?,?";
+			+ " limit ?,?";		// group by material_type.id 
 	
 	private static final String doPaginateSql = "SELECT COUNT(*) as total FROM material_type WHERE material_type.enabled=1";
 
@@ -42,20 +42,9 @@ public class MaterialService extends SelectService{
 		page.setTotalRow(totallyRow);
 		Integer firstIndex = (page.getPageNumber()-1)*page.getPageSize();
 		
-//		原本想用以下的几个逻辑判断增加排序，筛选功能，可是sql语句将筛选条件一起执行，但是不会报错
-		// 判断是否有添加其他筛选条件，包括按某个字段排序，筛选等
-//		if (ascBy == null && descBy == null && filter == null) {
-//			countMaterial = MaterialType.dao.find(countNoSortSql, firstIndex, page.getPageSize());
-//		} else if (!(ascBy == null) && !(filter == null)) {
-//			countMaterial =  MaterialType.dao.find(countSortFilterSql, filter, ascBy, "asc", firstIndex, page.getPageSize());
-//		} else if (!(descBy == null) && !(filter == null)) {
-//			countMaterial =  MaterialType.dao.find(countSortFilterSql, filter, descBy.toString(), "desc", firstIndex, page.getPageSize());
-//		} else if (!(ascBy == null)) {
-//			countMaterial =  MaterialType.dao.find(countSortAscSql, ascBy, firstIndex, page.getPageSize());
-//		} else if (!(descBy == null)) {
-//			countMaterial =  MaterialType.dao.find(countSortDescSql, descBy.toString(), firstIndex, page.getPageSize());	//
-//		} else if (!(filter == null)) {
-//			countMaterial =  MaterialType.dao.find(countFilterSql, filter, firstIndex, page.getPageSize());
+//		if (!(filter == null)) {
+//			countMaterial =  MaterialType.dao.find(countFilterSql, filter.toString(), firstIndex, page.getPageSize());
+//			System.out.println("filter: " + filter);
 //		}
 		
 		countMaterial = MaterialType.dao.find(countNoSortSql, firstIndex, page.getPageSize());
@@ -63,7 +52,7 @@ public class MaterialService extends SelectService{
 		
 		for (MaterialType item : countMaterial) {
 			MaterialTypeVO m = new MaterialTypeVO(item.getId(), item.getNo(), item.getArea(), item.getRow(), item.getCol(),
-					item.getHeight(), item.getEnabled(), item.getIsOnShelf(), Integer.parseInt(item.get("quantity").toString()));
+					item.getHeight(), item.getEnabled(), Integer.parseInt(item.get("quantity").toString()));
 			materialTypeVO.add(m);
 		}
 		
