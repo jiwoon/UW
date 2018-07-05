@@ -134,7 +134,7 @@ public class AGVWebSocket {
 			//调用指令发送发方法发送下一条指令
 			sendIOCmd();
 		} catch (Exception e) {
-			ErrorLogWritter.save(e.getMessage());
+			ErrorLogWritter.save(e.getClass().getSimpleName()+ ":" +e.getMessage());
 			e.printStackTrace();
 		}
 	}
