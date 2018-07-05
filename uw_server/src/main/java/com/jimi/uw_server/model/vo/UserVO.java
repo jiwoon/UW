@@ -2,13 +2,17 @@ package com.jimi.uw_server.model.vo;
 
 import com.jimi.uw_server.model.User;
 
+/**
+ * @author HardyYao
+ * @createTime 2018年7月5日 上午11:19:22 
+ */
 public class UserVO extends User {
-
+	
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 1701296666161176827L;
-	
+	private static final long serialVersionUID = 5852559455862894388L;
+
 	private String enabledString;
 	
 	private String typeString;
@@ -39,5 +43,5 @@ public class UserVO extends User {
 		this.setEnabled(enabled);
 	}
 
-
 }
+ 

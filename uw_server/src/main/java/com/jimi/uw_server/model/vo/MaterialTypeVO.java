@@ -2,12 +2,16 @@ package com.jimi.uw_server.model.vo;
 
 import com.jimi.uw_server.model.MaterialType;
 
+/**
+ * @author HardyYao
+ * @createTime 2018年7月5日 上午11:25:16 
+ */
 public class MaterialTypeVO extends MaterialType {
-
+	
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 4557628227809950920L;
+	private static final long serialVersionUID = 2988989565944159643L;
 
 	private String enabledString;
 	
@@ -31,7 +35,7 @@ public class MaterialTypeVO extends MaterialType {
 	}
 	
 	public MaterialTypeVO(Integer id, String no, Integer area, Integer row, Integer col, Integer height, 
-			boolean enabled, boolean isOnShelf, Integer quantity) {
+			boolean enabled, Integer quantity) {
 		this.setId(id);
 		this.setNo(no);
 		this.setArea(area);
@@ -39,8 +43,9 @@ public class MaterialTypeVO extends MaterialType {
 		this.setCol(col);
 		this.setHeight(height);
 		this.setEnabled(enabled);
-		this.setIsOnShelf(isOnShelf);
+//		this.setIsOnShelf(isOnShelf);
 		this.setQuantity(quantity);
 	}
-	
+
 }
+ 

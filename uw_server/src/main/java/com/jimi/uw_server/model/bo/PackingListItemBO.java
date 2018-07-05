@@ -2,6 +2,10 @@ package com.jimi.uw_server.model.bo;
 
 import com.jimi.uw_server.util.ExcelHelper.Excel;
 
+/**
+ * @author HardyYao
+ * @createTime 2018年7月5日 上午11:23:18 
+ */
 public class PackingListItemBO {
 	
 	@Excel(col=1, head="料号")
@@ -23,3 +27,4 @@ public class PackingListItemBO {
 	}
 
 }
+ 

@@ -2,13 +2,16 @@ package com.jimi.uw_server.model.vo;
 
 import com.jimi.uw_server.model.Robot;
 
+/**
+ * @author HardyYao
+ * @createTime 2018年7月5日 上午11:24:32 
+ */
 public class RobotVO extends Robot {
-
+	
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -7762806826429433369L;
-	
+	private static final long serialVersionUID = 5302277337005075342L;
 	private String enableString;
 
 	public String getEnableString() {
@@ -28,5 +31,6 @@ public class RobotVO extends Robot {
 		this.setY(y);
 		this.setEnabled(enabled);
 	}
-	
+
 }
+ 
