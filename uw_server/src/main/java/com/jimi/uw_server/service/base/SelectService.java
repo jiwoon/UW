@@ -1,13 +1,21 @@
 package com.jimi.uw_server.service.base;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.jfinal.kit.PropKit;
+import com.jfinal.kit.StrKit;
+import com.jfinal.plugin.activerecord.ActiveRecordPlugin;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
+import com.jfinal.plugin.activerecord.dialect.MysqlDialect;
+import com.jfinal.plugin.druid.DruidPlugin;
 import com.jimi.uw_server.exception.ParameterException;
+import com.jimi.uw_server.model.MappingKit;
+
+import cc.darhao.dautils.api.StringUtil;
 
 /**
  * 通用查询业务层
@@ -17,6 +25,44 @@ import com.jimi.uw_server.exception.ParameterException;
  */
 public class SelectService {
 
+	public static void main(String[] args) {
+		PropKit.use("properties.ini");
+		DruidPlugin dp = new DruidPlugin(PropKit.get("d_url"), PropKit.get("d_user"), PropKit.get("d_password"));
+		ActiveRecordPlugin arp = new ActiveRecordPlugin(dp);
+	    arp.setDialect(new MysqlDialect());	// 用什么数据库，就设置什么Dialect
+	    arp.setShowSql(true);
+	    MappingKit.mapping(arp);
+		dp.start();
+		arp.start();
+		SelectService selectService = new SelectService();
+		String result = selectService.select("material", null, null, null, null, null).getList().toString();
+		System.out.println(result);
+		result = selectService.select(new String[] {"material_type","material"}, new String[] {"material.type=material_type.id"}, null, null, null, null, null).getList().toString();
+		System.out.println(result);
+	}
+	
+	
+	/**
+	 * 分页查询，支持筛选和排序
+	 * @param tables 提供可读的表名数组
+	 * @param refers 外键数组，单表可为null
+	 * @param pageNo 页码，从1开始
+	 * @param pageSize 每页的条目数
+	 * @param ascBy 按指定字段升序，不可和descBy同时使用
+	 * @param descBy 按指定字段降序，不可和ascBy同时使用
+	 * @param filter 按字段筛选，支持<, >, >,=, <=, !=, =，多个字段请用&隔开
+	 * @return Page对象
+	 */
+	public Page<Record> select(String[] tables, String[] refers, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
+		StringBuffer sql = new StringBuffer();
+		List<String> questionValues = new ArrayList<>();
+		createFrom(tables, refers, sql);
+		createWhere(filter, questionValues, sql);
+		createOrderBy(ascBy, descBy, sql);
+		return paginateAndFillWhereValues(tables, pageNo, pageSize, sql, questionValues);
+	}
+	
+	
 	/**
 	 * 分页查询，支持筛选和排序
 	 * @param table 提供可读的表名
@@ -28,31 +74,42 @@ public class SelectService {
 	 * @return Page对象
 	 */
 	public Page<Record> select(String table, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
-		StringBuffer sql = new StringBuffer();
-		List<String> questionValues = new ArrayList<>();
-		createFrom(table, sql);
-		createWhere(filter, questionValues, sql);
-		createOrderBy(ascBy, descBy, sql);
-//		System.out.println("sql test2:" + sql.toString());
-		return paginateAndFillWhereValues(pageNo, pageSize, sql, questionValues);
+		return select(new String[] {table}, null, pageNo, pageSize, ascBy, descBy, filter);
 	}
 	
 	
-	private void createFrom(String table, StringBuffer sql) {
+	private void createFrom(String[] tables, String[] refers, StringBuffer sql) {
 		//表名非空判断
-		if(table == null) {
+		if(tables == null) {
 			throw new ParameterException("table name must be provided");
 		}
+		//创建FROM
+		sql.append(" FROM ");
 		//表是否在可读范围内
-		String[] reportTables = PropKit.use("properties.ini").get("readableTables").split(",");
-		for (String tablePara : reportTables) {
-			//按冒号分割表名和主键名（多个主键用&隔开）
-			if(tablePara.equals(table)) {
-				sql.append(" FROM " + table);
-				return;
+		String[] readabledTables = PropKit.use("properties.ini").get("readableTables").split(",");
+		int pass = 0;
+		for (String table : tables) {
+			for (String readabledTable : readabledTables) {
+				if(readabledTable.equals(table)) {
+					pass++;
+					sql.append(table + " JOIN ");
+					break;
+				}
 			}
 		}
-		throw new ParameterException("not a readable table");
+		if(pass != tables.length) {
+			throw new ParameterException("some tables are not readabled");
+		}
+		sql.delete(sql.lastIndexOf("JOIN"), sql.length());
+		//创建ON
+		if(refers != null) {
+			sql.append(" ON ");
+			for (String refer : refers) {
+				sql.append(refer);
+				sql.append(" AND ");
+			}
+			sql.delete(sql.lastIndexOf("AND"), sql.length());
+		}
 	}
 
 	
@@ -99,16 +156,52 @@ public class SelectService {
 	}
 
 
-	private Page<Record> paginateAndFillWhereValues(Integer pageNo, Integer pageSize, StringBuffer sql, List<String> questionValues) {
+	private Page<Record> paginateAndFillWhereValues(String[]tables, Integer pageNo, Integer pageSize, StringBuffer sql, List<String> questionValues) {
 		if((pageNo != null && pageSize == null) || (pageNo == null && pageSize != null)) {
 			throw new ParameterException("ascBy and descBy must be provided at the same time");
 		}
+		String resultSet = createResultSet(tables);
 		if(pageNo == null && pageSize == null) {
-			return Db.paginate(1, PropKit.use("properties.ini").getInt("defaultPageSize"), "SELECT *", sql.toString(), questionValues.toArray());
+			return Db.paginate(1, PropKit.use("properties.ini").getInt("defaultPageSize"), resultSet, sql.toString(), questionValues.toArray());
 		}else {
-//			System.out.println("sqlString:" + sql.toString() + "\nquestionValuesString" + questionValues.toArray());
-			return Db.paginate(pageNo, pageSize, "SELECT *", sql.toString(), questionValues.toArray());
+			return Db.paginate(pageNo, pageSize, resultSet, sql.toString(), questionValues.toArray());
 		}
+	}
+
+
+	private String createResultSet(String[] tables) {
+		if(tables.length == 1) {
+			return "SELECT *";
+		}
+		StringBuffer sql = new StringBuffer();
+		sql.append(" SELECT ");
+		PropKit.use("properties.ini");
+		String baseModelPackage = PropKit.get("baseModelPackage");
+		for (String table : tables) {
+			try {
+				String beanClassName = StrKit.firstCharToUpperCase(StringUtil.trimUnderLineAndToUpCase(table));
+				Class<?> beanClass = Class.forName(baseModelPackage + ".Base" + beanClassName);
+				Method[] methods = beanClass.getMethods();
+				for (Method method : methods) {
+					String methodName = method.getName();
+					if (methodName.startsWith("set") == false || methodName.length() <= 3) {
+						continue;
+					}
+					Class<?>[] types = method.getParameterTypes();
+					if (types.length != 1) {	
+						continue;
+					}
+					String attrName = methodName.substring(3);
+					String colName = StringUtil.toLowCaseAndInsertUnderLine(StrKit.firstCharToLowerCase(attrName));
+					sql.append(table + "." + colName + " AS " + beanClassName + "_" + attrName);
+					sql.append(",");
+				}
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+		}
+		sql.delete(sql.lastIndexOf(","), sql.length());
+		return sql.toString();
 	}
 	
 }
