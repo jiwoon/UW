@@ -3,11 +3,14 @@ package com.jimi.uw_server.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.jimi.uw_server.service.entity.Page;
+import com.jfinal.aop.Enhancer;
+import com.jfinal.plugin.activerecord.Page;
+import com.jfinal.plugin.activerecord.Record;
 import com.jimi.uw_server.model.Material;
 import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.model.vo.MaterialTypeVO;
 import com.jimi.uw_server.service.base.SelectService;
+import com.jimi.uw_server.service.entity.PagePaginate;
 
 /**
  * 物料业务层
@@ -17,57 +20,60 @@ import com.jimi.uw_server.service.base.SelectService;
  */
 public class MaterialService extends SelectService{
 	
+	private static SelectService selectService = Enhancer.enhance(SelectService.class);
+	
 	private	static final String getEntitiesSql = "SELECT material.id, material.type, material.row, material.col, "
-			+ "material.remainder_quantity as remainderQuantity FROM material, material_type WHERE type=? "
+			+ "material.remainder_quantity FROM material, material_type WHERE type=? "
 			+ "AND material_type.id=material.type AND material_type.enabled=1";
 	
 	private	static final String entitySearchSql = "SELECT * FROM material WHERE type=? ";
 	
 	private static final String uniqueCheckSql = "SELECT * FROM material_type WHERE no = ?";
-	
-	private static final String countNoSortSql = "SELECT material_type.*, material.remainder_quantity AS quantity"
-			+ " FROM material_type,material WHERE material_type.id=material.type AND material_type.enabled=1"
-			+ " limit ?,?";		// group by material_type.id 
-	
-	private static final String doPaginateSql = "SELECT COUNT(*) as total FROM material_type WHERE material_type.enabled=1";
 
 	public Object count(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
-		List<MaterialType> countMaterial = null;
 		List<MaterialTypeVO> materialTypeVO = new ArrayList<MaterialTypeVO>();
 		
-		Page page = new Page();
-		page.setPageNumber(pageNo);
-		page.setPageSize(pageSize);
-		Integer totallyRow = Integer.parseInt(MaterialType.dao.findFirst(doPaginateSql).get("total").toString());
-		page.setTotalRow(totallyRow);
-		Integer firstIndex = (page.getPageNumber()-1)*page.getPageSize();
+		Page<Record> result = selectService.select(new String[] {"material_type", "material"}, new String[] {"material.type=material_type.id"},
+				pageNo, pageSize, ascBy, descBy, "material_type." + filter.replace("&", "&material_type."));
 		
-//		if (!(filter == null)) {
-//			countMaterial =  MaterialType.dao.find(countFilterSql, filter.toString(), firstIndex, page.getPageSize());
-//			System.out.println("filter: " + filter);
-//		}
-		
-		countMaterial = MaterialType.dao.find(countNoSortSql, firstIndex, page.getPageSize());
-		System.out.println("countMaterial: " + countMaterial);
-		
-		for (MaterialType item : countMaterial) {
-			MaterialTypeVO m = new MaterialTypeVO(item.getId(), item.getNo(), item.getArea(), item.getRow(), item.getCol(),
-					item.getHeight(), item.getEnabled(), Integer.parseInt(item.get("quantity").toString()));
+		int totallyRow =  0;
+		for (Record res : result.getList()) {
+			MaterialTypeVO m = new MaterialTypeVO(res.get("MaterialType_Id"), res.get("MaterialType_No"), res.get("MaterialType_Area"),
+					res.get("MaterialType_Row"), res.get("MaterialType_Col"), res.get("MaterialType_Height"), res.get("MaterialType_Enabled"),
+					res.get("Material_RemainderQuantity"));
 			materialTypeVO.add(m);
+			totallyRow++;
 		}
 		
-		page.setList(materialTypeVO);
+		PagePaginate pagePaginate = new PagePaginate();
+		pagePaginate.setPageSize(pageSize);
+		pagePaginate.setPageNumber(pageNo);
+		pagePaginate.setTotalRow(totallyRow);
+		
+		pagePaginate.setList(materialTypeVO);
 
-		return page;
+		return pagePaginate;
 	}
 	
-	public List<Material> getEntities(Material material, Integer type) {
+	public Object getEntities(Material material, Integer type) {
 		List<Material> materialEntities;
 		if(Material.dao.find(entitySearchSql, material.getType()).size() == 0) {
 			return null;
 		}
 		materialEntities = Material.dao.find(getEntitiesSql, type);
-		return materialEntities;
+		
+		int pageSize = 20;
+		int pageNo = 1;
+		int totallyRow =  materialEntities.size();
+		
+		PagePaginate pagePaginate = new PagePaginate();
+		pagePaginate.setPageSize(pageSize);
+		pagePaginate.setPageNumber(pageNo);
+		pagePaginate.setTotalRow(totallyRow);
+		
+		pagePaginate.setList(materialEntities);
+		
+		return pagePaginate;
 	}
 
 	public boolean add(MaterialType materialType) {

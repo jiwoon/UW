@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.jfinal.aop.Enhancer;
+import com.jfinal.plugin.activerecord.Page;
+import com.jfinal.plugin.activerecord.Record;
 import com.jimi.uw_server.agv.dao.AGVTaskItemRedisDAO;
 import com.jimi.uw_server.agv.entity.AGVIOTaskItem;
 import com.jimi.uw_server.exception.OperationException;
@@ -13,23 +16,21 @@ import com.jimi.uw_server.model.Material;
 import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.model.PackingListItem;
 import com.jimi.uw_server.model.Task;
-import com.jimi.uw_server.model.User;
 import com.jimi.uw_server.model.Window;
 import com.jimi.uw_server.model.bo.PackingListItemBO;
 import com.jimi.uw_server.model.vo.TaskVO;
-import com.jimi.uw_server.service.entity.Page;
+import com.jimi.uw_server.service.base.SelectService;
+import com.jimi.uw_server.service.entity.PagePaginate;
 import com.jimi.uw_server.util.ErrorLogWritter;
 import com.jimi.uw_server.util.ExcelHelper;
 
 public class TaskService {
 	
+	private static SelectService selectService = Enhancer.enhance(SelectService.class);
+	
 	private static final String getWindowsSql = "SELECT id FROM window";
 	
 	private static final String getTaskMaterialIdSql = "SELECT material_type_id FROM packing_list_item WHERE task_id = ?";
-	
-	private static final String taskSql = "SELECT * FROM task limit ?, ?";
-	
-	private static final String doPaginateSql = "SELECT COUNT(*) as total FROM task";
 	
 	private static final String getNewTaskIdSql = "SELECT MAX(id) as newId FROM task";
 	
@@ -69,6 +70,7 @@ public class TaskService {
 		}
 		// 把任务条目均匀插入到队列til中（线程同步方法）
 		AGVTaskItemRedisDAO.addTaskItem(taskItems);
+		System.out.println("taskItems: " + taskItems);
 		task.setState(2);
 		task.keep("id", "type", "file_name", "window", "state", "createtime");
 		return task.update();
@@ -106,25 +108,25 @@ public class TaskService {
 	}
 	
 	public Object select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
-		List<Task> task;
 		List<TaskVO> taskVO = new ArrayList<TaskVO>();
 		
-		Page page = new Page();
-		page.setPageSize(pageSize);
-		page.setPageNumber(pageNo);
-		Integer totallyRow = Integer.parseInt(User.dao.findFirst(doPaginateSql).get("total").toString());
-		page.setTotalRow(totallyRow);
-		Integer firstIndex = (page.getPageNumber()-1)*page.getPageSize();
-		task= Task.dao.find(taskSql, firstIndex, page.getPageSize());
+		Page<Record> result = selectService.select("task", pageNo, pageSize, ascBy, descBy, filter);
 		
-		for (Task item : task) {
-			TaskVO t = new TaskVO(item.getId(), item.getState(), item.getType(), item.getFileName(), item.getCreateTime());
+		int totallyRow =  0;
+		for (Record res : result.getList()) {
+			TaskVO t = new TaskVO(res.get("id"), res.get("state"), res.get("type"), res.get("file_name"), res.get("create_time"));
 			taskVO.add(t);
+			totallyRow++;
 		}
 		
-		page.setList(taskVO);
+		PagePaginate pagePaginate = new PagePaginate();
+		pagePaginate.setPageSize(pageSize);
+		pagePaginate.setPageNumber(pageNo);
+		pagePaginate.setTotalRow(totallyRow);
 		
-		return page;
+		pagePaginate.setList(taskVO);
+		
+		return pagePaginate;
 	}
 	
 	//将excel表格的物料相关信息写入套料单数据表

@@ -23,13 +23,12 @@ public class UserController extends Controller {
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		if(tokenId != null) {
 			User user2 = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
-			if(user2 != null && user.getUid() == user2.getUid()) {
+			if(user2 != null && user.getUid().equals(user2.getUid())) {
 				throw new ParameterException("do not login again");
 			}
 		}
 
 		user.put(TokenBox.TOKEN_ID_KEY_NAME, TokenBox.createTokenId());
-		System.out.println("user: " + user.toString());
 		TokenBox.put(TokenBox.createTokenId(), SESSION_KEY_LOGIN_USER, user);
 		renderJson(ResultUtil.succeed(user));
 	}

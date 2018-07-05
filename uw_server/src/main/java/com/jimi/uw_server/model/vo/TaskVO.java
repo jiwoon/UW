@@ -2,22 +2,73 @@ package com.jimi.uw_server.model.vo;
 
 import java.util.Date;
 
-import com.jimi.uw_server.model.Task;
-
 /**
  * @author HardyYao
  * @createTime 2018年7月5日 上午11:21:03 
  */
-public class TaskVO extends Task {
+public class TaskVO {
 	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -3901616199242837932L;
+	private Integer id;
+	
+	private Integer state;
+	
+	private Integer type;
+	
+	private String fileName;
+	
+	private Date createTime;
 
 	private String typeString;
 	
 	private String stateString;
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public Integer getState() {
+		return state;
+	}
+
+	public void setState(Integer state) {
+		this.state = state;
+	}
+
+	public Integer getType() {
+		return type;
+	}
+
+	public void setType(Integer type) {
+		this.type = type;
+	}
+
+	public String getFileName() {
+		return fileName;
+	}
+
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+	}
+
+	public Date getCreateTime() {
+		return createTime;
+	}
+
+	public void setCreateTime(Date createTime) {
+		this.createTime = createTime;
+	}
+
+	public void setTypeString(String typeString) {
+		this.typeString = typeString;
+	}
+
+	public void setStateString(String stateString) {
+		this.stateString = stateString;
+	}
 
 	public String getTypeString() {
 		if (this.getType() == 0) {
@@ -48,11 +99,11 @@ public class TaskVO extends Task {
 	}
 	
 	public TaskVO(Integer id, Integer state, Integer type, String fileName, Date createTime) {
-		this.setId(id);
-		this.setState(state);
-		this.setType(type);
-		this.setFileName(fileName);
-		this.setCreateTime(createTime);
+		this.id = id;
+		this.state = state;
+		this.type = type;
+		this.fileName = fileName;
+		this.createTime = createTime;
 	}
 
 }
