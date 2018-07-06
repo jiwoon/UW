@@ -16,6 +16,7 @@ import com.jimi.uw_server.model.Material;
 import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.model.PackingListItem;
 import com.jimi.uw_server.model.Task;
+import com.jimi.uw_server.model.TaskLog;
 import com.jimi.uw_server.model.Window;
 import com.jimi.uw_server.model.bo.PackingListItemBO;
 import com.jimi.uw_server.model.vo.TaskVO;
@@ -96,8 +97,8 @@ public class TaskService {
 	}
 	
 //	public Object check(Integer id) {
-//		TaskLog taskLog = new TaskLog();
-//		taskLog.findFirst(checkTaskSql, id);
+//		TaskLog taskLog = TaskLog.dao.findById(id);
+//		taskLog.findById(id);
 //		return taskLog;
 //	}
 	

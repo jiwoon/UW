@@ -29,17 +29,17 @@ public class PositionLogVO extends PositionLog {
 	public PositionLogVO(Integer id, Integer taskId, String materialId, Integer oldArea, Integer oldRow, Integer oldCol, 
 			Integer oldHeight, Integer newArea, Integer newRow, Integer newCol, Integer newHeight, Date time) {
 		this.setId(id);
-		this.setTaskId(taskId);
-		this.setMaterialId(materialId);
+		this.set("taskId", taskId);
+		this.set("materialId", materialId);
 		this.set("materialNo", getMaterialNo(materialId));
-		this.setOldArea(oldArea);
-		this.setOldRow(oldRow);
-		this.setOldCol(oldCol);
-		this.setOldHeight(oldHeight);
-		this.setNewArea(newArea);
-		this.setNewRow(newRow);
-		this.setNewCol(newCol);
-		this.setNewHeight(newHeight);
+		this.set("oldArea", oldArea);
+		this.set("oldRow", oldRow);
+		this.set("oldCol", oldCol);
+		this.set("oldHeight", oldHeight);
+		this.set("newArea", newArea);
+		this.set("newRow", newRow);
+		this.set("newCol", newCol);
+		this.set("newHeight", newHeight);
 		this.setTime(time);
 	}
 }

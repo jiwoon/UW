@@ -8,8 +8,6 @@ import com.jimi.uw_server.model.Robot;
  */
 public class RobotVO extends Robot{
 	
-	private Integer enabled;
-	
 	private String enableString;
 	
 
@@ -17,8 +15,8 @@ public class RobotVO extends Robot{
 		this.enableString = enableString;
 	}
 
-	public String getEnableString() {
-		if(this.enabled == 1) {
+	public String getEnableString(Integer enabled) {
+		if(enabled == 1) {
 			this.enableString = "是";
 		} else {
 			this.enableString = "否";
@@ -34,7 +32,7 @@ public class RobotVO extends Robot{
 		this.setX(x);
 		this.setY(y);
 		this.setEnabled(enabled);
-		this.set("enableString", getEnableString());
+		this.set("enableString", getEnableString(enabled));
 	}
 
 }
