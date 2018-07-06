@@ -2,7 +2,10 @@ package com.jimi.uw_server.model.vo;
 
 import java.util.Date;
 
+import com.jimi.uw_server.model.Material;
+import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.model.TaskLog;
+import com.jimi.uw_server.model.User;
 
 /**
  * @author HardyYao
@@ -21,8 +24,10 @@ public class TaskLogVO extends TaskLog {
 	
 	private String materialNo;
 	
-	public String getAutoString() {
-		if(this.getAuto()) {
+	private String operatorName;
+	
+	public String getAutoString(boolean auto) {
+		if(auto) {
 			this.autoString = "自动";
 		} else {
 			this.autoString = "手动";
@@ -30,36 +35,44 @@ public class TaskLogVO extends TaskLog {
 		return autoString;
 	}
 
-	public void setAuto(String autoString) {
-		this.autoString = autoString;
-	}
-
-	public String getTaskType() {
+	public String getTaskType(Integer taskId) {
+		if (taskId == 0) {
+			this.taskType = "入库";
+		} else if (taskId == 1) {
+			this.taskType = "出库";
+		} else if (taskId == 2) {
+			this.taskType = "盘点";
+		}  else if (taskId == 3) {
+			this.taskType = "位置优化";
+		}
 		return taskType;
 	}
 
-	public void setTaskType(String taskType) {
-		this.taskType = taskType;
+	public String getOperatorName(String operator) {
+		User user = User.dao.findById(operator);
+		operatorName = user.getName();
+		return operatorName;
 	}
 
-	public String getMaterialNo() {
+	public String getMaterialNo(String materialId) {
+		Material material = Material.dao.findById(materialId);
+		Integer type = material.getType();
+		MaterialType materialType = MaterialType.dao.findById(type);
+		materialNo = materialType.getNo();
 		return materialNo;
 	}
 
-	public void setMaterialNo(String materialNo) {
-		this.materialNo = materialNo;
-	}
-	
-	public TaskLogVO(Integer id, Integer taskId, String taskType, String materialId, String materialNo, Integer quantity,
+	public TaskLogVO(Integer id, Integer taskId, String taskType, String materialId, Integer quantity,
 			String operator, boolean auto, Date time) {
 		this.setId(id);
-		this.setTaskId(taskId);
-		this.setTaskType(taskType);;
-		this.setMaterialId(materialId);
-		this.setMaterialNo(materialNo);
+		this.set("taskId", taskId);
+		this.set("taskType", getTaskType(taskId));
+		this.set("materialId", materialId);
+		this.set("materialNo", getMaterialNo(materialId));
 		this.setQuantity(quantity);
 		this.setOperator(operator);
-		this.setAuto(auto);
+		this.set("operatorName", getOperatorName(operator));
+		this.set("auto", getAutoString(auto));
 		this.setTime(time);
 	}
 

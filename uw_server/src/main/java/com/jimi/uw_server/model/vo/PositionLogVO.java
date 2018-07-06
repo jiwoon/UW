@@ -2,6 +2,8 @@ package com.jimi.uw_server.model.vo;
 
 import java.util.Date;
 
+import com.jimi.uw_server.model.Material;
+import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.model.PositionLog;
 
 /**
@@ -17,19 +19,19 @@ public class PositionLogVO extends PositionLog {
 	
 	private String materialNo;
 
-	public String getMaterialNo() {
+	public String getMaterialNo(String materialId) {
+		Material material = Material.dao.findById(materialId);
+		Integer type = material.getType();
+		MaterialType materialType = MaterialType.dao.findById(type);
+		materialNo = materialType.getNo();
 		return materialNo;
 	}
-
-	public void setMaterialNo(String materialNo) {
-		this.materialNo = materialNo;
-	}
-	
 	public PositionLogVO(Integer id, Integer taskId, String materialId, Integer oldArea, Integer oldRow, Integer oldCol, 
 			Integer oldHeight, Integer newArea, Integer newRow, Integer newCol, Integer newHeight, Date time) {
 		this.setId(id);
 		this.setTaskId(taskId);
 		this.setMaterialId(materialId);
+		this.set("materialNo", getMaterialNo(materialId));
 		this.setOldArea(oldArea);
 		this.setOldRow(oldRow);
 		this.setOldCol(oldCol);

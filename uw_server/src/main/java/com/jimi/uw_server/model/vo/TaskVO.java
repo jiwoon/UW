@@ -7,6 +7,11 @@ import com.jimi.uw_server.model.base.BaseTask;
 
 public class TaskVO extends BaseTask<Task> {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5623582632249846864L;
+
 	private String typeString;
 	
 	private String stateString;
