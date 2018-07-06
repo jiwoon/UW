@@ -111,7 +111,6 @@ public class TaskService {
 		List<TaskVO> taskVO = new ArrayList<TaskVO>();
 		
 		Page<Record> result = selectService.select("task", pageNo, pageSize, ascBy, descBy, filter);
-		
 		int totallyRow =  0;
 		for (Record res : result.getList()) {
 			TaskVO t = new TaskVO(res.get("id"), res.get("state"), res.get("type"), res.get("file_name"), res.get("create_time"));
