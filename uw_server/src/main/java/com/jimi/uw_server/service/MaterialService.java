@@ -23,7 +23,7 @@ public class MaterialService extends SelectService{
 	private static SelectService selectService = Enhancer.enhance(SelectService.class);
 	
 	private	static final String getEntitiesSql = "SELECT material.id, material.type, material.row, material.col, "
-			+ "material.remainder_quantity FROM material, material_type WHERE type=? "
+			+ "material.remainder_quantity as remainderQuantity FROM material, material_type WHERE type=? "
 			+ "AND material_type.id=material.type AND material_type.enabled=1";
 	
 	private	static final String entitySearchSql = "SELECT * FROM material WHERE type=? ";
@@ -33,10 +33,12 @@ public class MaterialService extends SelectService{
 	public Object count(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
 		List<MaterialTypeVO> materialTypeVO = new ArrayList<MaterialTypeVO>();
 		
-		if(filter != null) {
-			filter = "material_type." + filter.replace("&", "&material_type.");
+		if (filter != null) {
+			filter = filter + "&material_type.enabled=1";
+		} else {
+			filter = "material_type.enabled=1";
 		}
-		
+
 		Page<Record> result = selectService.select(new String[] {"material_type", "material"}, new String[] {"material.type=material_type.id"},
 				pageNo, pageSize, ascBy, descBy, filter);
 		

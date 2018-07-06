@@ -16,7 +16,6 @@ import com.jimi.uw_server.model.Material;
 import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.model.PackingListItem;
 import com.jimi.uw_server.model.Task;
-import com.jimi.uw_server.model.TaskLog;
 import com.jimi.uw_server.model.Window;
 import com.jimi.uw_server.model.bo.PackingListItemBO;
 import com.jimi.uw_server.model.vo.TaskVO;
@@ -37,20 +36,19 @@ public class TaskService {
 	
 	private static final String getTaskTypeSql = "SELECT type FROM task WHERE id = ?";
 	
-	private static final String getQuantitySql = "SELECT remainder_quantity FROM material WHERE type = ("
+	private static final String getQuantitySql = "SELECT SUM(remainder_quantity) AS remainderQuantity FROM material WHERE type = ("
 			+ "SELECT id FROM material_type WHERE no = ?)";
 	
 	private static final String getNoSql = "SELECT id FROM material_type WHERE no = ?";
 	
 	private static final String getMaterialId = "SELECT id FROM material WHERE type = (SELECT type FROM material WHERE type = ?)";
 	
-	public boolean create(Task task, Integer type, String fileName) {
+	public synchronized boolean create(Task task, Integer type, String fileName) {
 		task.setType(type);
 		task.setFileName(fileName);
 		task.setWindow(1);
 		task.setState(0);
 		task.setCreateTime(new Date());
-		System.out.println("task: " + task);
 		return task.save();
 	}
 	

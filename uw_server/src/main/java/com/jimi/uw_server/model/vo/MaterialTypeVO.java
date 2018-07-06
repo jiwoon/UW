@@ -8,6 +8,11 @@ import com.jimi.uw_server.model.MaterialType;
  */
 public class MaterialTypeVO extends MaterialType{
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 6512994067269010575L;
+
 	private boolean enabled;
 
 	private String enabledString;

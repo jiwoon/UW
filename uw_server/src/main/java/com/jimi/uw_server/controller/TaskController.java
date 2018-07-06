@@ -16,12 +16,10 @@ public class TaskController extends Controller {
 	
 	private static TaskService taskService = Enhancer.enhance(TaskService.class);
 	
-	//@Access({"SuperAdmin"})
 	public void create(@Para("") Task task, @Para("") PackingListItem packingListItem, @Para("") MaterialType materialType, UploadFile file, Integer type) {
 		file = getFile();
 		String fileName = file.getFileName();
 		String fullFileName = file.getUploadPath() + "\\" + file.getFileName();
-		System.out.println("type: " + type);
 		if(taskService.create(task, type, fileName)) {
 			TaskService.insertPackingList(task, packingListItem, materialType, type, fullFileName);
 			renderJson(ResultUtil.succeed());
@@ -30,7 +28,6 @@ public class TaskController extends Controller {
 		}
 	}
 	
-	//@Access({"SuperAdmin"})
 	public void pass(@Para("") Task task, Integer id) {
 		if(taskService.pass(task, id)) {
 			renderJson(ResultUtil.succeed());
@@ -39,7 +36,6 @@ public class TaskController extends Controller {
 		}
 	}
 	
-	//@Access({"SuperAdmin"})
 	public void start(@Para("") Task task, Integer id, Integer window) {
 		if(taskService.start(task, id, window)) {
 			renderJson(ResultUtil.succeed());
@@ -48,8 +44,6 @@ public class TaskController extends Controller {
 		}
 	}
 	
-	
-	//@Access({"SuperAdmin"})
 	public void cancel(@Para("") Task task, Integer id) {
 		if(taskService.cancel(task, id)) {
 			renderJson(ResultUtil.succeed());
