@@ -33,8 +33,12 @@ public class MaterialService extends SelectService{
 	public Object count(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
 		List<MaterialTypeVO> materialTypeVO = new ArrayList<MaterialTypeVO>();
 		
+		if(filter != null) {
+			filter = "material_type." + filter.replace("&", "&material_type.");
+		}
+		
 		Page<Record> result = selectService.select(new String[] {"material_type", "material"}, new String[] {"material.type=material_type.id"},
-				pageNo, pageSize, ascBy, descBy, "material_type." + filter.replace("&", "&material_type."));
+				pageNo, pageSize, ascBy, descBy, filter);
 		
 		int totallyRow =  0;
 		for (Record res : result.getList()) {

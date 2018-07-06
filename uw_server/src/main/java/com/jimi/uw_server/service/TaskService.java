@@ -19,13 +19,8 @@ import com.jimi.uw_server.model.Task;
 import com.jimi.uw_server.model.Window;
 import com.jimi.uw_server.model.bo.PackingListItemBO;
 import com.jimi.uw_server.model.vo.TaskVO;
-<<<<<<< HEAD
-import com.jimi.uw_server.model.vo.TaskVO2;
-import com.jimi.uw_server.service.entity.Page;
-=======
 import com.jimi.uw_server.service.base.SelectService;
 import com.jimi.uw_server.service.entity.PagePaginate;
->>>>>>> e916a6c3e1a0c7c439497fb50093077ac2a839a2
 import com.jimi.uw_server.util.ErrorLogWritter;
 import com.jimi.uw_server.util.ExcelHelper;
 
@@ -113,23 +108,10 @@ public class TaskService {
 	}
 	
 	public Object select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
-<<<<<<< HEAD
-		List<Task> task;
-		List<TaskVO> taskVO2 = new ArrayList<TaskVO>();
-=======
 		List<TaskVO> taskVO = new ArrayList<TaskVO>();
->>>>>>> e916a6c3e1a0c7c439497fb50093077ac2a839a2
 		
 		Page<Record> result = selectService.select("task", pageNo, pageSize, ascBy, descBy, filter);
-		
-<<<<<<< HEAD
-		for (Task item : task) {
-			TaskVO t = new TaskVO(item.getId(), item.getState(), item.getType(), item.getFileName(), item.getCreateTime());
-			taskVO2.add(t);
-		}
-		
-		page.setList(taskVO2);
-=======
+
 		int totallyRow =  0;
 		for (Record res : result.getList()) {
 			TaskVO t = new TaskVO(res.get("id"), res.get("state"), res.get("type"), res.get("file_name"), res.get("create_time"));
@@ -143,7 +125,6 @@ public class TaskService {
 		pagePaginate.setTotalRow(totallyRow);
 		
 		pagePaginate.setList(taskVO);
->>>>>>> e916a6c3e1a0c7c439497fb50093077ac2a839a2
 		
 		return pagePaginate;
 	}
