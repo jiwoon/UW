@@ -13,14 +13,6 @@ public class RobotVO extends Robot{
 	private String enableString;
 	
 
-	public Integer getEnabled() {
-		return enabled;
-	}
-
-	public void setEnabled(Integer enabled) {
-		this.enabled = enabled;
-	}
-
 	public void setEnableString(String enableString) {
 		this.enableString = enableString;
 	}
