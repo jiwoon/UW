@@ -3,9 +3,8 @@ package com.jimi.uw_server.model.vo;
 import java.util.Date;
 
 import com.jimi.uw_server.model.Task;
-import com.jimi.uw_server.model.base.BaseTask;
 
-public class TaskVO extends BaseTask<Task> {
+public class TaskVO extends Task{
 	
 	private String typeString;
 	
