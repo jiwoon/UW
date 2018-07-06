@@ -30,6 +30,7 @@ public class RobotVO extends Robot {
 		this.setX(x);
 		this.setY(y);
 		this.setEnabled(enabled);
+		this.set("enableString", getEnableString());
 	}
 
 }

@@ -3,6 +3,7 @@ package com.jimi.uw_server.controller;
 import com.jfinal.aop.Enhancer;
 import com.jfinal.core.Controller;
 import com.jfinal.core.paragetter.Para;
+import com.jfinal.json.Json;
 import com.jfinal.upload.UploadFile;
 import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.model.PackingListItem;
@@ -62,6 +63,7 @@ public class TaskController extends Controller {
 //	}
 	
 	public void select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
+		Json.getJson().toJson(ResultUtil.succeed(taskService.select(pageNo, pageSize, ascBy, descBy, filter)));
 		renderJson(ResultUtil.succeed(taskService.select(pageNo, pageSize, ascBy, descBy, filter)));
 	}
 	

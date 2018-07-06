@@ -17,6 +17,8 @@ public class MaterialTypeVO extends MaterialType {
 	
 	private Integer quantity;
 	
+	
+	
 	public void setQuantity(Integer quantity) {
 		this.quantity = quantity;
 	}
@@ -33,7 +35,7 @@ public class MaterialTypeVO extends MaterialType {
 		}
 		return enabledString;
 	}
-	
+
 	public MaterialTypeVO(Integer id, String no, Integer area, Integer row, Integer col, Integer height, 
 			boolean enabled, Integer quantity) {
 		this.setId(id);
@@ -43,8 +45,9 @@ public class MaterialTypeVO extends MaterialType {
 		this.setCol(col);
 		this.setHeight(height);
 		this.setEnabled(enabled);
+		this.set("enabledString", getEnabledString());
 //		this.setIsOnShelf(isOnShelf);
-		this.setQuantity(quantity);
+		this.set("quantity", quantity);
 	}
 
 }

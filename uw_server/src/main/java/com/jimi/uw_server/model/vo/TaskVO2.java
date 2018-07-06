@@ -4,17 +4,13 @@ import java.util.Date;
 
 import com.jimi.uw_server.model.Task;
 
-/**
- * @author HardyYao
- * @createTime 2018年7月5日 上午11:21:03 
- */
-public class TaskVO extends Task {
-	
+public class TaskVO2 extends Task {
+
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -3901616199242837932L;
-
+	private static final long serialVersionUID = -8082829435328812355L;
+	
 	private String typeString;
 	
 	private String stateString;
@@ -47,7 +43,7 @@ public class TaskVO extends Task {
 		return stateString;
 	}
 	
-	public TaskVO(Integer id, Integer state, Integer type, String fileName, Date createTime) {
+	public TaskVO2(Integer id, Integer state, Integer type, String fileName, Date createTime) {
 		this.setId(id);
 		this.setState(state);
 		this.setType(type);
@@ -56,4 +52,3 @@ public class TaskVO extends Task {
 	}
 
 }
- 

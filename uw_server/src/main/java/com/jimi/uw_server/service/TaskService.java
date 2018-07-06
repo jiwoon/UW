@@ -17,6 +17,7 @@ import com.jimi.uw_server.model.User;
 import com.jimi.uw_server.model.Window;
 import com.jimi.uw_server.model.bo.PackingListItemBO;
 import com.jimi.uw_server.model.vo.TaskVO;
+import com.jimi.uw_server.model.vo.TaskVO2;
 import com.jimi.uw_server.service.entity.Page;
 import com.jimi.uw_server.util.ErrorLogWritter;
 import com.jimi.uw_server.util.ExcelHelper;
@@ -107,7 +108,7 @@ public class TaskService {
 	
 	public Object select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
 		List<Task> task;
-		List<TaskVO> taskVO = new ArrayList<TaskVO>();
+		List<TaskVO> taskVO2 = new ArrayList<TaskVO>();
 		
 		Page page = new Page();
 		page.setPageSize(pageSize);
@@ -119,10 +120,10 @@ public class TaskService {
 		
 		for (Task item : task) {
 			TaskVO t = new TaskVO(item.getId(), item.getState(), item.getType(), item.getFileName(), item.getCreateTime());
-			taskVO.add(t);
+			taskVO2.add(t);
 		}
 		
-		page.setList(taskVO);
+		page.setList(taskVO2);
 		
 		return page;
 	}
