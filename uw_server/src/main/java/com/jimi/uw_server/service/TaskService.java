@@ -149,7 +149,8 @@ public class TaskService {
 				for (PackingListItemBO packingList : item) {
 					
 					// 计划出库数量
-					Integer planQuantity = Integer.parseInt(packingList.getQuantity());
+					Integer planQuantity = packingList.getQuantity();
+//					Integer planQuantity = Integer.parseInt(packingList.getQuantity());
 						
 					// 获取将要入库/出库的物料的库存数量
 					MaterialType checkQuantitySql = materialType.findFirst(getQuantitySql, packingList.getNo());
@@ -157,7 +158,7 @@ public class TaskService {
 						
 					if(taskType == 1) {
 						// 逐条判断库存是否足够，若是，则插入套料单数据；
-							if (remainderQuantity >= Integer.parseInt(packingList.getQuantity())) {
+							if (remainderQuantity >= planQuantity) {
 							System.out.println("料号为：" + packingList.getNo() +  "的物料库存充足，可以出库！");
 							// 添加物料类型id
 							MaterialType findNoSql = materialType.findFirst(getNoSql, packingList.getNo());
