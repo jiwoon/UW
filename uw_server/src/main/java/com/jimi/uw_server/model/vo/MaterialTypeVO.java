@@ -6,19 +6,27 @@ import com.jimi.uw_server.model.MaterialType;
  * @author HardyYao
  * @createTime 2018年7月5日 上午11:25:16 
  */
-public class MaterialTypeVO extends MaterialType {
+public class MaterialTypeVO extends MaterialType{
 	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 2988989565944159643L;
+	private boolean enabled;
 
 	private String enabledString;
 	
 	private Integer quantity;
 	
-	
-	
+
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+
+	public void setEnabledString(String enabledString) {
+		this.enabledString = enabledString;
+	}
+
 	public void setQuantity(Integer quantity) {
 		this.quantity = quantity;
 	}
@@ -28,7 +36,7 @@ public class MaterialTypeVO extends MaterialType {
 	}
 	
 	public String getEnabledString() {
-		if (this.getEnabled()) {
+		if (this.isEnabled()) {
 			this.enabledString = "是";
 		} else {
 			this.enabledString = "否";

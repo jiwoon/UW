@@ -1,7 +1,5 @@
 package com.jimi.uw_server.controller;
 
-import java.util.List;
-
 import com.jfinal.aop.Enhancer;
 import com.jfinal.core.Controller;
 import com.jfinal.core.paragetter.Para;
@@ -23,7 +21,7 @@ public class MaterialController extends Controller {
 
 	// 获取物料实体
 	public void getEntities(@Para("") Material material, Integer type) {
-		List<Material> entities = materialService.getEntities(material, type);
+		Object entities = materialService.getEntities(material, type);
 		if (entities != null) {
 			renderJson(ResultUtil.succeed(entities));
 		} else {
