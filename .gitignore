@@ -23,7 +23,7 @@ hs_err_pid*
 /.metadata/
 /.recommenders
 /RemoteSystemsTempFiles
-/uw_server/target
+/uw_server/target/
 /uw_server/target/classes/.gitignore
 /uw_server/target/classes/log4j.properties
 /uw_server/target/classes/properties.ini
