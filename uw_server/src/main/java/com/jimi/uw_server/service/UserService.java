@@ -21,25 +21,24 @@ import cc.darhao.dautils.api.MD5Util;
  * @createTime 2018年6月8日
  */
 public class UserService extends SelectService{
-	
+
 	private static SelectService selectService = Enhancer.enhance(SelectService.class);
 
 	private static final String loginSql = "SELECT * "
 			+ "FROM user WHERE uid = ? AND password = ?";
-	
+
 	private static final String uniqueCheckSql = "SELECT * FROM user WHERE uid = ?";
-	
+
 	private static final String userTypeSelectSql = "SELECT id,name";
-	
+
 	private static final String userTypeNonSelectSql = "FROM user_type";
-	
+
 	public User login(String uid, String password) {
 		User user = User.dao.findFirst(loginSql, uid, MD5Util.MD5(password));
 		if(user == null) {
 			throw new OperationException("userId or password is not correct");
 		} 
 		if(!user.getEnabled()) {
-			System.out.println("user.getEnabled(): " + user.getEnabled());
 			throw new OperationException("用户" + user.getName() + "已被禁用！");
 		}
 		return user;
@@ -59,29 +58,29 @@ public class UserService extends SelectService{
 		user.keep("uid","name","password","type","enabled");
 		return user.update();
 	}
-	
+
 	public Object select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
 		List<UserVO> userVO = new ArrayList<UserVO>();
-		
+
 		Page<Record> result = selectService.select("user", pageNo, pageSize, ascBy, descBy, filter);
-		
+
 		int totallyRow =  result.getTotalRow();
-		
+
 		for (Record res : result.getList()) {
 			UserVO u = new UserVO(res.get("uid"), res.get("password"), res.get("name"), res.get("type"), res.get("enabled"));
 			userVO.add(u);
 		}
-		
+
 		PagePaginate pagePaginate = new PagePaginate();
 		pagePaginate.setPageSize(pageSize);
 		pagePaginate.setPageNumber(pageNo);
 		pagePaginate.setTotalRow(totallyRow);
-		
+
 		pagePaginate.setList(userVO);
-		
+
 		return pagePaginate;
 	}
-	
+
 	public Object getTypes(Integer pageNo, Integer pageSize) {
 		return Db.paginate(pageNo, pageSize, userTypeSelectSql, userTypeNonSelectSql);
 	}

@@ -13,7 +13,7 @@ import com.jimi.uw_server.util.ResultUtil;
 public class LogController extends Controller {
 
 	private static LogService logService = Enhancer.enhance(LogService.class);
-	
+
 	public void select(String table, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
 		renderJson(ResultUtil.succeed(logService.selectLog(table, pageNo, pageSize, ascBy, descBy, filter)));
 	}

@@ -15,7 +15,7 @@ import com.jimi.uw_server.util.ResultUtil;
  * @createTime 2018年6月8日
  */
 public class MaterialController extends Controller {
-	
+
 	private static MaterialService materialService = Enhancer.enhance(MaterialService.class);
 
 	// 统计物料类型信息
@@ -30,23 +30,21 @@ public class MaterialController extends Controller {
 		if (entities != null) {
 			renderJson(ResultUtil.succeed(entities));
 		} else {
-			renderJson(ResultUtil.failed());
+			renderJson(ResultUtil.failed("该物料类型暂无库存！"));
 		}
 	}
-	
+
 	// 添加物料类型#
-//	@Access({"SuperAdmin"})
 	public void add(@Para("") MaterialType materialType) {
 		if(materialService.add(materialType)) {
 			renderJson(ResultUtil.succeed());
 		}else {
-			renderJson(ResultUtil.failed());
+			renderJson(ResultUtil.failed(412));
 			throw new OperationException("该物料已存在，请不要输入重复的物料类型号！");
 		}
 	}
 
     // 更新物料类型#
-//	@Access({"SuperAdmin"})
 	public void update(@Para("") MaterialType materialType) {
 		if(materialService.update(materialType)) {
 			renderJson(ResultUtil.succeed());

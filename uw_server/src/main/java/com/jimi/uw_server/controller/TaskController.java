@@ -18,10 +18,10 @@ import com.jimi.uw_server.util.ResultUtil;
  * @createTime 2018年6月8日
  */
 public class TaskController extends Controller {
-	
+
 	private static TaskService taskService = Enhancer.enhance(TaskService.class);
-	
-	public void create(@Para("") Task task, @Para("") PackingListItem packingListItem, @Para("") MaterialType materialType, UploadFile file, Integer type) {
+
+	public void create(@Para("") Task task, @Para("") PackingListItem packingListItem, @Para("") MaterialType materialType, UploadFile file, Integer type) throws Exception {
 		file = getFile();
 		String fileName = file.getFileName();
 		String fullFileName = file.getUploadPath() + "\\" + file.getFileName();
@@ -32,7 +32,7 @@ public class TaskController extends Controller {
 			renderJson(ResultUtil.failed());
 		}
 	}
-	
+
 	public void pass(@Para("") Task task, Integer id) {
 		if(taskService.pass(task, id)) {
 			renderJson(ResultUtil.succeed());
@@ -40,7 +40,7 @@ public class TaskController extends Controller {
 			renderJson(ResultUtil.failed());
 		}
 	}
-	
+
 	public void start(@Para("") Task task, Integer id, Integer window) {
 		if(taskService.start(task, id, window)) {
 			renderJson(ResultUtil.succeed());

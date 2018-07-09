@@ -1,5 +1,6 @@
 package com.jimi.uw_server.model.vo;
 
+import com.jimi.uw_server.model.Material;
 import com.jimi.uw_server.model.MaterialType;
 
 /**
@@ -12,36 +13,25 @@ public class MaterialTypeVO extends MaterialType{
 	 * 
 	 */
 	private static final long serialVersionUID = 6512994067269010575L;
-
-	private boolean enabled;
+	
+	private static final String searchMaterialType = "SELECT * FROM material WHERE type = ?";
 
 	private String enabledString;
 	
 	private Integer quantity;
-	
 
-	public boolean isEnabled() {
-		return enabled;
-	}
-
-	public void setEnabled(boolean enabled) {
-		this.enabled = enabled;
-	}
-
-	public void setEnabledString(String enabledString) {
-		this.enabledString = enabledString;
-	}
-
-	public void setQuantity(Integer quantity) {
-		this.quantity = quantity;
-	}
-
-	public Integer getQuantity() {
+	public Integer getQuantity(Integer id) {
+		Material material = Material.dao.findFirst(searchMaterialType, id);
+		if (material == null) {
+			quantity = 0;
+		} else {
+			quantity = material.getRemainderQuantity();
+		}
 		return quantity;
 	}
 	
-	public String getEnabledString() {
-		if (this.isEnabled()) {
+	public String getEnabledString(boolean enabled) {
+		if (enabled) {
 			this.enabledString = "是";
 		} else {
 			this.enabledString = "否";
@@ -50,7 +40,7 @@ public class MaterialTypeVO extends MaterialType{
 	}
 
 	public MaterialTypeVO(Integer id, String no, Integer area, Integer row, Integer col, Integer height, 
-			boolean enabled, Integer quantity) {
+			boolean enabled) {
 		this.setId(id);
 		this.setNo(no);
 		this.setArea(area);
@@ -58,9 +48,9 @@ public class MaterialTypeVO extends MaterialType{
 		this.setCol(col);
 		this.setHeight(height);
 		this.setEnabled(enabled);
-		this.set("enabledString", getEnabledString());
+		this.set("enabledString", getEnabledString(enabled));
 //		this.setIsOnShelf(isOnShelf);
-		this.set("quantity", quantity);
+		this.set("quantity", getQuantity(id));
 	}
 
 }

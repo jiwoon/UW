@@ -15,15 +15,12 @@ import com.jimi.uw_server.util.ResultUtil;
  */
 public class RobotController extends Controller {
 
-//	private static SelectService daoService = Enhancer.enhance(SelectService.class);
-	
 	private static RobotService robotService = Enhancer.enhance(RobotService.class);
-	
+
 	public void select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
 		renderJson(ResultUtil.succeed(robotService.select(pageNo, pageSize, ascBy, descBy, filter)));
 	}
-	
-//	@Access({"SuperAdmin"})
+
 	@ActionKey("/manage/robot/switch")
 	public void robotSwitch(Integer id, Integer enabled) {
 		if(robotService.robotSwitch(id, enabled)) {
