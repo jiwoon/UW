@@ -168,7 +168,7 @@ public class TaskService {
 						
 					// 获取将要入库/出库的物料的库存数量
 					MaterialType checkQuantitySql = materialType.findFirst(getQuantitySql, packingList.getNo());
-					Integer remainderQuantity = checkQuantitySql.get("remainderQuantity");
+					Integer remainderQuantity = Integer.parseInt(checkQuantitySql.get("remainderQuantity").toString());
 						
 					if(taskType == 1) {
 						// 逐条判断库存是否足够，若是，则插入套料单数据；
