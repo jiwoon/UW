@@ -69,4 +69,4 @@ uw_server/bin/
 /AGVMockServer/target/tomcat/logs/access_log.2018-07-04
 /AGVMockServer/target/tomcat/work/Tomcat/localhost/AGVMockServer/org/apache/jsp/index_jsp.java
 /AGVMockServer/target/tomcat/work/Tomcat/localhost/WsTest/org/apache/jsp/index_jsp.java
-
+AGVMockServer/.classpath
