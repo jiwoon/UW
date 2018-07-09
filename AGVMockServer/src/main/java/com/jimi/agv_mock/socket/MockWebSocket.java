@@ -64,7 +64,7 @@ public class MockWebSocket {
 		}
 		//转换成实体类
 		AGVMoveCmd moveCmd = JSON.parseObject(message, AGVMoveCmd.class);
-		new TaskThread(this, moveCmd).run();
+		new TaskThread(this, moveCmd).start();
     }
 
 

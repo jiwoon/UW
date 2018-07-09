@@ -40,7 +40,8 @@ public class TaskThread extends Thread{
 		
 		
 		try {
-			sleep(Constant.GET_CMD_DELAY);
+			sleep((long) (Constant.GET_CMD_DELAY * (1 + ((new Random().nextInt() 
+					% Constant.FLOATING_PERCENTAGE) / 100.0))));
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -49,7 +50,8 @@ public class TaskThread extends Thread{
 		socket.sendMessage(JSON.toJSONString(statusCmd));
 		
 		try {
-			sleep(Constant.FIRST_ACTION_DELAY);
+			sleep((long) (Constant.FIRST_ACTION_DELAY * (1 + ((new Random().nextInt() 
+					% Constant.FLOATING_PERCENTAGE) / 100.0))));
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -58,7 +60,8 @@ public class TaskThread extends Thread{
 		socket.sendMessage(JSON.toJSONString(statusCmd));
 		
 		try {
-			sleep(Constant.SECOND_ACTION_DELAY);
+			sleep((long) (Constant.SECOND_ACTION_DELAY * (1 + ((new Random().nextInt() 
+					% Constant.FLOATING_PERCENTAGE) / 100.0))));
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}

@@ -2,6 +2,7 @@ package com.jimi.uw_server.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -154,7 +155,7 @@ public class TaskService {
 						
 					// 获取将要入库/出库的物料的库存数量
 					MaterialType checkQuantitySql = materialType.findFirst(getQuantitySql, packingList.getNo());
-					Integer remainderQuantity = checkQuantitySql.get("remainder_quantity");
+					Integer remainderQuantity = Integer.parseInt(checkQuantitySql.get("remainderQuantity").toString());
 						
 					if(taskType == 1) {
 						// 逐条判断库存是否足够，若是，则插入套料单数据；

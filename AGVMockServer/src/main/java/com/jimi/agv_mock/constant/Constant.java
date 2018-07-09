@@ -14,6 +14,8 @@ public class Constant {
 	
 	public static final int SECOND_ACTION_DELAY = 10000;
 	
+	public static final int FLOATING_PERCENTAGE = 20;
+	
 	public static final int[] ROBOT_IDS = new int[] {3099, 3111};
 	
 }
