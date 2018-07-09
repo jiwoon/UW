@@ -71,4 +71,6 @@ uw_server/bin/
 /AGVMockServer/target/tomcat/work/Tomcat/localhost/WsTest/org/apache/jsp/index_jsp.java
 AGVMockServer/.classpath
 AGVMockServer/target/
+AGVMockServer/.project
 uw_server/.classpath
+uw_server/.project

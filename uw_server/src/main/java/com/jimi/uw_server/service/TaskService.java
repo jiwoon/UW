@@ -172,24 +172,23 @@ public class TaskService {
 						
 					if(taskType == 1) {
 						// 逐条判断库存是否足够，若是，则插入套料单数据；
-							if (remainderQuantity >= planQuantity) {
-							System.out.println("料号为：" + packingList.getNo() +  "的物料库存充足，可以出库！");
-							// 添加物料类型id
-							MaterialType findNoSql = materialType.findFirst(getNoSql, packingList.getNo());
-							Integer materialId = findNoSql.get("id");
-							packingListItem.setMaterialTypeId(materialId);
-							// 添加计划出入库数量
-							packingListItem.setQuantity(planQuantity);
-							// 添加任务id
-							packingListItem.setTaskId(newTaskId);
-							// 保存该记录到套料单表
-							packingListItem.save();
-								
-							// 更新物料数量
-							updateMaterialQuantity(material, taskType, remainderQuantity, planQuantity, materialId);
-								
-							// new一个PackingListItem，否则前面的记录会被覆盖掉
-							packingListItem = new PackingListItem();
+						if (remainderQuantity >= planQuantity) {
+						// 添加物料类型id
+						MaterialType findNoSql = materialType.findFirst(getNoSql, packingList.getNo());
+						Integer materialId = findNoSql.getId();
+						packingListItem.setMaterialTypeId(materialId);
+						// 添加计划出入库数量
+						packingListItem.setQuantity(planQuantity);
+						// 添加任务id
+						packingListItem.setTaskId(newTaskId);
+						// 保存该记录到套料单表
+						packingListItem.save();
+
+						// 更新物料数量
+						updateMaterialQuantity(material, taskType, remainderQuantity, planQuantity, materialId);
+
+						// new一个PackingListItem，否则前面的记录会被覆盖掉
+						packingListItem = new PackingListItem();
 						} else {	// 否则，提示库存不足
 							packingListItem = new PackingListItem();
 							ErrorLogWritter.save("料号为：" + packingList.getNo() +  "的物料库存不足！");
@@ -199,7 +198,7 @@ public class TaskService {
 						// 添加物料类型id
 						MaterialType findNoSql = materialType.findFirst(getNoSql, packingList.getNo());
 						Integer materialId = findNoSql.get("id");
-							packingListItem.setMaterialTypeId(materialId);
+						packingListItem.setMaterialTypeId(materialId);
 						// 添加计划出入库数量
 						packingListItem.setQuantity(planQuantity);
 						// 添加任务id
@@ -227,7 +226,6 @@ public class TaskService {
 		
 		if (file.exists()) {
 			if (file.delete()) {
-				System.out.println("文件" + file.getName() + "删除成功！");
 			} else {
 				ErrorLogWritter.save("文件" + file.getName() + "删除失败！");
 				throw new OperationException("文件" + file.getName() + "删除失败！");
@@ -239,15 +237,13 @@ public class TaskService {
 	public static void updateMaterialQuantity(Material material, Integer taskType, Integer remainderQuantity, Integer planQuantity, Integer materialTypeId) {
 		if (taskType == 1) {
 			remainderQuantity -= planQuantity;
-			System.out.println("remainderQuantity: " + remainderQuantity);
 			material = material.findFirst(getMaterialId, materialTypeId);
-			String materialId = material.get("id");
+			String materialId = material.getId();
 			material.findById(materialId).set("remainder_quantity", remainderQuantity).update();
 		} else if (taskType == 0) {
 			remainderQuantity += planQuantity;
-			System.out.println("remainderQuantity: " + remainderQuantity);
 			material = material.findFirst(getMaterialId, materialTypeId);
-			String materialId = material.get("id");
+			String materialId = material.getId();
 			material.findById(materialId).set("remainder_quantity", remainderQuantity).update();
 		} else {
 			return ;
