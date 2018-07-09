@@ -25,6 +25,7 @@ import com.jimi.uw_server.agv.entity.AGVMoveCmd;
 import com.jimi.uw_server.agv.entity.AGVStatusCmd;
 import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.model.Robot;
+import com.jimi.uw_server.model.Task;
 import com.jimi.uw_server.util.ErrorLogWritter;
 
 /**
@@ -114,8 +115,8 @@ public class AGVWebSocket {
 			//LS:
 			for (AGVIOTaskItem item : AGVTaskItemRedisDAO.getTaskItems()) {
 				if(groupid.equals(item.toString().split("#")[0]) && item.getState() == 1) {
-					//移除taskitems里对应item
-					AGVTaskItemRedisDAO.removeTaskItem(item);
+					//更改taskitems里对应item状态为2（已拣料到站）
+					AGVTaskItemRedisDAO.updateTaskItemState(item, 2);
 					//构建SL指令，令指定robot把料送回原仓位
 					AGVMoveCmd moveCmd = createSLCmd(statusCmd, groupid, materialType, item);
 					//发送SL
@@ -123,6 +124,7 @@ public class AGVWebSocket {
 					return;
 				}
 			}
+			
 			//SL:
 			//在数据库标记所有处于该坐标的物料为在架
 			List<MaterialType> specifiedPositionMaterialTypes = MaterialType.dao.find(SPECIFIED_POSITION_MATERIAL_TYEP_SQL,
@@ -131,6 +133,26 @@ public class AGVWebSocket {
 				mt.setIsOnShelf(true);
 				mt.update();
 			}
+			
+			/*
+			 * 判断该groupid所在的任务是否全部条目状态为2（已拣料到站），如果是，则清除所有该任务id对应的条目，
+			 * 释放内存，并修改数据库任务状态
+			*/
+			boolean isAllFinish = true;
+			for (AGVIOTaskItem item : AGVTaskItemRedisDAO.getTaskItems()) {
+				if(groupid.split(":")[3].equals(item.toString().split("#")[0].split(":")[3]) && item.getState() != 2) {
+					isAllFinish = false;
+				}
+			}
+			if(isAllFinish) {
+				int taskId = Integer.valueOf(groupid.split(":")[3]);
+				AGVTaskItemRedisDAO.removeTaskItemByTaskId(taskId);
+				Task task = new Task();
+				task.setId(taskId);
+				task.setState(3);
+				task.update();
+			}
+			
 			//调用指令发送发方法发送下一条指令
 			sendIOCmd();
 		} catch (Exception e) {
@@ -182,8 +204,8 @@ public class AGVWebSocket {
 			while(cn != 0 && a != taskItems.size()) {
 				AGVIOTaskItem item = taskItems.get(a);
 				MaterialType materialType = mtc.get(item.getMaterialTypeId());
-				//判断是否在架
-				if (materialType.getIsOnShelf()) {
+				//判断是否在架并且状态是否为0（未分配）
+				if (materialType.getIsOnShelf() && item.getState() == 0) {
 					//在mtc内标记所有处于该坐标的物料不在架
 					for (MaterialType mt : mtc.values()) {
 						if(materialType.getRow() == mt.getRow() && 
