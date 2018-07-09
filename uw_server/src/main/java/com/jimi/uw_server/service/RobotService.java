@@ -11,6 +11,11 @@ import com.jimi.uw_server.model.vo.RobotVO;
 import com.jimi.uw_server.service.base.SelectService;
 import com.jimi.uw_server.service.entity.PagePaginate;
 
+/**
+ * 叉车业务层
+ * @author HardyYao
+ * @createTime 2018年6月8日
+ */
 public class RobotService extends SelectService {
 	
 	private static SelectService selectService = Enhancer.enhance(SelectService.class);
@@ -20,12 +25,11 @@ public class RobotService extends SelectService {
 		
 		Page<Record> result = selectService.select("robot", pageNo, pageSize, ascBy, descBy, filter);
 		
-		int totallyRow =  0;
+		int totallyRow =  result.getTotalRow();
 		for (Record res : result.getList()) {
 			RobotVO r = new RobotVO(res.get("id"), res.get("status"), res.get("battery"),
 					res.get("x"), res.get("y"), res.get("enabled"));
 			robotVO.add(r);
-			totallyRow++;
 		}
 		
 		PagePaginate pagePaginate = new PagePaginate();

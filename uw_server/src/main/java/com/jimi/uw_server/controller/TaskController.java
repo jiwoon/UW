@@ -12,6 +12,11 @@ import com.jimi.uw_server.model.Window;
 import com.jimi.uw_server.service.TaskService;
 import com.jimi.uw_server.util.ResultUtil;
 
+/**
+ * 任务控制层
+ * @author HardyYao
+ * @createTime 2018年6月8日
+ */
 public class TaskController extends Controller {
 	
 	private static TaskService taskService = Enhancer.enhance(TaskService.class);

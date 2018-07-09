@@ -76,3 +76,4 @@ uw_server/bin/
 /AGVMockServer/target/tomcat/logs/access_log.2018-07-09
 /uw_server/.classpath
 /uw_server/.project
+/AGVMockServer/.classpath

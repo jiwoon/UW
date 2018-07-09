@@ -9,6 +9,11 @@ import com.jimi.uw_server.service.UserService;
 import com.jimi.uw_server.util.ResultUtil;
 import com.jimi.uw_server.util.TokenBox;
 
+/**
+ * 用户控制层
+ * @author HardyYao
+ * @createTime 2018年6月8日
+ */
 public class UserController extends Controller {
 
 	private UserService userService = Enhancer.enhance(UserService.class);

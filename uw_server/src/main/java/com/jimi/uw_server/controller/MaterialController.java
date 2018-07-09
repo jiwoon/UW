@@ -9,6 +9,11 @@ import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.service.MaterialService;
 import com.jimi.uw_server.util.ResultUtil;
 
+/**
+ * 物料控制层
+ * @author HardyYao
+ * @createTime 2018年6月8日
+ */
 public class MaterialController extends Controller {
 	
 	private static MaterialService materialService = Enhancer.enhance(MaterialService.class);
@@ -26,7 +31,6 @@ public class MaterialController extends Controller {
 			renderJson(ResultUtil.succeed(entities));
 		} else {
 			renderJson(ResultUtil.failed());
-			throw new OperationException("该物料不存在，请输入正确的物料类型号！");
 		}
 	}
 	
