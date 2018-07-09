@@ -17,9 +17,8 @@ import cc.darhao.dautils.api.MD5Util;
 
 /**
  * 用户业务层
- * <br>
- * <b>2018年5月29日</b>
- * @author 沫熊工作室 <a href="http://www.darhao.cc">www.darhao.cc</a>
+ * @author HardyYao
+ * @createTime 2018年6月8日
  */
 public class UserService extends SelectService{
 	
@@ -66,12 +65,11 @@ public class UserService extends SelectService{
 		
 		Page<Record> result = selectService.select("user", pageNo, pageSize, ascBy, descBy, filter);
 		
-		int totallyRow =  0;
+		int totallyRow =  result.getTotalRow();
 		
 		for (Record res : result.getList()) {
 			UserVO u = new UserVO(res.get("uid"), res.get("password"), res.get("name"), res.get("type"), res.get("enabled"));
 			userVO.add(u);
-			totallyRow++;
 		}
 		
 		PagePaginate pagePaginate = new PagePaginate();

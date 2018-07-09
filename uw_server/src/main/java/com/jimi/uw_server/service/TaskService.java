@@ -24,6 +24,11 @@ import com.jimi.uw_server.service.entity.PagePaginate;
 import com.jimi.uw_server.util.ErrorLogWritter;
 import com.jimi.uw_server.util.ExcelHelper;
 
+/**
+ * 任务业务层
+ * @author HardyYao
+ * @createTime 2018年6月8日
+ */
 public class TaskService {
 	
 	private static SelectService selectService = Enhancer.enhance(SelectService.class);
@@ -109,12 +114,21 @@ public class TaskService {
 	public Object select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
 		List<TaskVO> taskVO = new ArrayList<TaskVO>();
 		
+		if (filter != null) {
+//			if (filter.contains("createTimeString")) {
+//				filter = filter.replace("createTimeString", "create_time");
+//			} 
+			if (filter.contains("fileName")) {
+				filter = filter.replace("fileName", "file_name");
+			}
+		}
+		
 		Page<Record> result = selectService.select("task", pageNo, pageSize, ascBy, descBy, filter);
-		int totallyRow =  0;
+		
+		int totallyRow =  result.getTotalRow();
 		for (Record res : result.getList()) {
 			TaskVO t = new TaskVO(res.get("id"), res.get("state"), res.get("type"), res.get("file_name"), res.get("create_time"));
 			taskVO.add(t);
-			totallyRow++;
 		}
 		
 		PagePaginate pagePaginate = new PagePaginate();
@@ -154,7 +168,7 @@ public class TaskService {
 						
 					// 获取将要入库/出库的物料的库存数量
 					MaterialType checkQuantitySql = materialType.findFirst(getQuantitySql, packingList.getNo());
-					Integer remainderQuantity = checkQuantitySql.get("remainder_quantity");
+					Integer remainderQuantity = checkQuantitySql.get("remainderQuantity");
 						
 					if(taskType == 1) {
 						// 逐条判断库存是否足够，若是，则插入套料单数据；

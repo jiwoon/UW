@@ -14,9 +14,8 @@ import com.jimi.uw_server.service.entity.PagePaginate;
 
 /**
  * 物料业务层
- * <br>
- * <b>2018年5月29日</b>
- * @author 沫熊工作室 <a href="http://www.darhao.cc">www.darhao.cc</a>
+ * @author HardyYao
+ * @createTime 2018年6月8日
  */
 public class MaterialService extends SelectService{
 	
@@ -35,6 +34,12 @@ public class MaterialService extends SelectService{
 		
 		if (filter != null) {
 			filter = filter + "&material_type.enabled=1";
+			if (filter.contains("col")) {
+				filter = filter.replace("col", "material_type.col");
+			}
+			if (filter.contains("row")) {
+				filter = filter.replace("row", "material_type.row");
+			}
 		} else {
 			filter = "material_type.enabled=1";
 		}
@@ -42,13 +47,12 @@ public class MaterialService extends SelectService{
 		Page<Record> result = selectService.select(new String[] {"material_type", "material"}, new String[] {"material.type=material_type.id"},
 				pageNo, pageSize, ascBy, descBy, filter);
 		
-		int totallyRow =  0;
+		int totallyRow =  result.getTotalRow();
 		for (Record res : result.getList()) {
 			MaterialTypeVO m = new MaterialTypeVO(res.get("MaterialType_Id"), res.get("MaterialType_No"), res.get("MaterialType_Area"),
 					res.get("MaterialType_Row"), res.get("MaterialType_Col"), res.get("MaterialType_Height"), res.get("MaterialType_Enabled"),
 					res.get("Material_RemainderQuantity"));
 			materialTypeVO.add(m);
-			totallyRow++;
 		}
 		
 		PagePaginate pagePaginate = new PagePaginate();

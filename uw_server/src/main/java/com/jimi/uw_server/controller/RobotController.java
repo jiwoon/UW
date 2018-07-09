@@ -8,6 +8,11 @@ import com.jimi.uw_server.service.RobotService;
 //import com.jimi.uw_server.service.base.SelectService;
 import com.jimi.uw_server.util.ResultUtil;
 
+/**
+ * 叉车控制层
+ * @author HardyYao
+ * @createTime 2018年6月8日
+ */
 public class RobotController extends Controller {
 
 //	private static SelectService daoService = Enhancer.enhance(SelectService.class);

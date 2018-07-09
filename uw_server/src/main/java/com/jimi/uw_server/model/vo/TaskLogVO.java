@@ -4,6 +4,7 @@ import java.util.Date;
 
 import com.jimi.uw_server.model.Material;
 import com.jimi.uw_server.model.MaterialType;
+import com.jimi.uw_server.model.Task;
 import com.jimi.uw_server.model.TaskLog;
 import com.jimi.uw_server.model.User;
 
@@ -20,7 +21,7 @@ public class TaskLogVO extends TaskLog {
 	
 	private String autoString;
 
-	private String taskType;
+	private String taskTypeString;
 	
 	private String materialNo;
 	
@@ -36,16 +37,18 @@ public class TaskLogVO extends TaskLog {
 	}
 
 	public String getTaskType(Integer taskId) {
-		if (taskId == 0) {
-			this.taskType = "入库";
-		} else if (taskId == 1) {
-			this.taskType = "出库";
-		} else if (taskId == 2) {
-			this.taskType = "盘点";
-		}  else if (taskId == 3) {
-			this.taskType = "位置优化";
+		Task task  = Task.dao.findById(taskId);
+		Integer taskType = task.getType();
+		if (taskType == 0) {
+			this.taskTypeString = "入库";
+		} else if (taskType == 1) {
+			this.taskTypeString = "出库";
+		} else if (taskType == 2) {
+			this.taskTypeString = "盘点";
+		}  else if (taskType == 3) {
+			this.taskTypeString = "位置优化";
 		}
-		return taskType;
+		return taskTypeString;
 	}
 
 	public String getOperatorName(String operator) {
@@ -62,7 +65,7 @@ public class TaskLogVO extends TaskLog {
 		return materialNo;
 	}
 
-	public TaskLogVO(Integer id, Integer taskId, String taskType, String materialId, Integer quantity,
+	public TaskLogVO(Integer id, Integer taskId, String materialId, Integer quantity,
 			String operator, boolean auto, Date time) {
 		this.setId(id);
 		this.set("taskId", taskId);

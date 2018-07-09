@@ -8,6 +8,10 @@ import com.jimi.uw_server.model.Robot;
  */
 public class RobotVO extends Robot{
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7771022031487042995L;
 	private String enableString;
 	
 
