@@ -28,7 +28,7 @@ import com.jimi.uw_server.model.Robot;
 import com.jimi.uw_server.util.ErrorLogWritter;
 
 /**
- * 该类的所有方法由AGVCommunicator调用，请勿在其他地方调用
+ * 与AGV服务器进行通讯的类
  * <br>
  * <b>2018年6月15日</b>
  * @author 沫熊工作室 <a href="http://www.darhao.cc">www.darhao.cc</a>
