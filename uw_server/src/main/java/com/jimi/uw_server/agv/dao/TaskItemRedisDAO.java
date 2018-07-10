@@ -11,7 +11,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import com.jfinal.plugin.redis.Cache;
 import com.jfinal.plugin.redis.Redis;
 import com.jimi.uw_server.agv.entity.AGVIOTaskItem;
-import com.jimi.uw_server.agv.socket.AGVWebSocket;
+import com.jimi.uw_server.agv.handle.LSSLHandler;
 
 /**
  * AGV任务条目Redis数据访问对象
@@ -19,7 +19,7 @@ import com.jimi.uw_server.agv.socket.AGVWebSocket;
  * <b>2018年6月15日</b>
  * @author 沫熊工作室 <a href="http://www.darhao.cc">www.darhao.cc</a>
  */
-public class AGVTaskItemRedisDAO {
+public class TaskItemRedisDAO {
 
 	private static Cache cache = Redis.use();
 	
@@ -62,7 +62,7 @@ public class AGVTaskItemRedisDAO {
 		cache.del("til");
 		cache.lpush("til", items.toArray());
 		if(callSendIOCmdMethod) {
-			AGVWebSocket.me.sendIOCmd();
+			LSSLHandler.sendLS();
 		}
 	}
 	
