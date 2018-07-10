@@ -17,7 +17,7 @@
 </template>
 
 <script>
-  import { mapActions} from 'vuex';
+  import {mapActions} from 'vuex';
   import store from '../../../../store'
   import {axiosPost} from "../../../../utils/fetchData";
   import {materialEntityUrl} from "../../../../config/globalUrl";
@@ -47,13 +47,12 @@
         isPending: false
       }
     },
-    computed: {
-    },
+    computed: {},
     mounted() {
       this.fetchData(store.state.materialDetails)
     },
     methods: {
-      ...mapActions(['setDetailsActiveState','setDetailsData', 'setLoading']),
+      ...mapActions(['setDetailsActiveState', 'setDetailsData', 'setLoading']),
       init: function () {
         this.data = [];
         this.total = 0;
@@ -72,6 +71,8 @@
             if (response.data.result === 200) {
               this.data = response.data.data.list;
               this.total = response.data.data.totalRow;
+            } else if (response.data.result === 501) {
+              alert(response.data.data)
             } else {
               errHandler(response.data.result)
             }
@@ -120,7 +121,8 @@
     box-shadow: 3px 3px 20px 1px #bbb;
     padding: 30px 60px 10px 60px;
   }
-  #cancel-btn{
+
+  #cancel-btn {
     height: 100%;
     cursor: pointer;
   }

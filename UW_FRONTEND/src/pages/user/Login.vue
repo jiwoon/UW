@@ -8,7 +8,7 @@
         <form @submit.prevent="loginSubmit">
           <div class="form-group mb-4 mt-4">
             <label for="login-username">用户名</label>
-            <input type="text" id="login-username" class="form-control" placeholder="用户名" v-model="loginInfos.userName">
+            <input type="text" id="login-username" class="form-control" placeholder="用户名" v-model="loginInfos.uid">
           </div>
           <div class="form-group mb-2">
             <label for="login-password">密 码</label>
@@ -45,7 +45,7 @@
         pageHeight: 0,
         isPending: false,
         loginInfos: {
-          "userName": "",
+          "uid": "",
           "password": "",
           //"#TOKEN#": ""
           //checked: false

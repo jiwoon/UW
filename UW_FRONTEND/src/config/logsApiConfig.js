@@ -13,6 +13,15 @@ export const getLogsConfig = (name) => {
     return POSITION_CONFIG;
   }
 };
+export const getLogsQuery = (name) => {
+  if (name === 'task_log') {
+    return TASK_QUERY;
+  } else if (name === 'action_log') {
+    return ACTION_QUERY;
+  } else if (name === 'position_log') {
+    return POSITION_QUERY;
+  }
+};
 
 const TASK_CONFIG = [
   {field: "id", title: '序号', visible: false},
@@ -22,7 +31,7 @@ const TASK_CONFIG = [
   {field: "materialId", title: '物料ID', colStyle: {'width': '70px'}},
   {field: "materialNo", title: '料号', colStyle: {'width': '120px'}},
   {field: "quantity", title: '数量', colStyle: {'width': '70px'}},
-  {field: "operator", title: '操作员ID', colStyle: {'width': '70px'}},
+  {field: "operator", title: '操作员ID', colStyle: {'width': '80px'}},
   {field: "operatorName", title: '操作员', colStyle: {'width': '70px'}},
   {field: "auto", title: '是否自动', colStyle: {'width': '70px'}},
   {field: "time", title: '时间', colStyle: {'width': '170px'}}
@@ -52,4 +61,77 @@ const POSITION_CONFIG = [
   {field: "newCol", title: '新列号', colStyle: {'width': '70px'}},
   {field: "newHeight", title: '新高度', colStyle: {'width': '70px'}},
   {field: "time",title: '时间',  colStyle: {'width': '170px'}}
+];
+
+
+const ACTION_QUERY = [
+  {
+    id: 'ip',
+    name: 'IP地址',
+    model:'',
+    type: 'text'
+  },
+  {
+    id: 'uid',
+    name: '用户',
+    model: '',
+    type: 'text'
+  },
+  {
+    id: 'time',
+    name: '时间',
+    modelTo: '',
+    modelFrom: '',
+    type: 'date'
+  }
+];
+
+const TASK_QUERY = [
+  {
+    id: 'taskId',
+    name: '任务ID',
+    model: '',
+    type: 'text'
+  },
+  {
+    id: 'taskType',
+    name: '任务类型',
+    model: '',
+    type: 'text'
+  },
+  {
+    id: 'materialNo',
+    name: '料号',
+    model: '',
+    type: 'text'
+  },
+  {
+    id: 'operator',
+    name: '操作员ID',
+    model: '',
+    type: 'text'
+  },
+  {
+    id: 'time',
+    name: '时间',
+    modelTo: '',
+    modelFrom: '',
+    type: 'date'
+  }
+];
+
+const POSITION_QUERY = [
+  {
+    id: 'materialNo',
+    name: '料号',
+    model: '',
+    type: 'text'
+  },
+  {
+    id: 'time',
+    name: '时间',
+    modelTo: '',
+    modelFrom: '',
+    type: 'date'
+  }
 ];

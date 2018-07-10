@@ -29,7 +29,7 @@
       <!--<div class="icon-container">-->
       <!--<div class="setting-icon"></div>-->
       <!--</div>-->
-      <!--<div class="mt-auto w-100">-->
+      <div class="mt-auto w-100">
         <!--<div class="icon-container " :class="activeItem === 'users' ? 'icon-active' : ''"-->
              <!--@click="initData('users')">-->
           <!--<div class="setting-icon">-->
@@ -37,13 +37,13 @@
           <!--</div>-->
           <!--<span>用户</span>-->
         <!--</div>-->
-        <!--<div class="icon-container" @click="logout">-->
-          <!--<div class="setting-icon">-->
-            <!--<icon name="power" scale="1.6" style="color: #fff;"></icon>-->
-          <!--</div>-->
-          <!--<span>登出</span>-->
-        <!--</div>-->
-      <!--</div>-->
+        <div class="icon-container" @click="logout">
+          <div class="setting-icon">
+            <icon name="power" scale="1.6" style="color: #fff;"></icon>
+          </div>
+          <span>登出</span>
+        </div>
+      </div>
     </div>
   </div>
 </template>

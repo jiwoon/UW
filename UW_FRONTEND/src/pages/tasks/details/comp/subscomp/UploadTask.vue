@@ -40,7 +40,7 @@
   import {taskCreateUrl} from "../../../../../config/globalUrl";
   import {axiosPost} from "../../../../../utils/fetchData";
   import {errHandler} from "../../../../../utils/errorHandler";
-
+  import store from '../../../../../store'
   export default {
     name: "UploadTask",
     data() {
@@ -78,6 +78,7 @@
               }
             }
             formData.append('type', this.taskType);
+            formData.append('#TOKEN#', store.state.token);
             let config = {
               header: {
                 'Content-Type': 'multipart/form-data'

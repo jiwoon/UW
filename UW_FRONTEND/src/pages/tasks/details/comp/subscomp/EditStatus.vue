@@ -6,24 +6,25 @@
           <h3>更新任务状态：</h3>
         </div>
       </div>
-      <div class="form-row" v-if="originState === '0'">
+      <div class="form-row" v-if="originState === '0' || originState === '1' || originState === '2'">
         <label for="examine-select" class="col-form-label">状态更改:</label>
         <select id="examine-select" class="custom-select"
                 v-model="thisState">
           <option :value="originState" disabled>请选择</option>
-          <option value="1">通过审核</option>
-          <option value="4">作废任务</option>
-        </select>
-      </div>
-      <div class="form-row" v-else-if="originState === '1'">
-        <label for="status-select" class="col-form-label">状态更改:</label>
-        <select id="status-select" class="custom-select"
-                v-model="thisState" >
-          <option :value="originState" disabled>请选择</option>
-          <option value="2">开始任务</option>
+          <option value="1" v-if="originState === '0'">通过审核</option>
+          <option value="2" v-if="originState === '1'">开始任务</option>
           <option value="3">作废任务</option>
         </select>
       </div>
+      <!--<div class="form-row" v-else-if="originState === '1'">-->
+        <!--<label for="status-select" class="col-form-label">状态更改:</label>-->
+        <!--<select id="status-select" class="custom-select"-->
+                <!--v-model="thisState" >-->
+          <!--<option :value="originState" disabled>请选择</option>-->
+          <!--<option value="2">开始任务</option>-->
+          <!--<option value="3">作废任务</option>-->
+        <!--</select>-->
+      <!--</div>-->
       <div class="form-row" v-else>
         <label for="status-else-select" class="col-form-label">状态更改:</label>
         <select id="status-else-select" class="custom-select"
@@ -41,7 +42,7 @@
       <div class="dropdown-divider"></div>
       <div class="form-row justify-content-around">
         <button class="btn btn-secondary col mr-1 text-white" @click="closeEditPanel">取消</button>
-        <button class="btn btn-primary col ml-1 text-white" @click="submitUpdate" :disabled="originState > 1">提交</button>
+        <button class="btn btn-primary col ml-1 text-white" @click="submitUpdate" :disabled="originState > 2">提交</button>
       </div>
     </div>
   </div>
@@ -111,6 +112,10 @@
               }
             };
             if (this.thisState === '2') {
+              if (this.windowVal === "") {
+                alert("请选择仓口");
+                return;
+              }
               options.data.window = this.windowVal
             }
             axiosPost(options).then(res => {
