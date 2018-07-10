@@ -11,7 +11,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import com.jfinal.plugin.redis.Cache;
 import com.jfinal.plugin.redis.Redis;
 import com.jimi.uw_server.agv.entity.AGVIOTaskItem;
-import com.jimi.uw_server.agv.handle.LSSLHandler;
 
 /**
  * AGV任务条目Redis数据访问对象
@@ -62,7 +61,7 @@ public class TaskItemRedisDAO {
 		cache.del("til");
 		cache.lpush("til", items.toArray());
 		if(callSendIOCmdMethod) {
-			LSSLHandler.sendLS();
+//			LSSLHandler.sendLS();
 		}
 	}
 	

@@ -17,7 +17,7 @@ import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
 
 import com.jfinal.json.Json;
-import com.jimi.uw_server.agv.dao.AGVTaskItemRedisDAO;
+import com.jimi.uw_server.agv.dao.TaskItemRedisDAO;
 import com.jimi.uw_server.agv.entity.AGVBaseCmd;
 import com.jimi.uw_server.agv.entity.AGVIOTaskItem;
 import com.jimi.uw_server.agv.entity.AGVMissionGroup;
@@ -113,10 +113,10 @@ public class AGVWebSocket {
 			
 			//判断是LS指令还是SL指令第二动作完成，能在taskitems找到说明是LS，反之是SL
 			//LS:
-			for (AGVIOTaskItem item : AGVTaskItemRedisDAO.getTaskItems()) {
+			for (AGVIOTaskItem item : TaskItemRedisDAO.getTaskItems()) {
 				if(groupid.equals(item.toString().split("#")[0]) && item.getState() == 1) {
 					//更改taskitems里对应item状态为2（已拣料到站）
-					AGVTaskItemRedisDAO.updateTaskItemState(item, 2);
+					TaskItemRedisDAO.updateTaskItemState(item, 2);
 					//构建SL指令，令指定robot把料送回原仓位
 					AGVMoveCmd moveCmd = createSLCmd(statusCmd, groupid, materialType, item);
 					//发送SL
@@ -139,14 +139,14 @@ public class AGVWebSocket {
 			 * 释放内存，并修改数据库任务状态
 			*/
 			boolean isAllFinish = true;
-			for (AGVIOTaskItem item : AGVTaskItemRedisDAO.getTaskItems()) {
+			for (AGVIOTaskItem item : TaskItemRedisDAO.getTaskItems()) {
 				if(groupid.split(":")[3].equals(item.toString().split("#")[0].split(":")[3]) && item.getState() != 2) {
 					isAllFinish = false;
 				}
 			}
 			if(isAllFinish) {
 				int taskId = Integer.valueOf(groupid.split(":")[3]);
-				AGVTaskItemRedisDAO.removeTaskItemByTaskId(taskId);
+				TaskItemRedisDAO.removeTaskItemByTaskId(taskId);
 				Task task = new Task();
 				task.setId(taskId);
 				task.setState(3);
@@ -168,24 +168,24 @@ public class AGVWebSocket {
 		public void sendIOCmd() {
 			//判断til是否为空
 			List<AGVIOTaskItem> taskItems = new ArrayList<>();
-			AGVTaskItemRedisDAO.appendTaskItems(taskItems);
+			TaskItemRedisDAO.appendTaskItems(taskItems);
 			if (taskItems.isEmpty()) {
-				AGVTaskItemRedisDAO.setLcn(0);
+				TaskItemRedisDAO.setLcn(0);
 				return;
 			}
 			//统计当前有效robot数目赋值到cn
 			int cn = Robot.dao.find(ENABLED_ROBOT_SQL, 1).size();
-			int lcn = Integer.valueOf(AGVTaskItemRedisDAO.getLcn());
+			int lcn = Integer.valueOf(TaskItemRedisDAO.getLcn());
 			if (lcn > cn - 1) {
 				lcn = cn - 1;
-				AGVTaskItemRedisDAO.setLcn(lcn);
+				TaskItemRedisDAO.setLcn(lcn);
 				return;
 			}
 			int b = cn;
 			cn = cn - lcn;
 			lcn = b - 1;
 			int a = 0;
-			AGVTaskItemRedisDAO.setLcn(lcn);
+			TaskItemRedisDAO.setLcn(lcn);
 			//根据materialType表生成物料是否在架情况映射mtc
 			Map<Integer, MaterialType> mtc = new HashMap<>();
 			for (AGVIOTaskItem item : taskItems) {
@@ -225,7 +225,7 @@ public class AGVWebSocket {
 					AGVMoveCmd cmd = createLSCmd(materialType, item);
 					sendMessage(Json.getJson().toJson(cmd));
 					//更新任务条目状态为已分配
-					AGVTaskItemRedisDAO.updateTaskItemState(item, 1);
+					TaskItemRedisDAO.updateTaskItemState(item, 1);
 					cn--;
 				}
 				a++;
@@ -262,7 +262,7 @@ public class AGVWebSocket {
 		groups.add(group);
 		AGVMoveCmd moveCmd = new AGVMoveCmd();
 		moveCmd.setCmdcode("SL");
-		moveCmd.setCmdid(AGVTaskItemRedisDAO.getCmdId());
+		moveCmd.setCmdid(TaskItemRedisDAO.getCmdId());
 		moveCmd.setMissiongroups(groups);
 		return moveCmd;
 	}
@@ -281,7 +281,7 @@ public class AGVWebSocket {
 		groups.add(group);
 		AGVMoveCmd cmd = new AGVMoveCmd();
 		cmd.setCmdcode("LS");
-		cmd.setCmdid(AGVTaskItemRedisDAO.getCmdId());
+		cmd.setCmdid(TaskItemRedisDAO.getCmdId());
 		cmd.setMissiongroups(groups);
 		return cmd;
 	}
