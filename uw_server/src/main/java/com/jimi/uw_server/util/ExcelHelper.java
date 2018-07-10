@@ -182,8 +182,6 @@ public class ExcelHelper{
 				}
 				//如果是第一行则校验表头
 				if(i == startRowNum) {
-//					System.out.println(e.head());
-//					System.out.println(getString(i, e.col()));
 					if(!e.head().equals(getString(i, e.col()))){
 						throw new Exception("表头校验失败");
 					}
@@ -217,7 +215,6 @@ public class ExcelHelper{
 							break;
 					}
 					field.set(entity, value);
-//					System.out.println(value);
 				} catch (IllegalArgumentException | IllegalAccessException e1) {
 					logger.error("调用ExcelHelper.unfill()中field.set()方法时出错");
 					e1.printStackTrace();
@@ -406,28 +403,5 @@ public class ExcelHelper{
 			e.printStackTrace();
 		}
 	}
-	
-//	public static void main(String[] args) throws IOException {
-//		final List<PackingList> packingLists;
-//		String fileName = "C:\\Users\\Administrator\\Desktop\\test.xlsx";
-//		File file = new File(fileName);
-//		try {
-//			ExcelHelper fileReader = ExcelHelper.from(file);
-//			try {
-//				packingLists = fileReader.unfill(PackingList.class, 0);
-//				for (PackingList packingList : packingLists) {
-//					System.out.println(packingList.getMaterialTypeId());
-//					System.out.println(packingList.getNo());
-//					System.out.println(packingList.getQuantity());
-//				}
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//				return;				
-//			}
-//			
-//		} catch (IOException e1) {
-//			e1.printStackTrace();
-//		}
-//	}
 	
 }

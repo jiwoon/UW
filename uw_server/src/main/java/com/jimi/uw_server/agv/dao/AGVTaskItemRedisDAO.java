@@ -26,7 +26,6 @@ public class AGVTaskItemRedisDAO {
 	
 	/**
 	 * 添加任务条目，该方法会把新的任务条目插入到现有的任务列表当中，并把它们按任务id轮流排序<br>
-	 * 该方法由任务业务层的开始任务方法调用，请勿在其他地方调用
 	 */
 	public synchronized static void addTaskItem(List<AGVIOTaskItem> taskItems) {
 		//判断如果原先的任务队列为空，则在添加任务条目完成后调用sendIOCmd方法
@@ -70,13 +69,12 @@ public class AGVTaskItemRedisDAO {
 	
 	/**
 	 * 删除指定任务id的条目，注意：只能删除未分配的条目<br>
-	 * 该方法由任务业务层的作废任务方法调用，请勿在其他地方调用
 	 */
 	public synchronized static void removeTaskItemByTaskId(int taskId) {
 		for (int i = 0; i < cache.llen("til"); i++) {
 			byte[] item = cache.lindex("til", i);
 			AGVIOTaskItem agvioTaskItem = AGVIOTaskItem.fromString(new String(item));
-			if(agvioTaskItem.getTaskId() == taskId && agvioTaskItem.getState() == 0){
+			if(agvioTaskItem.getTaskId() == taskId && agvioTaskItem.getState() != 0){
 				cache.lrem("til", 1, item);
 				i--;
 			}
@@ -86,7 +84,6 @@ public class AGVTaskItemRedisDAO {
 	
 	/**
 	 * 更新任务条目状态<br>
-	 * 该方法由AGVWebSocket进行调用，请勿在其他地方调用
 	 */
 	public synchronized static void updateTaskItemState(AGVIOTaskItem taskItem, int state) {
 		for (int i = 0; i < cache.llen("til"); i++) {
@@ -104,7 +101,6 @@ public class AGVTaskItemRedisDAO {
 	
 	/**
 	 * 删除指定条目<br>
-	 * 该方法由AGVWebSocket进行调用，请勿在其他地方调用
 	 */
 	public synchronized static void removeTaskItem(AGVIOTaskItem taskItem) {
 		cache.lrem("til", 1, taskItem.toString().getBytes());

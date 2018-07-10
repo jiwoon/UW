@@ -11,7 +11,7 @@ public class PackingListItemBO {
 	@Excel(col=1, head="料号")
 	private String no;
 	@Excel(col=6, head="需求数")
-	private String quantity;
+	private Integer quantity;
 
 	public String getNo() {
 		return no;
@@ -19,10 +19,10 @@ public class PackingListItemBO {
 	public void setNo(String no) {
 		this.no = no;
 	}
-	public String getQuantity() {
+	public Integer getQuantity() {
 		return quantity;
 	}
-	public void setQuantity(String quantity) {
+	public void setQuantity(Integer quantity) {
 		this.quantity = quantity;
 	}
 

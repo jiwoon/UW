@@ -19,6 +19,7 @@ public class AGVIOTaskItem {
 	/**
 	 * 0：未分配
 	 * 1：已分配
+	 * 2：已拣料到站
 	 */
 	private int state;
 

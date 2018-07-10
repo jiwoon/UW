@@ -9,28 +9,32 @@ import com.jimi.uw_server.service.UserService;
 import com.jimi.uw_server.util.ResultUtil;
 import com.jimi.uw_server.util.TokenBox;
 
+/**
+ * 用户控制层
+ * @author HardyYao
+ * @createTime 2018年6月8日
+ */
 public class UserController extends Controller {
 
 	private UserService userService = Enhancer.enhance(UserService.class);
-	
+
 	public static final String USER_TABLE_NAME = "User";
-	
+
 	public static final String SESSION_KEY_LOGIN_USER = "loginUser";
-	
+
 	public void login(String uid, String password) {
 		User user = userService.login(uid, password);
 		//判断是否重复登录
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		if(tokenId != null) {
 			User user2 = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
-			if(user2 != null && user.getUid() == user2.getUid()) {
+			if(user2 != null && user.getUid().equals(user2.getUid())) {
 				throw new ParameterException("do not login again");
 			}
 		}
-
-		user.put(TokenBox.TOKEN_ID_KEY_NAME, TokenBox.createTokenId());
-		System.out.println("user: " + user.toString());
-		TokenBox.put(TokenBox.createTokenId(), SESSION_KEY_LOGIN_USER, user);
+		tokenId = TokenBox.createTokenId();
+		user.put(TokenBox.TOKEN_ID_KEY_NAME, tokenId);
+		TokenBox.put(tokenId, SESSION_KEY_LOGIN_USER, user);
 		renderJson(ResultUtil.succeed(user));
 	}
 
@@ -43,7 +47,6 @@ public class UserController extends Controller {
 		}
 	}
 
-//	@Access({"SuperAdmin"})
 	public void add(@Para("") User user) {
 		if(userService.add(user)) {
 			renderJson(ResultUtil.succeed());
@@ -51,8 +54,7 @@ public class UserController extends Controller {
 			renderJson(ResultUtil.failed());
 		}
 	}
-	
-//	@Access({"SuperAdmin"})
+
 	public void update(@Para("") User user) {
 		if(userService.update(user)) {
 			renderJson(ResultUtil.succeed());
@@ -60,7 +62,7 @@ public class UserController extends Controller {
 			renderJson(ResultUtil.failed());
 		}
 	}
-	
+
 	public void select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
 		renderJson(ResultUtil.succeed(userService.select(pageNo, pageSize, ascBy, descBy, filter)));
 	}
@@ -68,8 +70,7 @@ public class UserController extends Controller {
 	public void getTypes(Integer pageNo, Integer pageSize) {
 		renderJson(ResultUtil.succeed(userService.getTypes(pageNo, pageSize)));
 	}
-	
-//	@Access({"SuperAdmin"})
+
 	public void logout() {
 		//判断是否未登录
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);

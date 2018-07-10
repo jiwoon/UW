@@ -23,7 +23,7 @@ hs_err_pid*
 /.metadata/
 /.recommenders
 /RemoteSystemsTempFiles
-/uw_server/target
+/uw_server/target/
 /uw_server/target/classes/.gitignore
 /uw_server/target/classes/log4j.properties
 /uw_server/target/classes/properties.ini
@@ -49,6 +49,7 @@ hs_err_pid*
 /Document/技田AGV/~$AGV接口文档.docx
 Servers/
 uw_server/bin/
+/AGVMockServer/.settings
 /AGVMockServer/target/m2e-wtp/web-resources/META-INF/MANIFEST.MF
 /AGVMockServer/target/m2e-wtp/web-resources/META-INF/maven/cc.darhao/AGVMockServer/pom.properties
 /AGVMockServer/target/m2e-wtp/web-resources/META-INF/maven/cc.darhao/AGVMockServer/pom.xml
@@ -68,3 +69,19 @@ uw_server/bin/
 /AGVMockServer/target/tomcat/logs/access_log.2018-07-04
 /AGVMockServer/target/tomcat/work/Tomcat/localhost/AGVMockServer/org/apache/jsp/index_jsp.java
 /AGVMockServer/target/tomcat/work/Tomcat/localhost/WsTest/org/apache/jsp/index_jsp.java
+<<<<<<< HEAD
+AGVMockServer/target/
+AGVMockServer/.classpath
+AGVMockServer/.project
+uw_server/.classpath
+uw_server/.project
+=======
+
+/AGVMockServer/.classpath
+/AGVMockServer/.project
+/AGVMockServer/target/tomcat/logs/access_log.2018-07-05
+/AGVMockServer/target/tomcat/logs/access_log.2018-07-09
+/uw_server/.classpath
+/uw_server/.project
+/AGVMockServer/.classpath
+>>>>>>> 3eba0a5ae39f34f53aaa9eb5e4ba357c310d022b
