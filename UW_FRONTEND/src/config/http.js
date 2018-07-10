@@ -9,17 +9,18 @@ axios.defaults.baseURL = window.g.API_URL + '/mes_server/';
 
 axios.interceptors.request.use(
   config => {
+    console.log(config.headers)
     //console.log(store.state.token)
-    if (store.state.token !== '') {
-      if (config.data === "") {
-        config.data += ("#TOKEN#=" + store.state.token);
-      } else {
-        config.data += ("&#TOKEN#=" + store.state.token);
+    if (config.headers['Content-type'] === "application/x-www-form-urlencoded; charset=UTF-8") {
+      if (store.state.token !== '') {
+        if (config.data === "") {
+          config.data += ("#TOKEN#=" + store.state.token);
+        } else {
+          config.data += ("&#TOKEN#=" + store.state.token);
+        }
+
+        //console.log(config)
       }
-
-
-
-      //console.log(config)
     }
     return config;
   },

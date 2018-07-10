@@ -20,6 +20,7 @@
   import {mapGetters, mapActions} from 'vuex';
   import {logsUrl} from "../../../../config/globalUrl";
   import {axiosPost} from "../../../../utils/fetchData";
+  import {getLogsQuery} from "../../../../config/logsApiConfig";
   import {Settings} from 'luxon'
   import {Datetime} from 'vue-datetime'
   import 'vue-datetime/dist/vue-datetime.css'
@@ -30,8 +31,8 @@
     components: {
       'text-comp': {
         props: ['opt', 'callback'],
-        template: '<di v class="form-group col pr-3"">\n' +
-        '           <label :for="opt.id">{{opt.name}}</label>\n' +
+        template: '<div class="form-group col pr-3"">\n' +
+        '           <label :for="opt.id">{{opt.name}}：</label>\n' +
         '           <input type="text" class="form-control" :id="opt.id" v-model="opt.model" @keyup.enter="callback">\n' +
         '          </div>'
       },
@@ -42,12 +43,12 @@
         },
         template: '<div class="row">\n' +
         '    <div class="form-group col pr-3">\n' +
-        '      <label>测试时间  从：</label>\n' +
-        '      <datetime v-model="opt.modelFrom" type="datetime" />\n' +
+        '      <label>时间  从：</label>\n' +
+        '      <datetime v-model="opt.modelFrom" type="datetime" zone="Asia/Shanghai" value-zone="Asia/Shanghai" />\n' +
         '    </div>\n' +
         '    <div class="form-group col pr-3">\n' +
         '      <label>至：</label>\n' +
-        '      <datetime v-model="opt.modelTo" type="datetime" />\n' +
+        '      <datetime v-model="opt.modelTo" type="datetime" zone="Asia/Shanghai" value-zone="Asia/Shanghai" />\n' +
         '    </div>\n' +
         '  </div>'
 
@@ -56,27 +57,7 @@
     data() {
       return {
         // pageSize: 2000,
-        queryOptions: [
-          {
-            id: 'ip',
-            name: 'IP地址',
-            model:'',
-            type: 'text'
-          },
-          {
-            id: 'uid',
-            name: '用户',
-            model: '',
-            type: 'text'
-          },
-          {
-            id: 'time',
-            name: '时间',
-            modelTo: '',
-            modelFrom: '',
-            type: 'date'
-          }
-        ],
+        queryOptions: [],
         copyQueryOptions: [],
         queryString: ""
       }
@@ -100,27 +81,8 @@
     methods: {
       ...mapActions(['setLoading']),
       initForm: function () {
-        this.queryOptions = [
-          {
-            id: 'ip',
-            name: 'IP地址',
-            model:'',
-            type: 'text'
-          },
-          {
-            id: 'uid',
-            name: '用户',
-            model: '',
-            type: 'text'
-          },
-          {
-            id: 'time',
-            name: '时间',
-            modelTo: '',
-            modelFrom: '',
-            type: 'date'
-          }
-        ]
+        let queryOptions = getLogsQuery(this.logsRouterApi);
+        this.queryOptions = JSON.parse(JSON.stringify(queryOptions));
       },
       createQueryString: function () {
         this.queryString = "";

@@ -7,6 +7,9 @@
           <p class="card-text col">ID: {{item.id}}</p>
           <p class="card-text col">状态: {{robotStatus(item.status)}}</p>
         </div>
+        <div class="card-body row pb-3 pt-0">
+          <p class="card-text col">启停状态: {{item.enabled === 0 ? '停用' : "启用"}}</p>
+        </div>
         <div class="card-body row pb-0 pt-1">
           <p class="card-text col">X: {{item.x}}</p>
           <p class="card-text col">Y: {{item.y}}</p>
@@ -127,7 +130,10 @@
           axiosPost(options).then(response => {
             if (response.data.result === 200) {
               this.isPending = false;
-              alert((enabled === 0 ? "停用" : "启用") + "成功")
+              alert((enabled === 0 ? "停用" : "启用") + "成功");
+              let path = this.$route.path;
+              this.$router.replace('_empty');
+              this.$router.push(path);
             }
 
           }).catch(err => {

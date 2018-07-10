@@ -58,7 +58,7 @@
         data: {
           pageNo: 1,
           pageSize: 20,
-          descBy: 'createTimeString'
+          descBy: 'create_time'
         }
       };
       this.fetchData(options)
@@ -79,7 +79,7 @@
           data: {
             pageNo: 1,
             pageSize: 20,
-            descBy: 'createTimeString',
+            descBy: 'create_time',
           }
 
         };
@@ -151,7 +151,7 @@
         let options = {
           url: taskSelectUrl,
           data: {
-            descBy: 'createTimeString'
+            descBy: 'create_time'
           }
         };
         options.data.pageNo = this.query.offset / this.query.limit + 1;

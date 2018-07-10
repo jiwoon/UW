@@ -49,11 +49,11 @@
         template: '<div class="row">\n' +
         '    <div class="form-group col pr-3">\n' +
         '      <label>创建时间  从：</label>\n' +
-        '      <datetime v-model="opt.modelFrom" type="datetime" />\n' +
+        '      <datetime v-model="opt.modelFrom" type="datetime" zone="Asia/Shanghai" value-zone="Asia/Shanghai"/>\n' +
         '    </div>\n' +
         '    <div class="form-group col pr-3">\n' +
         '      <label>至：</label>\n' +
-        '      <datetime v-model="opt.modelTo" type="datetime" />\n' +
+        '      <datetime v-model="opt.modelTo" type="datetime" zone="Asia/Shanghai" value-zone="Asia/Shanghai"/>\n' +
         '    </div>\n' +
         '  </div>'
 
@@ -235,7 +235,7 @@
           }
         });
         this.copyQueryOptions.map((item, index) => {
-          if (item.type === 'text') {
+          if (item.type === 'text' || item.type === 'select') {
             if (_.trim(item.model) !== "") {
               if (index === 0) {
                 this.queryString += (item.id + "=" + _.trim(item.model))

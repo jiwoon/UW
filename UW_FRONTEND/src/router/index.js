@@ -22,9 +22,9 @@ const router = new Router({
       path: '/',
       component: Main,
       redirect: '/material',
-      // meta: {
-      //   requireAuth: true
-      // },
+      meta: {
+        requireAuth: true
+      },
       children: [
         {
           path: '/material',
@@ -73,24 +73,24 @@ const router = new Router({
   ]
 })
 
-// if (localStorage.getItem('token')) {
-//   store.commit('setLoginToken', localStorage.getItem('token'))
-// }
-//
-//
-// router.beforeEach((to, from, next) => {
-//   if (to.matched.some(r => r.meta.requireAuth)) {
-//     if (store.state.token) {
-//       next();
-//     } else {
-//       next({
-//         path: '/login',
-//         query: {redirect: to.fullPath}
-//       })
-//     }
-//   } else {
-//     next();
-//   }
-// });
+if (localStorage.getItem('token')) {
+  store.commit('setLoginToken', localStorage.getItem('token'))
+}
+
+
+router.beforeEach((to, from, next) => {
+  if (to.matched.some(r => r.meta.requireAuth)) {
+    if (store.state.token) {
+      next();
+    } else {
+      next({
+        path: '/login',
+        query: {redirect: to.fullPath}
+      })
+    }
+  } else {
+    next();
+  }
+});
 
 export default router;

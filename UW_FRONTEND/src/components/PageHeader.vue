@@ -8,7 +8,7 @@
         <span>
           <img src="/static/img/logo.png" class="nav-logo" draggable="false">
         </span>
-        智能生产控制系统</a>
+        智能仓库管理系统</a>
     </div>
   </nav>
 </template>
