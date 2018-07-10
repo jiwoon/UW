@@ -44,9 +44,9 @@ public class TaskService {
 			+ "SELECT id FROM material_type WHERE no = ?)";
 
 	private static final String getNoSql = "SELECT id FROM material_type WHERE no = ?";
-	
+
 	private static final String getMaterialId = "SELECT id FROM material WHERE type = (SELECT type FROM material WHERE type = ?)";
-	
+
 	public synchronized boolean create(Task task, Integer type, String fileName) {
 		task.setType(type);
 		task.setFileName(fileName);
@@ -112,9 +112,9 @@ public class TaskService {
 		List<TaskVO> taskVO = new ArrayList<TaskVO>();
 
 		if (filter != null) {
-//			if (filter.contains("createTimeString")) {
-//				filter = filter.replace("createTimeString", "create_time");
-//			} 
+			if (filter.contains("createTimeString")) {
+				filter = filter.replace("createTimeString", "create_time");
+			}
 			if (filter.contains("fileName")) {
 				filter = filter.replace("fileName", "file_name");
 			}
@@ -139,8 +139,8 @@ public class TaskService {
 	}
 
 	//将excel表格的物料相关信息写入套料单数据表
-	public static void insertPackingList(Task task, PackingListItem packingListItem, MaterialType materialType, Integer type, String fullFileName) throws Exception {
-		List<PackingListItemBO> item;
+	public static boolean insertPackingList(Task task, PackingListItem packingListItem, MaterialType materialType, Integer type, String fullFileName) throws Exception {
+		List<PackingListItemBO> items;
 
 		File file = new File(fullFileName);
 		// 获取新任务id
@@ -149,27 +149,29 @@ public class TaskService {
 		// 获取新建任务类型：0入库 1出库 2盘点 3位置优化
 		Task taskTypeSql = task.findFirst(getTaskTypeSql, newTaskId);
 		Integer taskType = taskTypeSql.get("type");
-	
+
 		Material material = new Material();
 
 		// 读取excel表格的套料单数据，将数据一条条写入到套料单表；如果任务类型为出/入库，还需要修改物料实体表中对应物料的库存数量
 		ExcelHelper fileReader = ExcelHelper.from(file);
 
-		item = fileReader.unfill(PackingListItemBO.class, 2);
-		for (PackingListItemBO packingList : item) {
+		items = fileReader.unfill(PackingListItemBO.class, 2);
+		for (PackingListItemBO item : items) {
 			// 计划出库数量
-			Integer planQuantity = packingList.getQuantity();
-//			Integer planQuantity = Integer.parseInt(packingList.getQuantity());
-		
+			Integer planQuantity = item.getQuantity();
+
 			// 获取将要入库/出库的物料的库存数量
-			MaterialType checkQuantitySql = materialType.findFirst(getQuantitySql, packingList.getNo());
+			MaterialType checkQuantitySql = materialType.findFirst(getQuantitySql, item.getNo());
 			Integer remainderQuantity = Integer.parseInt(checkQuantitySql.get("remainderQuantity").toString());
+			if (remainderQuantity.equals(null)) {
+				return false;
+			}
 
 			if(taskType == 1) {
 				// 逐条判断库存是否足够，若是，则插入套料单数据
 				if (remainderQuantity >= planQuantity) {
 				// 添加物料类型id
-				MaterialType findNoSql = materialType.findFirst(getNoSql, packingList.getNo());
+				MaterialType findNoSql = materialType.findFirst(getNoSql, item.getNo());
 				Integer materialId = findNoSql.getId();
 				packingListItem.setMaterialTypeId(materialId);
 				// 添加计划出入库数量
@@ -186,12 +188,12 @@ public class TaskService {
 				packingListItem = new PackingListItem();
 				} else {	// 否则，提示库存不足
 					packingListItem = new PackingListItem();
-					ErrorLogWritter.save("料号为：" + packingList.getNo() +  "的物料库存不足！");
-					throw new OperationException("料号为：" + packingList.getNo() +  "的物料库存不足！");
+					ErrorLogWritter.save("料号为：" + item.getNo() +  "的物料库存不足！");
+					throw new OperationException("料号为：" + item.getNo() +  "的物料库存不足！");
 				}					
 			} else {
 				// 添加物料类型id
-				MaterialType findNoSql = materialType.findFirst(getNoSql, packingList.getNo());
+				MaterialType findNoSql = materialType.findFirst(getNoSql, item.getNo());
 				Integer materialId = findNoSql.get("id");
 				packingListItem.setMaterialTypeId(materialId);
 				// 添加计划出入库数量
@@ -217,6 +219,8 @@ public class TaskService {
 				throw new OperationException("文件" + file.getName() + "删除失败！");
 			}
 		}
+		
+		return true;
 	}
 
 	//更新物料实体表中的库存数量

@@ -2,9 +2,6 @@ package com.jimi.uw_server.model.vo;
 
 import java.util.Date;
 
-import com.jimi.uw_server.model.Material;
-import com.jimi.uw_server.model.MaterialType;
-import com.jimi.uw_server.model.Task;
 import com.jimi.uw_server.model.TaskLog;
 import com.jimi.uw_server.model.User;
 
@@ -23,8 +20,6 @@ public class TaskLogVO extends TaskLog {
 
 	private String taskTypeString;
 	
-	private String materialNo;
-	
 	private String operatorName;
 	
 	public String getAutoString(boolean auto) {
@@ -36,9 +31,7 @@ public class TaskLogVO extends TaskLog {
 		return autoString;
 	}
 
-	public String getTaskType(Integer taskId) {
-		Task task  = Task.dao.findById(taskId);
-		Integer taskType = task.getType();
+	public String getTaskType(Integer taskType) {
 		if (taskType == 0) {
 			this.taskTypeString = "入库";
 		} else if (taskType == 1) {
@@ -57,28 +50,19 @@ public class TaskLogVO extends TaskLog {
 		return operatorName;
 	}
 
-	public String getMaterialNo(String materialId) {
-		Material material = Material.dao.findById(materialId);
-		Integer type = material.getType();
-		MaterialType materialType = MaterialType.dao.findById(type);
-		materialNo = materialType.getNo();
-		return materialNo;
-	}
-
-	public TaskLogVO(Integer id, Integer taskId, String materialId, Integer quantity,
+	public TaskLogVO(Integer id, Integer taskId, Integer type, String materialId, String materialNo, Integer quantity,
 			String operator, boolean auto, Date time) {
 		this.setId(id);
 		this.set("taskId", taskId);
-		this.set("taskType", getTaskType(taskId));
+		this.set("taskType", getTaskType(type));
 		this.set("materialId", materialId);
-		this.set("materialNo", getMaterialNo(materialId));
+		this.set("materialNo", materialNo);
 		this.setQuantity(quantity);
 		this.setOperator(operator);
 		this.set("operatorName", getOperatorName(operator));
 		this.set("auto", getAutoString(auto));
 		this.setTime(time);
 	}
-
 
 }
  
