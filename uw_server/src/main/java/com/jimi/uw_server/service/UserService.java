@@ -47,7 +47,7 @@ public class UserService extends SelectService{
 	public boolean add(User user) {
 		user.setEnabled(true);
 		if(User.dao.find(uniqueCheckSql, user.getUid()).size() != 0) {
-			throw new OperationException("用户" + user.getName() + "已存在！");
+			throw new OperationException("用户" + user.getUid() + "已存在！");
 		}
 		user.keep("uid","name","password","type", "enabled");
 		user.setPassword(MD5Util.MD5(user.getPassword()));

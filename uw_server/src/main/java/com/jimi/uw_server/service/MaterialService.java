@@ -98,5 +98,5 @@ public class MaterialService extends SelectService{
 		materialType.keep("id","no","area","row","col","height","enabled", "is_on_shelf");
 		return materialType.update();
 	}
-	
+
 }
