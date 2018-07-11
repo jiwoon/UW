@@ -5,6 +5,7 @@ import com.jfinal.core.Controller;
 import com.jfinal.core.paragetter.Para;
 import com.jfinal.json.Json;
 import com.jfinal.upload.UploadFile;
+import com.jimi.uw_server.exception.OperationException;
 import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.model.PackingListItem;
 import com.jimi.uw_server.model.Task;
@@ -26,10 +27,12 @@ public class TaskController extends Controller {
 		String fileName = file.getFileName();
 		String fullFileName = file.getUploadPath() + "\\" + file.getFileName();
 		if(taskService.create(task, type, fileName)) {
-			TaskService.insertPackingList(task, packingListItem, materialType, type, fullFileName);
-			renderJson(ResultUtil.succeed());
-		} else {
-			renderJson(ResultUtil.failed());
+			if (TaskService.insertPackingList(task, packingListItem, materialType, type, fullFileName)) {
+				renderJson(ResultUtil.succeed());
+			} else {
+				renderJson(ResultUtil.failed(412));
+				throw new OperationException("创建任务失败，套料单格式错误或者物料类型表里面不存在套料单中对应的物料类型！");
+			}
 		}
 	}
 

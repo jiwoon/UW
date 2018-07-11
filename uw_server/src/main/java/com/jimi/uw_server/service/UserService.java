@@ -61,11 +61,9 @@ public class UserService extends SelectService{
 
 	public Object select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
 		List<UserVO> userVO = new ArrayList<UserVO>();
-
 		Page<Record> result = selectService.select("user", pageNo, pageSize, ascBy, descBy, filter);
 
 		int totallyRow =  result.getTotalRow();
-
 		for (Record res : result.getList()) {
 			UserVO u = new UserVO(res.get("uid"), res.get("password"), res.get("name"), res.get("type"), res.get("enabled"));
 			userVO.add(u);
