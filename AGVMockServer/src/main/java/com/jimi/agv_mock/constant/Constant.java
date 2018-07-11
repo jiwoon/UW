@@ -8,6 +8,8 @@ package com.jimi.agv_mock.constant;
  */
 public class Constant {
 	
+	public static final int WAIT_ACK_TIMEOUT = 3000;
+	
 	public static final int GET_CMD_DELAY = 1000;
 	
 	public static final int FIRST_ACTION_DELAY = 10000;

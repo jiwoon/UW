@@ -188,7 +188,6 @@ public class TaskService {
 				packingListItem = new PackingListItem();
 				} else {	// 否则，提示库存不足
 					packingListItem = new PackingListItem();
-					ErrorLogWritter.save("料号为：" + item.getNo() +  "的物料库存不足！");
 					throw new OperationException("料号为：" + item.getNo() +  "的物料库存不足！");
 				}					
 			} else {
@@ -219,7 +218,7 @@ public class TaskService {
 				throw new OperationException("文件" + file.getName() + "删除失败！");
 			}
 		}
-		
+
 		return true;
 	}
 
