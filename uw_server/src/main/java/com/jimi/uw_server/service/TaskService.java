@@ -8,7 +8,7 @@ import java.util.List;
 import com.jfinal.aop.Enhancer;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
-import com.jimi.uw_server.agv.dao.AGVTaskItemRedisDAO;
+import com.jimi.uw_server.agv.dao.TaskItemRedisDAO;
 import com.jimi.uw_server.agv.entity.AGVIOTaskItem;
 import com.jimi.uw_server.exception.OperationException;
 import com.jimi.uw_server.model.Material;
@@ -72,7 +72,7 @@ public class TaskService {
 			taskItems.add(a);
 		}
 		// 把任务条目均匀插入到队列til中（线程同步方法）
-		AGVTaskItemRedisDAO.addTaskItem(taskItems);
+		TaskItemRedisDAO.addTaskItem(taskItems);
 		task.setState(2);
 		task.keep("id", "type", "file_name", "window", "state", "createtime");
 		return task.update();
@@ -82,7 +82,7 @@ public class TaskService {
 		// 判断任务是否处于进行中状态，若是，则把相关的任务条目从til中剔除（线程同步方法） 并 更新任务状态为作废；
 		int state = task.findById(id).getState();
 		if (state == 2) {
-			AGVTaskItemRedisDAO.removeTaskItemByTaskId(id);
+			TaskItemRedisDAO.removeTaskItemByTaskId(id);
 		}
 		// 如果任务状态为已完成或者已作废，就那么就不能再作废它
 //		if (state == 3 || state == 4) {
