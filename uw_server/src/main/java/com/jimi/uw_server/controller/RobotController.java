@@ -3,9 +3,7 @@ package com.jimi.uw_server.controller;
 import com.jfinal.aop.Enhancer;
 import com.jfinal.core.ActionKey;
 import com.jfinal.core.Controller;
-//import com.jimi.uw_server.annotation.Access;
 import com.jimi.uw_server.service.RobotService;
-//import com.jimi.uw_server.service.base.SelectService;
 import com.jimi.uw_server.util.ResultUtil;
 
 /**
@@ -23,7 +21,15 @@ public class RobotController extends Controller {
 
 	@ActionKey("/manage/robot/switch")
 	public void robotSwitch(Integer id, Integer enabled) {
-		if(robotService.robotSwitch(id, enabled)) {
+		if (robotService.robotSwitch(id, enabled)) {
+			renderJson(ResultUtil.succeed());
+		} else {
+			renderJson(ResultUtil.failed());
+		}
+	}
+	
+	public void pause(boolean pause) {
+		if (robotService.pause(pause)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());

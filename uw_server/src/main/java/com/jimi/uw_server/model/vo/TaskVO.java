@@ -43,9 +43,6 @@ public class TaskVO extends Task{
 		return stateString;
 	}
 
-	public Date getCreateTimeString(Date createTime) {
-		return createTime;
-	}
 
 	public TaskVO(Integer id, Integer state, Integer type, String fileName, Date createTime) {
 		this.setId(id);
@@ -54,7 +51,7 @@ public class TaskVO extends Task{
 		this.setType(type);
 		this.set("typeString", getTypeString(type));
 		this.set("fileName", fileName);
-		this.set("createTimeString", getCreateTimeString(createTime));
+		this.set("createTimeString", createTime);
 	}
 
 	
