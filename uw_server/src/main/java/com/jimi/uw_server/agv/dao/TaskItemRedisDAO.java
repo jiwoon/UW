@@ -10,7 +10,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import com.jfinal.plugin.redis.Cache;
 import com.jfinal.plugin.redis.Redis;
-import com.jimi.uw_server.agv.entity.AGVIOTaskItem;
+import com.jimi.uw_server.agv.entity.bo.AGVIOTaskItem;
 import com.jimi.uw_server.agv.handle.LSSLHandler;
 
 /**
@@ -22,6 +22,27 @@ import com.jimi.uw_server.agv.handle.LSSLHandler;
 public class TaskItemRedisDAO {
 
 	private static Cache cache = Redis.use();
+	
+	
+	/**
+	 * 是否已经停止分配任务
+	 */
+	public synchronized static int isPauseAssign() {
+		try {
+			return cache.get("pause");
+		} catch (NullPointerException e) {
+			cache.set("pause", 0);
+			return isPauseAssign();
+		}
+	}
+	
+	
+	/**
+	 * 设置停止分配任务标志位
+	 */
+	public synchronized static void setPauseAssign(int pause) {
+		cache.set("pause", pause);
+	}
 	
 	
 	/**
@@ -74,7 +95,7 @@ public class TaskItemRedisDAO {
 		for (int i = 0; i < cache.llen("til"); i++) {
 			byte[] item = cache.lindex("til", i);
 			AGVIOTaskItem agvioTaskItem = AGVIOTaskItem.fromString(new String(item));
-			if(agvioTaskItem.getTaskId() == taskId && agvioTaskItem.getState() != 0){
+			if(agvioTaskItem.getTaskId() == taskId && agvioTaskItem.getState() != 1 && agvioTaskItem.getState() != 2){
 				cache.lrem("til", 1, item);
 				i--;
 			}

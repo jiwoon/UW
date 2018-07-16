@@ -63,4 +63,31 @@ public abstract class BaseRobot<M extends BaseRobot<M>> extends Model<M> impleme
 		return getInt("enabled");
 	}
 
+	public M setError(java.lang.Integer error) {
+		set("error", error);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getError() {
+		return getInt("error");
+	}
+
+	public M setWarn(java.lang.Integer warn) {
+		set("warn", warn);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getWarn() {
+		return getInt("warn");
+	}
+
+	public M setPause(java.lang.Boolean pause) {
+		set("pause", pause);
+		return (M)this;
+	}
+	
+	public java.lang.Boolean getPause() {
+		return get("pause");
+	}
+
 }

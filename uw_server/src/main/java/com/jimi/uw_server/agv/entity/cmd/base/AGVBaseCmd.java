@@ -1,4 +1,4 @@
-package com.jimi.uw_server.agv.entity;
+package com.jimi.uw_server.agv.entity.cmd.base;
 
 /**
  * AGV指令父类

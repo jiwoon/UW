@@ -16,7 +16,8 @@ import com.jfinal.plugin.activerecord.tx.Tx;
 import com.jfinal.plugin.druid.DruidPlugin;
 import com.jfinal.plugin.redis.RedisPlugin;
 import com.jfinal.template.Engine;
-import com.jimi.uw_server.agv.socket.AGVWebSocket;
+import com.jimi.uw_server.agv.socket.AGVMainSocket;
+import com.jimi.uw_server.agv.socket.RobotInfoSocket;
 import com.jimi.uw_server.controller.LogController;
 import com.jimi.uw_server.controller.MaterialController;
 import com.jimi.uw_server.controller.RobotController;
@@ -95,7 +96,8 @@ public class UwConfig extends JFinalConfig {
 	@Override
 	public void afterJFinalStart() {
 		TokenBox.start(PropKit.use("properties.ini").getInt("sessionTimeout"));
-		AGVWebSocket.connect(PropKit.use("properties.ini").get("agvServerURI"));
+		AGVMainSocket.init(PropKit.use("properties.ini").get("agvServerURI"));
+		RobotInfoSocket.init(PropKit.use("properties.ini").get("robotInfoURI"));
 		System.out.println("Uw Server is Running now...");
 	}
 	

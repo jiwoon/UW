@@ -1,4 +1,4 @@
-package com.jimi.agv_mock.entity;
+package com.jimi.agv_mock.entity.cmd.base;
 
 /**
  * AGV指令父类

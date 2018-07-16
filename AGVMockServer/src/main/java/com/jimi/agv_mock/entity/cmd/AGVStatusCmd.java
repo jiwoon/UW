@@ -1,4 +1,6 @@
-package com.jimi.uw_server.agv.entity;
+package com.jimi.agv_mock.entity.cmd;
+
+import com.jimi.agv_mock.entity.cmd.base.AGVBaseCmd;
 
 /**
  * AGV指令任务状态指令
