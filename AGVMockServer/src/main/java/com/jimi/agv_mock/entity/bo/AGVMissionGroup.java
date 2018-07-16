@@ -1,4 +1,4 @@
-package com.jimi.uw_server.agv.entity;
+package com.jimi.agv_mock.entity.bo;
 
 /**
  * AGV任务组

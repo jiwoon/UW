@@ -1,4 +1,4 @@
-package com.jimi.uw_server.agv.entity;
+package com.jimi.agv_mock.entity.bo;
 
 /**
  * AGV出入库任务条目
@@ -15,13 +15,6 @@ public class AGVIOTaskItem {
 	private int windowPositionY;
 	
 	private int taskId;
-	
-	/**
-	 * 0：未分配
-	 * 1：已分配
-	 * 2：已拣料到站
-	 */
-	private int state;
 
 	
 	public int getMaterialTypeId() {
@@ -56,20 +49,11 @@ public class AGVIOTaskItem {
 		this.windowPositionX = windowPositionX;
 	}
 
-	public int getState() {
-		return state;
-	}
-
-	public void setState(int state) {
-		this.state = state;
-	}
-
 	public AGVIOTaskItem(int materialId, int windowPositionX, int windowPositionY, int taskId) {
 		this.materialTypeId = materialId;
 		this.windowPositionX = windowPositionX;
 		this.windowPositionY = windowPositionY;
 		this.taskId = taskId;
-		this.state = 0;
 	}
 	
 	
@@ -78,7 +62,7 @@ public class AGVIOTaskItem {
 	 */
 	@Override
 	public String toString() {
-		return materialTypeId + ":" + windowPositionX + ":" + windowPositionY + ":" + taskId + "#" + state;
+		return materialTypeId + ":" + windowPositionX + ":" + windowPositionY + ":" + taskId;
 	}
 	
 	
@@ -86,10 +70,8 @@ public class AGVIOTaskItem {
 	 * 把Item转成GroupId
 	 */
 	public static AGVIOTaskItem fromString(String string) {
-		String[] attrsAndState = string.split("#");
-		String[] attrs = attrsAndState[0].split(":");
+		String[] attrs = string.split(":");
 		AGVIOTaskItem item = new AGVIOTaskItem(Integer.valueOf(attrs[0]), Integer.valueOf(attrs[1]), Integer.valueOf(attrs[2]), Integer.valueOf(attrs[3]));
-		item.setState(Integer.valueOf(attrsAndState[1]));
 		return item;
 	}
 }

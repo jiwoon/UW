@@ -7,11 +7,11 @@ import java.util.Map;
 
 import com.jfinal.json.Json;
 import com.jimi.uw_server.agv.dao.TaskItemRedisDAO;
-import com.jimi.uw_server.agv.entity.AGVIOTaskItem;
-import com.jimi.uw_server.agv.entity.AGVMissionGroup;
-import com.jimi.uw_server.agv.entity.AGVMoveCmd;
-import com.jimi.uw_server.agv.entity.AGVStatusCmd;
-import com.jimi.uw_server.agv.socket.AGVWebSocket;
+import com.jimi.uw_server.agv.entity.bo.AGVIOTaskItem;
+import com.jimi.uw_server.agv.entity.bo.AGVMissionGroup;
+import com.jimi.uw_server.agv.entity.cmd.AGVMoveCmd;
+import com.jimi.uw_server.agv.entity.cmd.AGVStatusCmd;
+import com.jimi.uw_server.agv.socket.AGVMainSocket;
 import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.model.Robot;
 import com.jimi.uw_server.model.Task;
@@ -33,6 +33,11 @@ public class LSSLHandler {
 	 * 发送LS指令
 	 */
 	public static void sendLS() {
+		//判断是否存在停止分配标志位
+		if(TaskItemRedisDAO.isPauseAssign() == 1){
+			return;
+		}
+
 		//判断til是否为空
 		List<AGVIOTaskItem> taskItems = new ArrayList<>();
 		TaskItemRedisDAO.appendTaskItems(taskItems);
@@ -40,6 +45,7 @@ public class LSSLHandler {
 			TaskItemRedisDAO.setLcn(0);
 			return;
 		}
+		
 		//统计当前有效robot数目赋值到cn
 		int cn = Robot.dao.find(ENABLED_ROBOT_SQL, 1).size();
 		int lcn = Integer.valueOf(TaskItemRedisDAO.getLcn());
@@ -53,6 +59,7 @@ public class LSSLHandler {
 		lcn = b - 1;
 		int a = 0;
 		TaskItemRedisDAO.setLcn(lcn);
+		
 		//根据materialType表生成物料是否在架情况映射mtc
 		Map<Integer, MaterialType> mtc = new HashMap<>();
 		for (AGVIOTaskItem item : taskItems) {
@@ -67,12 +74,15 @@ public class LSSLHandler {
 		for (MaterialType materialType : materialTypes) {
 			mtc.put(materialType.getId(), materialType);
 		}
+		
 		//获取第a个元素
 		while(cn != 0 && a != taskItems.size()) {
 			AGVIOTaskItem item = taskItems.get(a);
 			MaterialType materialType = mtc.get(item.getMaterialTypeId());
+			
 			//判断是否在架并且状态是否为0（未分配）
 			if (materialType.getIsOnShelf() && item.getState() == 0) {
+				
 				//在mtc内标记所有处于该坐标的物料不在架
 				for (MaterialType mt : mtc.values()) {
 					if(materialType.getRow() == mt.getRow() && 
@@ -81,18 +91,22 @@ public class LSSLHandler {
 						mt.setIsOnShelf(false);
 					}
 				}
-				//在数据库标记所有处于该坐标的物料为不在架
+				
+				//发送LS>>>
+				AGVMoveCmd cmd = createLSCmd(materialType, item);
+				AGVMainSocket.sendMessage(Json.getJson().toJson(cmd));
+				
+				//在数据库标记所有处于该坐标的物料为不在架***
 				List<MaterialType> specifiedPositionMaterialTypes = MaterialType.dao.find(SPECIFIED_POSITION_MATERIAL_TYEP_SQL,
 						materialType.getRow(), materialType.getCol(), materialType.getHeight());
 				for (MaterialType mt: specifiedPositionMaterialTypes) {
 					mt.setIsOnShelf(false);
 					mt.update();
 				}
-				//发送LS
-				AGVMoveCmd cmd = createLSCmd(materialType, item);
-				AGVWebSocket.sendMessage(Json.getJson().toJson(cmd));
-				//更新任务条目状态为已分配
+				
+				//更新任务条目状态为已分配***
 				TaskItemRedisDAO.updateTaskItemState(item, 1);
+				
 				cn--;
 			}
 			a++;
@@ -121,17 +135,16 @@ public class LSSLHandler {
 				//查询对应物料类型
 				MaterialType materialType = MaterialType.dao.findById(groupid.split(":")[0]);
 				
-				if(item.getState() == 1) {//LS:
-					//更改taskitems里对应item状态为2（已拣料到站）
-					TaskItemRedisDAO.updateTaskItemState(item, 2);
-					
+				if(item.getState() == 1) {//LS执行完成时：（这部分逻辑下一个版本放到APP中）
 					//构建SL指令，令指定robot把料送回原仓位
 					AGVMoveCmd moveCmd = createSLCmd(statusCmd, groupid, materialType, item);
+					//发送SL>>>
+					AGVMainSocket.sendMessage(Json.getJson().toJson(moveCmd));
 					
-					//发送SL
-					AGVWebSocket.sendMessage(Json.getJson().toJson(moveCmd));
-				}else if(item.getState() == 2) {//SL:
-					//在数据库标记所有处于该坐标的物料为在架
+					//更改taskitems里对应item状态为2（已拣料到站）***
+					TaskItemRedisDAO.updateTaskItemState(item, 2);
+				}else if(item.getState() == 2) {//SL执行完成时：
+					//在数据库标记所有处于该坐标的物料为在架***
 					List<MaterialType> specifiedPositionMaterialTypes = MaterialType.dao.find(SPECIFIED_POSITION_MATERIAL_TYEP_SQL,
 							materialType.getRow(), materialType.getCol(), materialType.getHeight());
 					for (MaterialType mt: specifiedPositionMaterialTypes) {
@@ -139,13 +152,16 @@ public class LSSLHandler {
 						mt.update();
 					}
 					
+					//更改taskitems里对应item状态为3（已回库完成）***
+					TaskItemRedisDAO.updateTaskItemState(item, 3);
+					
 					/*
-					 * 判断该groupid所在的任务是否全部条目状态为2（已拣料到站），如果是，则清除所有该任务id对应的条目，
-					 * 释放内存，并修改数据库任务状态
+					 * 判断该groupid所在的任务是否全部条目状态为3（已回库完成），如果是，
+					 * 则清除所有该任务id对应的条目，释放内存，并修改数据库任务状态***
 					*/
 					boolean isAllFinish = true;
 					for (AGVIOTaskItem item1 : TaskItemRedisDAO.getTaskItems()) {
-						if(groupid.split(":")[3].equals(item1.toString().split("#")[0].split(":")[3]) && item1.getState() != 2) {
+						if(groupid.split(":")[3].equals(item1.toString().split("#")[0].split(":")[3]) && item1.getState() != 3) {
 							isAllFinish = false;
 						}
 					}
