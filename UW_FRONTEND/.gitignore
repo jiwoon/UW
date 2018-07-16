@@ -14,6 +14,4 @@ yarn-error.log*
 *.sln
 /node_modules/
 
-package-lock.json
-package.json
-/static/js/config.js
+/package-lock.json
