@@ -51,7 +51,7 @@ public class UserController extends Controller {
 		if(userService.add(user)) {
 			renderJson(ResultUtil.succeed());
 		} else {
-			renderJson(ResultUtil.failed());
+			renderJson(ResultUtil.failed("请完善用户信息！"));
 		}
 	}
 
@@ -67,8 +67,8 @@ public class UserController extends Controller {
 		renderJson(ResultUtil.succeed(userService.select(pageNo, pageSize, ascBy, descBy, filter)));
 	}
 	
-	public void getTypes(Integer pageNo, Integer pageSize) {
-		renderJson(ResultUtil.succeed(userService.getTypes(pageNo, pageSize)));
+	public void getTypes() {
+		renderJson(ResultUtil.succeed(userService.getTypes()));
 	}
 
 	public void logout() {
