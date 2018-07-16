@@ -9,13 +9,13 @@ import com.jfinal.plugin.activerecord.IBean;
 @SuppressWarnings({"serial", "unchecked"})
 public abstract class BaseSocketLog<M extends BaseSocketLog<M>> extends Model<M> implements IBean {
 
-	public M setId(java.lang.Long id) {
+	public M setId(java.lang.Integer id) {
 		set("id", id);
 		return (M)this;
 	}
 	
-	public java.lang.Long getId() {
-		return getLong("id");
+	public java.lang.Integer getId() {
+		return getInt("id");
 	}
 
 	public M setJson(java.lang.String json) {

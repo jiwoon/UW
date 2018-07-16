@@ -12,8 +12,8 @@
           <option value="" disabled>请选择</option>
           <option value="0">入库</option>
           <option value="1">出库</option>
-          <option value="2">盘点</option>
-          <option value="3">位置优化</option>
+          <!--<option value="2">盘点</option>-->
+          <!--<option value="3">位置优化</option>-->
         </select>
       </div>
       <div class="form-row" v-if="taskType < 2">
@@ -41,6 +41,7 @@
   import {axiosPost} from "../../../../../utils/fetchData";
   import {errHandler} from "../../../../../utils/errorHandler";
   import store from '../../../../../store'
+
   export default {
     name: "UploadTask",
     data() {
@@ -68,7 +69,7 @@
           if (this.taskType !== "") {
             this.isPending = true;
             let formData = new FormData();
-            if (this.taskType < 2){
+            if (this.taskType < 2) {
               if (this.thisFile !== "") {
                 formData.append('file', this.thisFile);
               } else {
@@ -92,7 +93,11 @@
                 let tempUrl = this.$route.path;
                 this.$router.replace('_empty');
                 this.$router.replace(tempUrl);
-              } else {
+              } else if (res.data.result === 501) {
+                this.isPending = false;
+                alert(res.data.data);
+              }
+              else {
                 this.isPending = false;
                 errHandler(res.data.result)
               }

@@ -8,16 +8,16 @@ import com.jimi.uw_server.model.MaterialType;
  * @createTime 2018年7月5日 上午11:25:16 
  */
 public class MaterialTypeVO extends MaterialType{
-	
+
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 6512994067269010575L;
-	
+
 	private static final String searchMaterialType = "SELECT * FROM material WHERE type = ?";
 
 	private String enabledString;
-	
+
 	private Integer quantity;
 
 	public Integer getQuantity(Integer id) {

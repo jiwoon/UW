@@ -10,6 +10,8 @@ import LogsModule from '../pages/logs/details/TableModule'
 import TasksMain from '../pages/tasks/TaskMain'
 import RobotMain from '../pages/robot/RobotMain'
 import Login from '../pages/user/Login'
+import UserConfig from '../pages/user/UserConfig'
+
 Vue.use(Router);
 
 const router = new Router({
@@ -61,6 +63,11 @@ const router = new Router({
           path: 'robot',
           name: 'Robot',
           component: RobotMain
+        },
+        {
+          path: 'user',
+          name: 'UserConfig',
+          component: UserConfig
         }
       ]
     },
@@ -71,7 +78,7 @@ const router = new Router({
       component: Login
     }
   ]
-})
+});
 
 if (localStorage.getItem('token')) {
   store.commit('setLoginToken', localStorage.getItem('token'))

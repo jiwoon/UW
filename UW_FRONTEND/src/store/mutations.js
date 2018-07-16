@@ -1,3 +1,5 @@
+import {userTypeList} from "./getters";
+
 export const setLoginToken = (state, token) => {
   state.token = token;
 };
@@ -32,4 +34,8 @@ export const setTaskActiveState = (state, isTaskDetailsActive) => {
 };
 export const setTaskData = (state, taskDetails) => {
   state.taskDetails = taskDetails
+};
+
+export const setUserTypeList = (state, userTypeList) => {
+  state.userTypeList = userTypeList
 };

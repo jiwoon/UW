@@ -77,3 +77,4 @@ uw_server/bin/
 /uw_server/.classpath
 /uw_server/.project
 /AGVMockServer/.classpath
+/AGVMockServer/bin/

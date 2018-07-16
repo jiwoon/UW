@@ -114,6 +114,7 @@
             if (this.thisState === '2') {
               if (this.windowVal === "") {
                 alert("请选择仓口");
+                this.isPending = false;
                 return;
               }
               options.data.window = this.windowVal

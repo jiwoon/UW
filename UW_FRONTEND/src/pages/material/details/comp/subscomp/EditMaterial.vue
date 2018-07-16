@@ -67,7 +67,7 @@
           no: '',
           col: '',
           height: '',
-          enabled: ''
+          enabled: 1
         },
         isPending: false
       }
@@ -79,7 +79,6 @@
       this.thisData.no = this.editData.no;
       this.thisData.col = this.editData.col;
       this.thisData.height = this.editData.height;
-      this.thisData.enabled = this.editData.enabled;
     },
     methods: {
       closeEditPanel: function () {
@@ -111,6 +110,10 @@
               errHandler(response.data.result);
               this.closeEditPanel()
             }
+          }).catch(err => {
+            this.isPending = false;
+            console.log(JSON.stringify(err));
+            alert('请求超时，清刷新重试')
           })
         }
       }
