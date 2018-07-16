@@ -7,7 +7,7 @@
 </template>
 
 <script>
-  import {userAddUrl, userUpdateUrl, userQueryUrl} from "../../../config/globalUrl";
+  import {userAddUrl, userUpdateUrl, userSelectUrl} from "../../../config/globalUrl";
   import {mapGetters, mapActions} from 'vuex'
   import {axiosPost} from "../../../utils/fetchData";
   import {errHandler} from "../../../utils/errorHandler";
@@ -28,17 +28,19 @@
         pageSizeOptions: [20, 40],
         data: [],
         columns: [
-          {field: 'UserId', title: 'UUID', colStyle: {'width': '100px'}},
-          {field: 'UserName', title: '用户名', colStyle: {'width': '100px'}},
-          {field: 'UserType', title: '用户类型', colStyle: {'width': '100px'}},
-          {field: 'LoginTime', title: '最后一次登录时间', colStyle: {'width': '100px'}},
-          {field: 'InService', title: '是否启用', colStyle:{'width': '100px'}},
+          {field: 'showId', title: '序号', colStyle: {'width': '60px'}},
+          {field: 'uid', title: '用户名', colStyle: {'width': '100px'}},
+          {field: 'name', title: '用户描述', colStyle: {'width': '100px'}},
+          {field: 'type', title: '用户类型', colStyle: {'width': '100px'}, visible: false},
+          {field: 'typeString', title: '用户类型', colStyle: {'width': '100px'}},
+          {field: 'enabled', title: '是否启用', colStyle: {'width': '100px'}, visible: false},
+          {field: 'enabledString', title: '是否启用', colStyle:{'width': '100px'}},
           {title: '操作', tdComp: 'UserOperation', colStyle: {'width': '100px'}}
-
         ],
         total: 0,
         query: {"limit": 20, "offset": 0},
-        isPending: false
+        isPending: false,
+        filter: ''
       }
     },
     created() {
@@ -49,8 +51,29 @@
 
     },
     watch: {
-      $route: function (val) {
-        this.thisFetch(val.query)
+      $route: function (route) {
+        this.setLoading(true);
+        if (route.query.filter) {
+          let options = {
+            url: userSelectUrl,
+            data: {
+              filter: route.query.filter
+            }
+          };
+          this.fetchData(options)
+        } else {
+          let options = {
+            url: userSelectUrl
+          };
+          this.fetchData(options)
+        }
+      },
+      query: {
+        handler(query) {
+          this.setLoading(true);
+          this.dataFilter(query);
+        },
+        deep: true
       }
     },
     methods: {
@@ -62,12 +85,8 @@
       },
       thisFetch: function (opt) {
         let options = {
-          url: userQueryUrl,
-          data: {
-            table: 'Gps_User',
-            pageNo: 1,
-            pageSize: 20
-          }
+          url: userSelectUrl,
+          data: {}
         };
         this.fetchData(options);
       },
@@ -79,6 +98,9 @@
             this.setLoading(false);
             if (response.data.result === 200) {
               this.data = response.data.data.list;
+              this.data.map((item, index) => {
+                item.showId = index + 1 + this.query.offset;
+              });
               this.total = response.data.data.totalRow;
             } else {
               this.isPending = false;
@@ -93,6 +115,18 @@
         } else {
           this.setLoading(false)
         }
+      },
+      dataFilter: function () {
+        let options = {
+          url: userSelectUrl,
+          data: {}
+        };
+        options.data.pageNo = this.query.offset / this.query.limit + 1;
+        options.data.pageSize = this.query.limit;
+        if (this.filter !== "") {
+          options.data.filter = this.filter
+        }
+        this.fetchData(options);
       }
     }
   }

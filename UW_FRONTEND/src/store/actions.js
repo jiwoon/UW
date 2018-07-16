@@ -1,4 +1,5 @@
 import {materialAddUrl} from "../config/globalUrl";
+import {userTypeList} from "./getters";
 
 export const setLoginToken = ({commit}, token) => {
   commit('setLoginToken', token)
@@ -35,4 +36,8 @@ export const setTaskActiveState = ({commit}, isTaskDetailsActive) => {
 };
 export const setTaskData = ({commit}, taskDetails) => {
   commit('setTaskData', taskDetails)
+};
+
+export const setUserTypeList = ({commit}, userTypeList) => {
+  commit('setUserTypeList', userTypeList)
 };

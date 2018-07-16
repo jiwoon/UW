@@ -1,8 +1,8 @@
 <template>
   <div class="user-options form-row">
-    <div class="btn pl-1 pr-1" title="详细" @click="checkTaskDetails(row)">
-      <icon name="list" scale="1.8"></icon>
-    </div>
+    <!--<div class="btn pl-1 pr-1" title="详细" @click="checkTaskDetails(row)">-->
+      <!--<icon name="list" scale="1.8"></icon>-->
+    <!--</div>-->
     <div class="btn pl-1 pr-1" title="状态" @click="isEditing = true">
       <icon name="menu" scale="1.8"></icon>
     </div>

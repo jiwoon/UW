@@ -4,7 +4,7 @@
       <div class="add-panel-container">
         <div class="form-row">
           <div class="form-group mb-0">
-            <h3>物料详情：</h3>
+            <h3>物料详情：({{showNo}})</h3>
           </div>
           <datatable v-bind="$data"/>
         </div>
@@ -36,26 +36,30 @@
         pageSizeOptions: [20, 40, 80],
         data: [],
         columns: [
-          {title: 'Uid', field: 'id', colStyle: {width: '60px'}},
-          {title: '类型', field: 'type', colStyle: {width: '60px'}},
-          {title: '行号', field: 'row', colStyle: {width: '60px'}},
-          {title: '列号', field: 'col', colStyle: {width: '60px'}},
+          {title: '料盘唯一码', field: 'id', colStyle: {width: '60px'}},
+          {title: '类型', field: 'type', colStyle: {width: '60px'}, visible: false},
+          {title: '盒内行号', field: 'row', colStyle: {width: '60px'}},
+          {title: '盒内列号', field: 'col', colStyle: {width: '60px'}},
           {title: '剩余数量', field: 'remainderQuantity', colStyle: {width: '60px'}},
         ],
         total: 0,
         query: {"limit": 20, "offset": 0},
-        isPending: false
+        isPending: false,
+
+        showNo: ''
       }
     },
     computed: {},
     mounted() {
-      this.fetchData(store.state.materialDetails)
+      this.showNo = store.state.materialDetails.no;
+      this.fetchData(store.state.materialDetails);
     },
     methods: {
       ...mapActions(['setDetailsActiveState', 'setDetailsData', 'setLoading']),
       init: function () {
         this.data = [];
         this.total = 0;
+        this.showNo = ""
       },
       fetchData: function (val) {
         if (!this.isPending) {
@@ -63,7 +67,7 @@
           let options = {
             url: materialEntityUrl,
             data: {
-              type: val
+              type: val.id
             }
           };
           axiosPost(options).then(response => {
@@ -90,7 +94,7 @@
       },
       closePanel: function () {
         this.setDetailsActiveState(false);
-        this.setDetailsData('')
+        this.setDetailsData({})
       }
 
     }

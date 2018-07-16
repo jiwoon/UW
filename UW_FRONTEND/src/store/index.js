@@ -16,8 +16,9 @@ const state = {
   copyData: [],
   materialDetails: '',
   isDetailsActive: false,
-  taskDetails: '',
-  isTaskDetailsActive: false
+  taskDetails: {},
+  isTaskDetailsActive: false,
+  userTypeList: {}
 };
 
 const store = new Vuex.Store({

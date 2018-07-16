@@ -34,3 +34,7 @@ export const isTaskDetailsActive = (state) => {
 export const taskDetails = (state) => {
   return state.taskDetails
 };
+
+export const userTypeList = (state) => {
+  return state.userTypeList
+};

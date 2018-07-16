@@ -8,35 +8,31 @@
         <div class="update-panel-container form-row flex-column justify-content-between">
           <div class="form-row">
             <div class="form-row col-6 pl-2 pr-2">
-              <label for="user-id" class="col-form-label">UUID:</label>
-              <input type="text" id="user-id" class="form-control" v-model="userData.userId" disabled>
+              <label for="user-id" class="col-form-label">用户名:</label>
+              <input type="text" id="user-id" class="form-control" v-model="userData.uid" disabled>
             </div>
             <div class="form-row col-6 pl-2 pr-2">
               <label for="user-des" class="col-form-label">用户描述:</label>
-              <input type="text" id="user-des" class="form-control" v-model="userData.userDes">
+              <input type="text" id="user-des" class="form-control" v-model="userData.name">
+            </div>
+
+            <div class="form-row col-6 pl-2 pr-2">
+              <label for="user-pwd" class="col-form-label">密码:</label>
+              <input type="password" id="user-pwd" class="form-control" v-model="userData.password">
             </div>
             <div class="form-row col-6 pl-2 pr-2">
               <label for="type-select" class="col-form-label">用户类型:</label>
-              <select id="type-select" class="custom-select" v-model="userData.userType">
+              <select id="type-select" class="custom-select" v-model="userData.type">
                 <option value="" disabled selected>请选择</option>
-                <option value="SuperAdmin">SuperAdmin</option>
-                <option value="IPQC">IPQC</option>
-              </select>
-            </div>
-            <div class="form-row col-6 pl-2 pr-2">
-              <label for="plan-select" class="col-form-label">测试计划:</label>
-              <select id="plan-select" class="custom-select" v-model="userData.userTestPlan">
-                <option value="" disabled>请选择</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
+                <option v-for="item in userTypeList" :value="item.id">{{item.name}}</option>
               </select>
             </div>
             <div class="form-row col-6 pl-2 pr-2">
               <label for="active-select" class="col-form-label">是否启用:</label>
-              <select id="active-select" class="custom-select" v-model="userData.inService">
+              <select id="active-select" class="custom-select" v-model="userData.enabled">
                 <option value="" disabled>请选择</option>
-                <option value="0">禁用</option>
-                <option value="1">启用</option>
+                <option value=false>禁用</option>
+                <option value=true>启用</option>
               </select>
             </div>
           </div>
@@ -54,6 +50,7 @@
 <script>
   import EditUser from './EditUser';
   import {userUpdateUrl} from "../../../config/globalUrl";
+  import {mapGetters} from 'vuex'
   import {axiosPost} from "../../../utils/fetchData";
   import {errHandler} from "../../../utils/errorHandler";
 
@@ -67,14 +64,18 @@
       return {
         isEditing: false,
         userData: {
-          userId: '',
-          userDes: '',
-          userType: '',
-          userTestPlan: '',
-          inService: ''
+          uid: '',
+          name: '',
+          password: '',
+          type: '',
+          enabled: '',
         },
+        tempPwd: '',
         isPending: false
       }
+    },
+    computed: {
+      ...mapGetters(['userTypeList'])
     },
     methods: {
       init: function () {
@@ -82,11 +83,12 @@
       },
       editUser: function (val) {
         this.isEditing = true;
-        this.userData.userId = val.UserId;
-        this.userData.userDes = val.UserDes;
-        this.userData.userType = val.UserType;
-        this.userData.userTestPlan = val.UserTestPlan;
-        this.userData.inService = val.InService ? "1" : "0";
+        this.userData.uid = val.uid;
+        this.userData.name = val.name;
+        this.userData.password = val.password;
+        this.userData.type = val.type;
+        this.userData.enabled = val.enabled;
+        this.tempPwd = val.password;
       },
       updateSubmit: function () {
         if (!this.isPending) {
@@ -95,6 +97,9 @@
             url: userUpdateUrl,
             data: this.userData
           };
+          if (options.data.password === this.tempPwd) {
+            delete options.data.password
+          }
           axiosPost(options).then(response => {
             this.isPending = false;
             if (response.data.result === 200) {

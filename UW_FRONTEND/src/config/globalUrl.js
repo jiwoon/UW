@@ -19,6 +19,12 @@ export const logsUrl = url + '/log/select';
 //users
 export const loginUrl = url + '/manage/user/login';
 export const logoutUrl = url + '/manage/user/logout';
+export const userAddUrl = url + '/manage/user/add';
+export const userUpdateUrl = url + '/manage/user/update';
+export const userSelectUrl = url + '/manage/user/select';
+export const userTypeUrl = url + '/manage/user/getTypes';
+
+
 
 //tasks
 export const taskUrl = url + '/task';

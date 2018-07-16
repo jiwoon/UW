@@ -101,7 +101,7 @@
           {field: 'col', title: '行号', colStyle: {'width': '70px'}},
           {field: 'height', title: '高度', colStyle: {'width': '70px'}},
           {field: 'enabled', title: '可用性', visible: false},
-          {field: 'enabledString', title: '是否可用', colStyle: {'width': '70px'}},
+          {field: 'enabledString', title: '是否可用', colStyle: {'width': '70px'}, visible: false},
           {field: 'quantity', title: '数量', colStyle: {'width': '70px'}},
           {title: '操作', tdComp: 'OperationOptions', colStyle: {'width': '80px'} }
 
