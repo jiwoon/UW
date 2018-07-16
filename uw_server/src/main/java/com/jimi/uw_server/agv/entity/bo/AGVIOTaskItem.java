@@ -1,5 +1,7 @@
 package com.jimi.uw_server.agv.entity.bo;
 
+import com.jimi.uw_server.model.PackingListItem;
+
 /**
  * AGV出入库任务条目
  * <br>
@@ -8,13 +10,10 @@ package com.jimi.uw_server.agv.entity.bo;
  */
 public class AGVIOTaskItem {
 
-	private int materialTypeId;
 	
-	private int windowPositionX;
+	private PackingListItem packingListItem;
 	
-	private int windowPositionY;
-	
-	private int taskId;
+	private int robotId;
 	
 	/**
 	 * 0：未分配
@@ -23,38 +22,29 @@ public class AGVIOTaskItem {
 	 * 3：已回库完成
 	 */
 	private int state;
-
 	
-	public int getMaterialTypeId() {
-		return materialTypeId;
+	
+	public AGVIOTaskItem(PackingListItem packingListItem) {
+		this.packingListItem = packingListItem;
+		this.robotId = 0;
+		this.state = 0;
+	}
+	
+
+	public PackingListItem getPackingListItem() {
+		return packingListItem;
 	}
 
-	public void setMaterialTypeId(int materialId) {
-		this.materialTypeId = materialId;
+	public void setPackingListItem(PackingListItem packingListItem) {
+		this.packingListItem = packingListItem;
 	}
 
-	public int getTaskId() {
-		return taskId;
+	public int getRobotId() {
+		return robotId;
 	}
 
-	public void setTaskId(int taskId) {
-		this.taskId = taskId;
-	}
-
-	public int getWindowPositionY() {
-		return windowPositionY;
-	}
-
-	public void setWindowPositionY(int windowPositionY) {
-		this.windowPositionY = windowPositionY;
-	}
-
-	public int getWindowPositionX() {
-		return windowPositionX;
-	}
-
-	public void setWindowPositionX(int windowPositionX) {
-		this.windowPositionX = windowPositionX;
+	public void setRobotId(int robotId) {
+		this.robotId = robotId;
 	}
 
 	public int getState() {
@@ -64,33 +54,8 @@ public class AGVIOTaskItem {
 	public void setState(int state) {
 		this.state = state;
 	}
-
-	public AGVIOTaskItem(int materialId, int windowPositionX, int windowPositionY, int taskId) {
-		this.materialTypeId = materialId;
-		this.windowPositionX = windowPositionX;
-		this.windowPositionY = windowPositionY;
-		this.taskId = taskId;
-		this.state = 0;
-	}
 	
-	
-	/**
-	 * 把GroupId转成Item
-	 */
-	@Override
-	public String toString() {
-		return materialTypeId + ":" + windowPositionX + ":" + windowPositionY + ":" + taskId + "#" + state;
-	}
-	
-	
-	/**
-	 * 把Item转成GroupId
-	 */
-	public static AGVIOTaskItem fromString(String string) {
-		String[] attrsAndState = string.split("#");
-		String[] attrs = attrsAndState[0].split(":");
-		AGVIOTaskItem item = new AGVIOTaskItem(Integer.valueOf(attrs[0]), Integer.valueOf(attrs[1]), Integer.valueOf(attrs[2]), Integer.valueOf(attrs[3]));
-		item.setState(Integer.valueOf(attrsAndState[1]));
-		return item;
+	public String getGroupId() {
+		return packingListItem.getMaterialTypeId() + ":" + packingListItem.getTaskId();
 	}
 }

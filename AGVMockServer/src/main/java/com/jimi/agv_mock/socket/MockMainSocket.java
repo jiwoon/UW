@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+
 import javax.websocket.CloseReason;
 import javax.websocket.OnClose;
 import javax.websocket.OnMessage;
@@ -20,6 +21,8 @@ import com.jimi.agv_mock.constant.Constant;
 import com.jimi.agv_mock.entity.cmd.base.AGVBaseCmd;
 import com.jimi.agv_mock.handle.ACKHandler;
 import com.jimi.agv_mock.handle.LSSLHandler;
+import com.jimi.agv_mock.handle.SwitchHandler;
+import com.jimi.agv_mock.thread.TaskPool;
 
 
 /**
@@ -34,6 +37,8 @@ public class MockMainSocket implements UncaughtExceptionHandler{
     private static Session session;
     
 	private static int cmdid;
+	
+	private static TaskPool taskPool;
 
 	/**
 	 * 发送的CMDID与是否被ACK的关系映射
@@ -46,12 +51,18 @@ public class MockMainSocket implements UncaughtExceptionHandler{
 	private static Set<Integer> receiveNotAckCmdidSet;
 	
 	
+	static{
+		sendCmdidAckMap = new HashMap<>();
+    	receiveNotAckCmdidSet = new HashSet<>();
+    	taskPool = new TaskPool();
+//    	taskPool.start();
+	}
+	
+	
     @OnOpen
     public void onOpen(Session session){
     	MockMainSocket.session = session;
-    	sendCmdidAckMap = new HashMap<>();
-    	receiveNotAckCmdidSet = new HashSet<>();
-    	sendMessage("AGV 服务当前为Mock模式,服务器类型叉车服务");
+    	send("AGV 服务当前为Mock模式,服务器类型叉车服务");
     }
     
     
@@ -81,17 +92,12 @@ public class MockMainSocket implements UncaughtExceptionHandler{
 				
 				//判断是启用禁用指令
 				if(message.contains("\"cmdcode\":\"enable\"") || message.contains("\"cmdcode\":\"disable\"")) {
-					
+					SwitchHandler.handleEnableOrDisable(message);
 				}
 				
-				//判断是启用禁用指令
-				if(message.contains("\"cmdcode\":\"enable\"") || message.contains("\"cmdcode\":\"disable\"")) {
-					
-				}
-				
-				//判断是启用禁用指令
-				if(message.contains("\"cmdcode\":\"enable\"") || message.contains("\"cmdcode\":\"disable\"")) {
-					
+				//判断是暂停继续指令
+				if(message.contains("\"cmdcode\":\"allpause\"") || message.contains("\"cmdcode\":\"allstart\"")) {
+					SwitchHandler.handlePasueOrStart(message);
 				}
 				
 			}
@@ -169,6 +175,11 @@ public class MockMainSocket implements UncaughtExceptionHandler{
 	public void uncaughtException(Thread t, Throwable e) {
 		//处理一些错误命令
 		e.printStackTrace();
+	}
+
+
+	public static TaskPool getTaskPool() {
+		return taskPool;
 	}
 
 }

@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import com.jfinal.json.Json;
 import com.jfinal.plugin.redis.Cache;
 import com.jfinal.plugin.redis.Redis;
 import com.jimi.uw_server.agv.entity.bo.AGVIOTaskItem;
@@ -57,10 +58,11 @@ public class TaskItemRedisDAO {
 		appendTaskItems(taskItems);
 		Map<Integer, Queue<AGVIOTaskItem>> groupByTaskIdMap = new HashMap<>();
 		for (AGVIOTaskItem item : taskItems) {
-			Queue<AGVIOTaskItem> queue = groupByTaskIdMap.get(item.getTaskId());
+			
+			Queue<AGVIOTaskItem> queue = groupByTaskIdMap.get(item.getPackingListItem().getTaskId());
 			if(queue == null) {
 				queue = new LinkedBlockingQueue<>();
-				groupByTaskIdMap.put(item.getTaskId(), queue);
+				groupByTaskIdMap.put(item.getPackingListItem().getTaskId(), queue);
 			}
 			queue.offer(item);
 		}
@@ -72,7 +74,7 @@ public class TaskItemRedisDAO {
 				if(item == null) {
 					emptyQueue++;
 				}else {
-					items.add(item.toString().getBytes());
+					items.add(Json.getJson().toJson(item).getBytes());
 				}
 			}
 			if(emptyQueue == groupByTaskIdMap.size()) {
@@ -94,8 +96,8 @@ public class TaskItemRedisDAO {
 	public synchronized static void removeTaskItemByTaskId(int taskId) {
 		for (int i = 0; i < cache.llen("til"); i++) {
 			byte[] item = cache.lindex("til", i);
-			AGVIOTaskItem agvioTaskItem = AGVIOTaskItem.fromString(new String(item));
-			if(agvioTaskItem.getTaskId() == taskId && agvioTaskItem.getState() != 1 && agvioTaskItem.getState() != 2){
+			AGVIOTaskItem agvioTaskItem = Json.getJson().parse(new String(item), AGVIOTaskItem.class);
+			if(agvioTaskItem.getPackingListItem().getId() == taskId && agvioTaskItem.getState() != 1 && agvioTaskItem.getState() != 2){
 				cache.lrem("til", 1, item);
 				i--;
 			}
@@ -109,11 +111,10 @@ public class TaskItemRedisDAO {
 	public synchronized static void updateTaskItemState(AGVIOTaskItem taskItem, int state) {
 		for (int i = 0; i < cache.llen("til"); i++) {
 			byte[] item = cache.lindex("til", i);
-			AGVIOTaskItem agvioTaskItem = AGVIOTaskItem.fromString(new String(item));
-			if(agvioTaskItem.getTaskId() == taskItem.getTaskId() && 
-					agvioTaskItem.getMaterialTypeId() == taskItem.getMaterialTypeId()){
+			AGVIOTaskItem agvioTaskItem = Json.getJson().parse(new String(item), AGVIOTaskItem.class);
+			if(agvioTaskItem.getPackingListItem().getId() == taskItem.getPackingListItem().getId()){
 				agvioTaskItem.setState(state);
-				cache.lset("til", i, agvioTaskItem.toString().getBytes());
+				cache.lset("til", i, Json.getJson().toJson(agvioTaskItem).getBytes());
 				break;
 			}
 		}
@@ -124,7 +125,7 @@ public class TaskItemRedisDAO {
 	 * 删除指定条目<br>
 	 */
 	public synchronized static void removeTaskItem(AGVIOTaskItem taskItem) {
-		cache.lrem("til", 1, taskItem.toString().getBytes());
+		cache.lrem("til", 1, Json.getJson().toJson(taskItem).getBytes());
 	}
 	
 
@@ -143,10 +144,10 @@ public class TaskItemRedisDAO {
 	public synchronized static List<AGVIOTaskItem> appendTaskItems(List<AGVIOTaskItem> taskItems) {
 		List<byte[]> items = cache.lrange("til", 0, -1);
 		for (byte[] item : items) {
-			taskItems.add(AGVIOTaskItem.fromString(new String(item)));
+			taskItems.add(Json.getJson().parse(new String(item), AGVIOTaskItem.class));
 		}
 		return taskItems;
-	}
+	} 
 
 	
 	public synchronized static void setLcn(int lcn) {

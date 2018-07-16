@@ -15,6 +15,7 @@ import com.jimi.uw_server.agv.socket.AGVMainSocket;
 import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.model.Robot;
 import com.jimi.uw_server.model.Task;
+import com.jimi.uw_server.model.Window;
 
 /**
  * LS、SL命令处理器
@@ -63,7 +64,7 @@ public class LSSLHandler {
 		//根据materialType表生成物料是否在架情况映射mtc
 		Map<Integer, MaterialType> mtc = new HashMap<>();
 		for (AGVIOTaskItem item : taskItems) {
-			mtc.put(item.getMaterialTypeId(), null);
+			mtc.put(item.getPackingListItem().getMaterialTypeId(), null);
 		}
 		StringBuffer sb = new StringBuffer(SPECIFIED_ID_MATERIAL_TYPE_SQL);
 		for (int i = 0; i < mtc.size(); i++) {
@@ -78,7 +79,7 @@ public class LSSLHandler {
 		//获取第a个元素
 		while(cn != 0 && a != taskItems.size()) {
 			AGVIOTaskItem item = taskItems.get(a);
-			MaterialType materialType = mtc.get(item.getMaterialTypeId());
+			MaterialType materialType = mtc.get(item.getPackingListItem().getMaterialTypeId());
 			
 			//判断是否在架并且状态是否为0（未分配）
 			if (materialType.getIsOnShelf() && item.getState() == 0) {
@@ -131,7 +132,7 @@ public class LSSLHandler {
 		
 		//判断是LS指令还是SL指令第二动作完成，状态是1说明是LS，状态2是SL
 		for (AGVIOTaskItem item : TaskItemRedisDAO.getTaskItems()) {
-			if(groupid.equals(item.toString().split("#")[0])) {
+			if(groupid.equals(item.getGroupId())) {
 				//查询对应物料类型
 				MaterialType materialType = MaterialType.dao.findById(groupid.split(":")[0]);
 				
@@ -161,7 +162,7 @@ public class LSSLHandler {
 					*/
 					boolean isAllFinish = true;
 					for (AGVIOTaskItem item1 : TaskItemRedisDAO.getTaskItems()) {
-						if(groupid.split(":")[3].equals(item1.toString().split("#")[0].split(":")[3]) && item1.getState() != 3) {
+						if(groupid.split(":")[1].equals(item1.getGroupId().split(":")[1]) && item1.getState() != 3) {
 							isAllFinish = false;
 						}
 					}
@@ -188,8 +189,10 @@ public class LSSLHandler {
 		AGVMissionGroup group = new AGVMissionGroup();
 		group.setMissiongroupid(groupid);//missionGroupId要和LS指令相同
 		group.setRobotid(statusCmd.getRobotid());//robotId要和LS指令相同
-		group.setStartx(item.getWindowPositionX());//起点X为仓口X
-		group.setStarty(item.getWindowPositionY());//起点Y为仓口Y
+		int windowId = Task.dao.findById(item.getPackingListItem().getTaskId()).getWindow();
+		Window window = Window.dao.findById(windowId);
+		group.setStartx(window.getRow());//起点X为仓口X
+		group.setStarty(window.getCol());//起点Y为仓口Y
 		group.setEndx(materialType.getRow());//设置X
 		group.setEndy(materialType.getCol());//设置Y
 		group.setEndz(materialType.getHeight());//设置Z
@@ -204,13 +207,15 @@ public class LSSLHandler {
 
 	private static AGVMoveCmd createLSCmd(MaterialType materialType, AGVIOTaskItem item) {
 		AGVMissionGroup group = new AGVMissionGroup();
-		group.setMissiongroupid(item.toString().split("#")[0]);
+		group.setMissiongroupid(item.getGroupId());
 		group.setRobotid(0);//让AGV系统自动分配
 		group.setStartx(materialType.getRow());//物料Row
 		group.setStarty(materialType.getCol());//物料Col
 		group.setStartz(materialType.getHeight());//物料Height
-		group.setEndx(item.getWindowPositionX());//仓口X
-		group.setEndy(item.getWindowPositionY());//仓口Y
+		int windowId = Task.dao.findById(item.getPackingListItem().getTaskId()).getWindow();
+		Window window = Window.dao.findById(windowId);
+		group.setEndx(window.getRow());//终点X为仓口X
+		group.setEndy(window.getCol());//终点Y为仓口Y
 		List<AGVMissionGroup> groups = new ArrayList<>();
 		groups.add(group);
 		AGVMoveCmd cmd = new AGVMoveCmd();

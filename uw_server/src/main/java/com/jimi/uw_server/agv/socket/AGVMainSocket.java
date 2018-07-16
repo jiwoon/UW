@@ -189,9 +189,14 @@ public class AGVMainSocket implements UncaughtExceptionHandler{
 	
 	
 	private static void log(Boolean isSend, String message) {
-		AGVBaseCmd baseCmd = Json.getJson().parse(message, AGVBaseCmd.class);
-		int cmdid = baseCmd.getCmdid();
-		String cmdcode = baseCmd.getCmdcode();
+		int cmdid = -1;
+		String cmdcode = "-";
+		try {
+			AGVBaseCmd baseCmd = Json.getJson().parse(message, AGVBaseCmd.class);
+			cmdid = baseCmd.getCmdid();
+			cmdcode = baseCmd.getCmdcode();
+		} catch (Exception e) {
+		}
 		SocketLog log = new SocketLog();
 		log.setCmdid(cmdid);
 		log.setCmdcode(cmdcode);

@@ -11,7 +11,9 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 
+import com.jimi.agv_mock.constant.Constant;
 import com.jimi.agv_mock.entity.bo.AGVRobot;
+import com.jimi.agv_mock.thread.RobotInfoReporter;
 
 
 /**
@@ -23,38 +25,73 @@ import com.jimi.agv_mock.entity.bo.AGVRobot;
 @ServerEndpoint("/robotinfo")
 public class MockRobotInfoSocket {
 	
-    private Session session;
-	
+    private static Session session;
+    
 	/**
-	 * 机器编号数组
+	 * 机器实体集合
 	 */
-	private static Map<Integer, AGVRobot> robots = new HashMap<>();
-
+	private static Map<Integer, AGVRobot> robots;
 	
+	public static RobotInfoReporter reporter;
+    
+	
+    static{
+    	robots = new HashMap<>();
+		for (Integer id : Constant.ROBOT_IDS) {
+			AGVRobot robot = new AGVRobot();
+			robot.setRobotid(id);
+			robot.setEnable(2);
+			robot.setSystem_pause(false);
+			robot.setErrorcode(255);
+			robot.setWarncode(255);
+			robot.setStatus(0);
+			robots.put(id, robot);
+		}
+    }
+    
+    
     @OnOpen
-    public void onOpen(Session session){
-    	this.session = session;
+    public void onOpen(Session session1){
+    	session = session1;
+    	reporter = new RobotInfoReporter(robots);
+    	reporter.start();
     }
     
     
 	@OnClose
 	public void onClose(Session userSession, CloseReason reason) {
 		System.out.println("Client was disconnected2.");
+		reporter.interrupt();
 	}
     
 
-	public synchronized void sendMessage(String message) {
+	public static synchronized void sendMessage(String message) {
         try {
-			this.session.getBasicRemote().sendText(message);
+			session.getBasicRemote().sendText(message);
 			System.out.println("["+ new Date().toString() +"]"+"send message: " + message);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
     }
+	
+	
+	public static void init(Map<Integer, AGVRobot> robots) {
+		robots = new HashMap<>();
+		for (Integer id : Constant.ROBOT_IDS) {
+			AGVRobot robot = new AGVRobot();
+			robot.setRobotid(id);
+			robot.setEnable(2);
+			robot.setSystem_pause(false);
+			robot.setErrorcode(255);
+			robot.setWarncode(255);
+			robot.setStatus(0);
+			robots.put(id, robot);
+		}
+	}
 
 
 	public static Map<Integer, AGVRobot> getRobots() {
 		return robots;
 	}
-	
+
 }

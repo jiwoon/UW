@@ -18,7 +18,7 @@ public class ExceptionHandler {
 		AGVLoadExceptionCmd loadExceptionCmd = Json.getJson().parse(message, AGVLoadExceptionCmd.class);
 		String groupid = loadExceptionCmd.getMissiongroupid();
 		for(AGVIOTaskItem item : TaskItemRedisDAO.getTaskItems()) {
-			if(item.toString().split("#")[0].equals(groupid)) {
+			if(item.getGroupId().equals(groupid)) {
 				TaskItemRedisDAO.updateTaskItemState(item, 0);
 				break;
 			}
