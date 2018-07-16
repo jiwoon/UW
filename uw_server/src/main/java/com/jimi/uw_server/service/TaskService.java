@@ -33,7 +33,7 @@ public class TaskService {
 
 	private static final String getWindowsSql = "SELECT id FROM window";
 
-	private static final String getTaskMaterialIdSql = "SELECT material_type_id FROM packing_list_item WHERE task_id = ?";
+	private static final String getTaskMaterialIdSql = "SELECT * FROM packing_list_item WHERE task_id = ?";
 
 	private static final String getNewTaskIdSql = "SELECT MAX(id) as newId FROM task";
 
@@ -71,7 +71,7 @@ public class TaskService {
 		return task.update();
 	}
 
-	public boolean start(Task task, Integer id, Integer window) {
+	public List<AGVIOTaskItem> start(Task task, Integer id, Integer window) {
 		List<PackingListItem> items = PackingListItem.dao.find(getTaskMaterialIdSql, id);
 		// 根据套料单、物料类型表生成任务条目
 		List<AGVIOTaskItem> taskItems = new ArrayList<AGVIOTaskItem>();
@@ -79,11 +79,10 @@ public class TaskService {
 			AGVIOTaskItem a = new AGVIOTaskItem(item);
 			taskItems.add(a);
 		}
-		// 把任务条目均匀插入到队列til中（线程同步方法）
-		TaskItemRedisDAO.addTaskItem(taskItems);
 		task.setState(2);
 		task.keep("id", "type", "file_name", "window", "state", "createtime");
-		return task.update();
+		task.update();
+		return taskItems;
 	}
 
 	public boolean cancel(Task task, Integer id) {

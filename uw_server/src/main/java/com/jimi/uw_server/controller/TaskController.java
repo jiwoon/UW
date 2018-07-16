@@ -1,11 +1,14 @@
 package com.jimi.uw_server.controller;
 
 import java.io.File;
+import java.util.List;
 
 import com.jfinal.aop.Enhancer;
 import com.jfinal.core.Controller;
 import com.jfinal.core.paragetter.Para;
 import com.jfinal.upload.UploadFile;
+import com.jimi.uw_server.agv.dao.TaskItemRedisDAO;
+import com.jimi.uw_server.agv.entity.bo.AGVIOTaskItem;
 import com.jimi.uw_server.model.PackingListItem;
 import com.jimi.uw_server.model.Task;
 import com.jimi.uw_server.model.Window;
@@ -53,8 +56,11 @@ public class TaskController extends Controller {
 	}
 
 	public void start(@Para("") Task task, Integer id, Integer window) {
-		if(taskService.start(task, id, window)) {
+		List<AGVIOTaskItem> items = taskService.start(task, id, window);
+		if(!items.isEmpty()) {
 			renderJson(ResultUtil.succeed());
+			// 把任务条目均匀插入到队列til中
+			TaskItemRedisDAO.addTaskItem(items);
 		} else {
 			renderJson(ResultUtil.failed());
 		}

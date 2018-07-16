@@ -25,12 +25,12 @@ public class ACKHandler {
 	/**
 	 * 处理非ACK指令
 	 */
-	public static void handleNOTACK(String message) {
+	public static boolean handleNOTACK(String message) {
 		AGVBaseCmd baseCmd = Json.getJson().parse(message, AGVBaseCmd.class);
 		//判断是否已经ack过
 		for (Integer cmdid : AGVMainSocket.getReceiveNotAckCmdidSet()) {
 			if(baseCmd.getCmdid() == cmdid) {
-				return;
+				return false;
 			}
 		}
 		//发送ack
@@ -38,6 +38,7 @@ public class ACKHandler {
 		AGVMainSocket.sendACK(Json.getJson().toJson(baseCmd));
 		//添加到已经ACK的非ACK指令CMDID集合
 		AGVMainSocket.getReceiveNotAckCmdidSet().add(baseCmd.getCmdid());
+		return true;
 	}
 }
 	

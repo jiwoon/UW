@@ -104,16 +104,16 @@ public class AGVMainSocket implements UncaughtExceptionHandler{
 			if(message.contains("\"cmdcode\":\"ack\"")) {//ack指令
 				ACKHandler.handleACK(message);
 			}else if(message.contains("\"cmdcode\"")){//非ack指令
-				ACKHandler.handleNOTACK(message);
-				
-				//判断是否是status指令
-				if(message.contains("\"cmdcode\":\"status\"")) {
-					LSSLHandler.handleStatus(message);
-				}
-				
-				//判断是否是loadexception指令
-				if(message.contains("\"cmdcode\":\"loadexception\"")) {
-					ExceptionHandler.handleLoadException(message);
+				if(ACKHandler.handleNOTACK(message)) {
+					//判断是否是status指令
+					if(message.contains("\"cmdcode\":\"status\"")) {
+						LSSLHandler.handleStatus(message);
+					}
+					
+					//判断是否是loadexception指令
+					if(message.contains("\"cmdcode\":\"loadexception\"")) {
+						ExceptionHandler.handleLoadException(message);
+					}
 				}
 			}
 		});
@@ -128,7 +128,7 @@ public class AGVMainSocket implements UncaughtExceptionHandler{
 	public static void sendACK(String message) {
 		try {
 			//模拟延迟
-			Thread.sleep(WAIT_ACK_TIMEOUT + new Random().nextInt() % 500);
+//			Thread.sleep(WAIT_ACK_TIMEOUT + new Random().nextInt() % 500);
 			send(message);
 		} catch (Exception e) {
 			ErrorLogWritter.save(e.getClass().getSimpleName()+ ":" +e.getMessage());
@@ -141,19 +141,34 @@ public class AGVMainSocket implements UncaughtExceptionHandler{
 	 * 使用websocket发送一条消息到AGV服务器
 	 */
 	public static void sendMessage(String message) {
-		int cmdid = Json.getJson().parse(message, AGVBaseCmd.class).getCmdid();
-		try {
-			send(message);
-			sendCmdidAckMap.put(cmdid, false);
-			Thread.sleep(WAIT_ACK_TIMEOUT);
-			while(!sendCmdidAckMap.get(cmdid)) {
+//		synchronized (AGVMainSocket.class) {
+			int cmdid = Json.getJson().parse(message, AGVBaseCmd.class).getCmdid();
+			try {
+//				//判断只要存在任何一条没有被ack的指令，则该发送操作阻塞
+//				while (true) {
+//					boolean isAllAck = true;
+//					for (Boolean isAck : sendCmdidAckMap.values()) {
+//						if (!isAck) {
+//							isAllAck = false;
+//						}
+//					}
+//					if (isAllAck) {
+//						break;
+//					}
+//					Thread.sleep(WAIT_ACK_TIMEOUT);
+//				}
 				send(message);
+				sendCmdidAckMap.put(cmdid, false);
 				Thread.sleep(WAIT_ACK_TIMEOUT);
+				while (!sendCmdidAckMap.get(cmdid)) {
+					send(message);
+					Thread.sleep(WAIT_ACK_TIMEOUT);
+				}
+			} catch (Exception e) {
+				ErrorLogWritter.save(e.getClass().getSimpleName() + ":" + e.getMessage());
+				e.printStackTrace();
 			}
-		} catch (Exception e) {
-			ErrorLogWritter.save(e.getClass().getSimpleName()+ ":" +e.getMessage());
-			e.printStackTrace();
-		}
+//		}
 	}
 	
 	
@@ -189,6 +204,11 @@ public class AGVMainSocket implements UncaughtExceptionHandler{
 	
 	
 	private static void log(Boolean isSend, String message) {
+		if(isSend) {
+			System.out.println("["+ new Date().toString() +"]" + "send message:" + message);
+		}else {
+			System.out.println("["+ new Date().toString() +"]" + "receiver message:" + message);
+		}
 		int cmdid = -1;
 		String cmdcode = "-";
 		try {

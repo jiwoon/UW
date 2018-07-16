@@ -1,6 +1,7 @@
 package com.jimi.uw_server.agv.socket;
 
 import java.net.URI;
+import java.util.Date;
 
 import javax.websocket.ClientEndpoint;
 import javax.websocket.CloseReason;
@@ -67,6 +68,7 @@ public class RobotInfoSocket{
 	@OnMessage
 	public void onMessage(String message ,Session session) {
 		try {
+			System.out.println("["+ new Date().toString() +"]" + "receiver message:" + message);
 			AGVRobotInfoCmd robotInfoCmd = Json.getJson().parse(message, AGVRobotInfoCmd.class);
 			for (AGVRobot agvRobot : robotInfoCmd.getRobotarry()) {
 				Integer robotid = agvRobot.getRobotid();

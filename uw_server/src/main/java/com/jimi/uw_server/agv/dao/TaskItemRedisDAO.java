@@ -59,10 +59,10 @@ public class TaskItemRedisDAO {
 		Map<Integer, Queue<AGVIOTaskItem>> groupByTaskIdMap = new HashMap<>();
 		for (AGVIOTaskItem item : taskItems) {
 			
-			Queue<AGVIOTaskItem> queue = groupByTaskIdMap.get(item.getPackingListItem().getTaskId());
+			Queue<AGVIOTaskItem> queue = groupByTaskIdMap.get(item.getTaskId());
 			if(queue == null) {
 				queue = new LinkedBlockingQueue<>();
-				groupByTaskIdMap.put(item.getPackingListItem().getTaskId(), queue);
+				groupByTaskIdMap.put(item.getTaskId(), queue);
 			}
 			queue.offer(item);
 		}
@@ -97,7 +97,7 @@ public class TaskItemRedisDAO {
 		for (int i = 0; i < cache.llen("til"); i++) {
 			byte[] item = cache.lindex("til", i);
 			AGVIOTaskItem agvioTaskItem = Json.getJson().parse(new String(item), AGVIOTaskItem.class);
-			if(agvioTaskItem.getPackingListItem().getId() == taskId && agvioTaskItem.getState() != 1 && agvioTaskItem.getState() != 2){
+			if(agvioTaskItem.getId() == taskId && agvioTaskItem.getState() != 1 && agvioTaskItem.getState() != 2){
 				cache.lrem("til", 1, item);
 				i--;
 			}
@@ -112,7 +112,9 @@ public class TaskItemRedisDAO {
 		for (int i = 0; i < cache.llen("til"); i++) {
 			byte[] item = cache.lindex("til", i);
 			AGVIOTaskItem agvioTaskItem = Json.getJson().parse(new String(item), AGVIOTaskItem.class);
-			if(agvioTaskItem.getPackingListItem().getId() == taskItem.getPackingListItem().getId()){
+			int a = agvioTaskItem.getId();
+			int b = taskItem.getId();
+			if(a == b){
 				agvioTaskItem.setState(state);
 				cache.lset("til", i, Json.getJson().toJson(agvioTaskItem).getBytes());
 				break;
@@ -121,6 +123,21 @@ public class TaskItemRedisDAO {
 	}
 
 	
+	public synchronized static void updateTaskItemRobot(AGVIOTaskItem taskItem, int robotid) {
+		for (int i = 0; i < cache.llen("til"); i++) {
+			byte[] item = cache.lindex("til", i);
+			AGVIOTaskItem agvioTaskItem = Json.getJson().parse(new String(item), AGVIOTaskItem.class);
+			int a = agvioTaskItem.getId();
+			int b = taskItem.getId();
+			if(a == b){
+				agvioTaskItem.setRobotId(robotid);
+				cache.lset("til", i, Json.getJson().toJson(agvioTaskItem).getBytes());
+				break;
+			}
+		}
+	}
+
+
 	/**
 	 * 删除指定条目<br>
 	 */

@@ -16,7 +16,7 @@ public class Constant {
 	/**
 	 * 叉车实时信息发送周期
 	 */
-	public static final int ROBOT_INFO_CYCLE = 3000;
+	public static final int ROBOT_INFO_CYCLE = 30000;
 	
 	/**
 	 * 任务池遍历周期

@@ -48,7 +48,7 @@ public class LSSLHandler {
 		}
 		
 		//统计当前有效robot数目赋值到cn
-		int cn = Robot.dao.find(ENABLED_ROBOT_SQL, 1).size();
+		int cn = Robot.dao.find(ENABLED_ROBOT_SQL, 2).size();
 		int lcn = Integer.valueOf(TaskItemRedisDAO.getLcn());
 		if (lcn > cn - 1) {
 			lcn = cn - 1;
@@ -64,7 +64,7 @@ public class LSSLHandler {
 		//根据materialType表生成物料是否在架情况映射mtc
 		Map<Integer, MaterialType> mtc = new HashMap<>();
 		for (AGVIOTaskItem item : taskItems) {
-			mtc.put(item.getPackingListItem().getMaterialTypeId(), null);
+			mtc.put(item.getMaterialTypeId(), null);
 		}
 		StringBuffer sb = new StringBuffer(SPECIFIED_ID_MATERIAL_TYPE_SQL);
 		for (int i = 0; i < mtc.size(); i++) {
@@ -79,7 +79,7 @@ public class LSSLHandler {
 		//获取第a个元素
 		while(cn != 0 && a != taskItems.size()) {
 			AGVIOTaskItem item = taskItems.get(a);
-			MaterialType materialType = mtc.get(item.getPackingListItem().getMaterialTypeId());
+			MaterialType materialType = mtc.get(item.getMaterialTypeId());
 			
 			//判断是否在架并且状态是否为0（未分配）
 			if (materialType.getIsOnShelf() && item.getState() == 0) {
@@ -137,6 +137,8 @@ public class LSSLHandler {
 				MaterialType materialType = MaterialType.dao.findById(groupid.split(":")[0]);
 				
 				if(item.getState() == 1) {//LS执行完成时：（这部分逻辑下一个版本放到APP中）
+					//更新tsakitems里对应item的robotid
+					TaskItemRedisDAO.updateTaskItemRobot(item, statusCmd.getRobotid());
 					//构建SL指令，令指定robot把料送回原仓位
 					AGVMoveCmd moveCmd = createSLCmd(statusCmd, groupid, materialType, item);
 					//发送SL>>>
@@ -167,7 +169,7 @@ public class LSSLHandler {
 						}
 					}
 					if(isAllFinish) {
-						int taskId = Integer.valueOf(groupid.split(":")[3]);
+						int taskId = Integer.valueOf(groupid.split(":")[1]);
 						TaskItemRedisDAO.removeTaskItemByTaskId(taskId);
 						Task task = new Task();
 						task.setId(taskId);
@@ -189,7 +191,7 @@ public class LSSLHandler {
 		AGVMissionGroup group = new AGVMissionGroup();
 		group.setMissiongroupid(groupid);//missionGroupId要和LS指令相同
 		group.setRobotid(statusCmd.getRobotid());//robotId要和LS指令相同
-		int windowId = Task.dao.findById(item.getPackingListItem().getTaskId()).getWindow();
+		int windowId = Task.dao.findById(item.getTaskId()).getWindow();
 		Window window = Window.dao.findById(windowId);
 		group.setStartx(window.getRow());//起点X为仓口X
 		group.setStarty(window.getCol());//起点Y为仓口Y
@@ -212,7 +214,7 @@ public class LSSLHandler {
 		group.setStartx(materialType.getRow());//物料Row
 		group.setStarty(materialType.getCol());//物料Col
 		group.setStartz(materialType.getHeight());//物料Height
-		int windowId = Task.dao.findById(item.getPackingListItem().getTaskId()).getWindow();
+		int windowId = Task.dao.findById(item.getTaskId()).getWindow();
 		Window window = Window.dao.findById(windowId);
 		group.setEndx(window.getRow());//终点X为仓口X
 		group.setEndy(window.getCol());//终点Y为仓口Y

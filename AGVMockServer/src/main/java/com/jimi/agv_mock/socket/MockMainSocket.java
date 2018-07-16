@@ -55,7 +55,7 @@ public class MockMainSocket implements UncaughtExceptionHandler{
 		sendCmdidAckMap = new HashMap<>();
     	receiveNotAckCmdidSet = new HashSet<>();
     	taskPool = new TaskPool();
-//    	taskPool.start();
+    	taskPool.start();
 	}
 	
 	
@@ -82,24 +82,23 @@ public class MockMainSocket implements UncaughtExceptionHandler{
 			if(message.contains("\"cmdcode\":\"ack\"")) {//ack指令
 				ACKHandler.handleACK(message);
 			}else if(message.contains("\"cmdcode\"")){//非ack指令
-				ACKHandler.handleNOTACK(message);
-				
-				//交给对应命令处理器：
-				//判断是否是ls，sl指令
-				if(message.contains("\"cmdcode\":\"LS\"") || message.contains("\"cmdcode\":\"SL\"")) {
-					LSSLHandler.handleLSSL(message);
+				if(ACKHandler.handleNOTACK(message)) {
+					//交给对应命令处理器：
+					//判断是否是ls，sl指令
+					if(message.contains("\"cmdcode\":\"LS\"") || message.contains("\"cmdcode\":\"SL\"")) {
+						LSSLHandler.handleLSSL(message);
+					}
+					
+					//判断是启用禁用指令
+					if(message.contains("\"cmdcode\":\"enable\"") || message.contains("\"cmdcode\":\"disable\"")) {
+						SwitchHandler.handleEnableOrDisable(message);
+					}
+					
+					//判断是暂停继续指令
+					if(message.contains("\"cmdcode\":\"allpause\"") || message.contains("\"cmdcode\":\"allstart\"")) {
+						SwitchHandler.handlePasueOrStart(message);
+					}
 				}
-				
-				//判断是启用禁用指令
-				if(message.contains("\"cmdcode\":\"enable\"") || message.contains("\"cmdcode\":\"disable\"")) {
-					SwitchHandler.handleEnableOrDisable(message);
-				}
-				
-				//判断是暂停继续指令
-				if(message.contains("\"cmdcode\":\"allpause\"") || message.contains("\"cmdcode\":\"allstart\"")) {
-					SwitchHandler.handlePasueOrStart(message);
-				}
-				
 			}
 		});
 		thread.setUncaughtExceptionHandler(this);
@@ -114,7 +113,7 @@ public class MockMainSocket implements UncaughtExceptionHandler{
 	public static void sendACK(String message) {
 		try {
 			//模拟延迟
-			Thread.sleep(Constant.WAIT_ACK_TIMEOUT + new Random().nextInt() % 500);
+//			Thread.sleep(Constant.WAIT_ACK_TIMEOUT + new Random().nextInt() % 500);
 			send(message);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -126,18 +125,33 @@ public class MockMainSocket implements UncaughtExceptionHandler{
 	 * 使用websocket发送一条消息到AGV服务器
 	 */
 	public static void sendMessage(String message) {
-		int cmdid = JSON.parseObject(message, AGVBaseCmd.class).getCmdid();
-		try {
-			send(message);
-			sendCmdidAckMap.put(cmdid, false);
-			Thread.sleep(Constant.WAIT_ACK_TIMEOUT);
-			while(!sendCmdidAckMap.get(cmdid)) {
+//		synchronized (MockMainSocket.class) {
+			int cmdid = JSON.parseObject(message, AGVBaseCmd.class).getCmdid();
+			try {
+//				//判断只要存在任何一条没有被ack的指令，则该发送操作阻塞
+//				while (true) {
+//					boolean isAllAck = true;
+//					for (Boolean isAck : sendCmdidAckMap.values()) {
+//						if (!isAck) {
+//							isAllAck = false;
+//						}
+//					}
+//					if (isAllAck) {
+//						break;
+//					}
+//					Thread.sleep(Constant.WAIT_ACK_TIMEOUT);
+//				}
 				send(message);
+				sendCmdidAckMap.put(cmdid, false);
 				Thread.sleep(Constant.WAIT_ACK_TIMEOUT);
+				while (!sendCmdidAckMap.get(cmdid)) {
+					send(message);
+					Thread.sleep(Constant.WAIT_ACK_TIMEOUT);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+//		}
 	}
     
 

@@ -23,14 +23,14 @@ public class ACKHandler {
 	}
 
 	/**
-	 * 处理非ACK指令
+	 * 处理非ACK指令，如果未ACK，则回复ACK并返回true，反之不回复并返回false
 	 */
-	public static void handleNOTACK(String message) {
+	public static boolean handleNOTACK(String message) {
 		AGVBaseCmd baseCmd = JSON.parseObject(message, AGVBaseCmd.class);
 		//判断是否已经ack过
 		for (Integer cmdid : MockMainSocket.getReceiveNotAckCmdidSet()) {
 			if(baseCmd.getCmdid() == cmdid) {
-				return;
+				return false;
 			}
 		}
 		//发送ack
@@ -38,6 +38,7 @@ public class ACKHandler {
 		MockMainSocket.sendACK(JSON.toJSONString(baseCmd));
 		//添加到已经ACK的非ACK指令CMDID集合
 		MockMainSocket.getReceiveNotAckCmdidSet().add(baseCmd.getCmdid());
+		return true;
 	}
 }
 	
