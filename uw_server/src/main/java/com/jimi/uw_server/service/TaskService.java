@@ -46,11 +46,22 @@ public class TaskService {
 
 	private static final String getMaterialIdSql = "SELECT id FROM material WHERE type = (SELECT type FROM material WHERE type = ?)";
 
-	public synchronized boolean create(Task task, Integer type, String fileName) {
-		task.setType(type);
-		task.setFileName(fileName);
-		task.setState(0);
-		task.setCreateTime(new Date());
+	public synchronized boolean createIOTask(Task task, Integer type, String fileName, String fullFileName) throws Exception {
+		if (!(fileName.endsWith(".xls") || fileName.endsWith(".xlsx"))) {
+			return false;
+		}
+		List<PackingListItemBO> items;
+		File file = new File(fullFileName);
+		ExcelHelper fileReader = ExcelHelper.from(file);
+		items = fileReader.unfill(PackingListItemBO.class, 2);
+		if (items == null) {
+			return false;
+		} else {
+			task.setType(type);
+			task.setFileName(fileName);
+			task.setState(0);
+			task.setCreateTime(new Date());
+		}
 		return task.save();
 	}
 
@@ -174,7 +185,8 @@ public class TaskService {
 			// 获取将要入库/出库的物料的库存数量
 			MaterialType checkQuantitySql = MaterialType.dao.findFirst(getQuantitySql, item.getNo());
 			if (checkQuantitySql.get("remainderQuantity") == null) {
-				throw new OperationException(item.getNo() + "插入套料单失败，可能是物料实体表里面不存在套料单中对应的物料类型！");
+				continue;
+//				throw new OperationException(item.getNo() + "插入套料单失败，可能是物料实体表里面不存在套料单中对应的物料类型！");
 			} else {
 				remainderQuantity = Integer.parseInt(checkQuantitySql.get("remainderQuantity").toString());
 			}

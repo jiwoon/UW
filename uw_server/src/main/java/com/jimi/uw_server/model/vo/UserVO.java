@@ -78,11 +78,14 @@ public class UserVO {
 	}
 
 	public String getTypeString() {
-		if (this.getType() == 1) {
+		if (this.getType() == 0) {
+			this.typeString = "游客";
+		} else if (this.getType() == 1) {
 			this.typeString = "超级管理员";
-		} else {
+		} else if (this.getType() == 2) {
 			this.typeString = "普通管理员";
 		}
+
 		return typeString;
 	}
 	

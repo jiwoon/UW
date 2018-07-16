@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.jfinal.aop.Enhancer;
-import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jimi.uw_server.exception.OperationException;
 import com.jimi.uw_server.model.User;
+import com.jimi.uw_server.model.UserType;
 import com.jimi.uw_server.model.vo.UserVO;
 import com.jimi.uw_server.service.base.SelectService;
 import com.jimi.uw_server.service.entity.PagePaginate;
@@ -29,14 +29,12 @@ public class UserService extends SelectService{
 
 	private static final String uniqueCheckSql = "SELECT * FROM user WHERE uid = ?";
 
-	private static final String userTypeSelectSql = "SELECT id,name";
-
-	private static final String userTypeNonSelectSql = "FROM user_type";
+	private static final String getUserTypeSql = "SELECT id,name FROM user_type";
 
 	public User login(String uid, String password) {
 		User user = User.dao.findFirst(loginSql, uid, MD5Util.MD5(password));
 		if(user == null) {
-			throw new OperationException("userId or password is not correct");
+			throw new OperationException("用户名或密码不正确！");
 		} 
 		if(!user.getEnabled()) {
 			throw new OperationException("用户" + user.getName() + "已被禁用！");
@@ -45,17 +43,23 @@ public class UserService extends SelectService{
 	}
 
 	public boolean add(User user) {
+		if (user.getUid() == null || user.getPassword() == null || user.getName() == null || user.getType() == null) {
+			return false;
+		}
 		user.setEnabled(true);
 		if(User.dao.find(uniqueCheckSql, user.getUid()).size() != 0) {
 			throw new OperationException("用户" + user.getUid() + "已存在！");
 		}
-		user.keep("uid","name","password","type", "enabled");
+		user.keep("uid","name","password", "enabled","type");
 		user.setPassword(MD5Util.MD5(user.getPassword()));
 		return user.save();
 	}
 
 	public boolean update(User user) {
-		user.keep("uid","name","password","type","enabled");
+		if (!(user.getPassword() == null)) {
+			user.setPassword(MD5Util.MD5(user.getPassword()));
+		}
+		user.keep("uid","name","password", "enabled","type");
 		return user.update();
 	}
 
@@ -79,8 +83,10 @@ public class UserService extends SelectService{
 		return pagePaginate;
 	}
 
-	public Object getTypes(Integer pageNo, Integer pageSize) {
-		return Db.paginate(pageNo, pageSize, userTypeSelectSql, userTypeNonSelectSql);
+	public List<UserType> getTypes() {
+		List<UserType> userTypes = new ArrayList<UserType>();
+		userTypes = UserType.dao.find(getUserTypeSql);
+		return userTypes;
 	}
 
 }
