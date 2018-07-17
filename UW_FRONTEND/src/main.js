@@ -12,10 +12,6 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap/dist/js/bootstrap.bundle.min'
 import Datatable from '../static/js/datatable.min.js'
 import locale from './locale/zh-cn'
-//
-// let xxxx = '123_234_asd';
-// let regxxxx = /([^_]+)/g;
-// console.log(regxxxx.exec(xxxx))
 
 Vue.component('icon', Icon)
 Vue.use(Datatable, {locale})

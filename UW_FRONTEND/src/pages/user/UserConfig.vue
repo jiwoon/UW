@@ -24,15 +24,15 @@
             <div class="form-row">
               <div class="form-row col-6 pl-2 pr-2">
                 <label for="user-name" class="col-form-label">用户名:</label>
-                <input type="text" id="user-name" class="form-control" v-model="userData.uid">
+                <input type="text" id="user-name" class="form-control" v-model="userData.uid" maxlength="16">
               </div>
               <div class="form-row col-6 pl-2 pr-2">
                 <label for="user-pwd" class="col-form-label">密码:</label>
-                <input type="password" id="user-pwd" class="form-control" v-model="userData.password">
+                <input type="password" id="user-pwd" class="form-control" v-model="userData.password" maxlength="32">
               </div>
               <div class="form-row col-6 pl-2 pr-2">
                 <label for="user-des" class="col-form-label">用户描述:</label>
-                <input type="text" id="user-des" class="form-control" v-model="userData.name">
+                <input type="text" id="user-des" class="form-control" v-model="userData.name" maxlength="32">
               </div>
               <div class="form-row col-6 pl-2 pr-2">
                 <label for="access-select" class="col-form-label">用户类型:</label>
