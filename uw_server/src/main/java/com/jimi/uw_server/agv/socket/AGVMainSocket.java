@@ -7,7 +7,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
 import javax.websocket.ClientEndpoint;
@@ -25,6 +24,7 @@ import com.jimi.uw_server.agv.entity.cmd.base.AGVBaseCmd;
 import com.jimi.uw_server.agv.handle.ACKHandler;
 import com.jimi.uw_server.agv.handle.ExceptionHandler;
 import com.jimi.uw_server.agv.handle.LSSLHandler;
+import com.jimi.uw_server.agv.thread.TaskPool;
 import com.jimi.uw_server.model.SocketLog;
 import com.jimi.uw_server.util.ErrorLogWritter;
 
@@ -43,6 +43,8 @@ public class AGVMainSocket implements UncaughtExceptionHandler{
 	
 	private static String uri;
 	
+	private TaskPool taskPool;
+	
 	/**
 	 * 发送的CMDID与是否被ACK的关系映射
 	 */
@@ -59,7 +61,6 @@ public class AGVMainSocket implements UncaughtExceptionHandler{
 			sendCmdidAckMap = new HashMap<>();
 			receiveNotAckCmdidSet = new HashSet<>();
 			TaskItemRedisDAO.setPauseAssign(0);
-			TaskItemRedisDAO.setLcn(0);
 			//连接AGV服务器
 			AGVMainSocket.uri = uri;
 			connect(AGVMainSocket.uri);
@@ -74,7 +75,8 @@ public class AGVMainSocket implements UncaughtExceptionHandler{
 		System.out.println("AGVMainSocket is Running Now...");
 		session = userSession;
 		try {
-			LSSLHandler.sendLS();
+			taskPool = new TaskPool();
+			taskPool.start();
 		} catch (Exception e) {
 			ErrorLogWritter.save(e.getClass().getSimpleName() + ":" + e.getMessage());
 			e.printStackTrace();
@@ -85,6 +87,7 @@ public class AGVMainSocket implements UncaughtExceptionHandler{
 	@OnClose
 	public void onClose(Session userSession, CloseReason reason) {
 		ErrorLogWritter.save("AGVMainSocket was Stopped because :" + reason.getReasonPhrase());
+		taskPool.interrupt();
 		try {
 			Thread.sleep(3000);
 			//重新连接

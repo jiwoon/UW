@@ -12,6 +12,7 @@ import com.jimi.uw_server.agv.entity.bo.AGVMissionGroup;
 import com.jimi.uw_server.agv.entity.cmd.AGVMoveCmd;
 import com.jimi.uw_server.agv.entity.cmd.AGVStatusCmd;
 import com.jimi.uw_server.agv.socket.AGVMainSocket;
+import com.jimi.uw_server.agv.socket.RobotInfoSocket;
 import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.model.Robot;
 import com.jimi.uw_server.model.Task;
@@ -25,7 +26,6 @@ import com.jimi.uw_server.model.Window;
  */
 public class LSSLHandler {
 
-	private static final String ENABLED_ROBOT_SQL = "SELECT * FROM robot WHERE enabled = ?";
 	private static final String SPECIFIED_ID_MATERIAL_TYPE_SQL = "SELECT * FROM material_type WHERE id IN()";
 	private static final String SPECIFIED_POSITION_MATERIAL_TYEP_SQL = "SELECT * FROM material_type WHERE row = ? AND col = ? AND height = ?";
 	
@@ -34,32 +34,13 @@ public class LSSLHandler {
 	 * 发送LS指令
 	 */
 	public static void sendLS() {
-		//判断是否存在停止分配标志位
-		if(TaskItemRedisDAO.isPauseAssign() == 1){
-			return;
-		}
-
-		//判断til是否为空
+		//判断til是否为空或者cn为0
+		int cn = countFreeRobot();
 		List<AGVIOTaskItem> taskItems = new ArrayList<>();
 		TaskItemRedisDAO.appendTaskItems(taskItems);
-		if (taskItems.isEmpty()) {
-			TaskItemRedisDAO.setLcn(0);
+		if (taskItems.isEmpty() || cn == 0) {
 			return;
 		}
-		
-		//统计当前有效robot数目赋值到cn
-		int cn = Robot.dao.find(ENABLED_ROBOT_SQL, 2).size();
-		int lcn = Integer.valueOf(TaskItemRedisDAO.getLcn());
-		if (lcn > cn - 1) {
-			lcn = cn - 1;
-			TaskItemRedisDAO.setLcn(lcn);
-			return;
-		}
-		int b = cn;
-		cn = cn - lcn;
-		lcn = b - 1;
-		int a = 0;
-		TaskItemRedisDAO.setLcn(lcn);
 		
 		//根据materialType表生成物料是否在架情况映射mtc
 		Map<Integer, MaterialType> mtc = new HashMap<>();
@@ -77,7 +58,8 @@ public class LSSLHandler {
 		}
 		
 		//获取第a个元素
-		while(cn != 0 && a != taskItems.size()) {
+		int a = 0;
+		do{
 			AGVIOTaskItem item = taskItems.get(a);
 			MaterialType materialType = mtc.get(item.getMaterialTypeId());
 			
@@ -111,7 +93,7 @@ public class LSSLHandler {
 				cn--;
 			}
 			a++;
-		}
+		}while(cn != 0 && a != taskItems.size());
 	}
 
 
@@ -176,9 +158,6 @@ public class LSSLHandler {
 						task.setState(3);
 						task.update();
 					}
-					
-					//调用指令发送发方法发送下一条指令
-					sendLS();
 				}
 			}
 		}
@@ -227,4 +206,15 @@ public class LSSLHandler {
 		return cmd;
 	}
 	
+	
+	private static int countFreeRobot() {
+		List<Robot> freeRobots = new ArrayList<>();
+		for (Robot robot : RobotInfoSocket.getRobots().values()) {
+			//筛选空闲或充电状态的处于启用中的叉车
+			if((robot.getStatus() == 0 || robot.getStatus() == 4) && robot.getEnabled() == 2) {
+				freeRobots.add(robot);
+			}
+		}
+		return freeRobots.size();
+	}
 }

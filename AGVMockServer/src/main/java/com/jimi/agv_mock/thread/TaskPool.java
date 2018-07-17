@@ -27,7 +27,7 @@ public class TaskPool extends Thread{
 	}
 	
 	
-	public void addTask(AGVMoveCmd cmd) {
+	public synchronized void addTask(AGVMoveCmd cmd) {
 		tasks.offer(cmd);
 	}
 	
@@ -46,17 +46,31 @@ public class TaskPool extends Thread{
 	}
 	
 	
-	private void assignOneTask() {
-		AGVMoveCmd task;
-		task = tasks.poll();
-		AGVRobot robot = getAFreeRobot();
-		if(task != null && robot != null) {
+	private synchronized void assignOneTask() {
+		AGVMoveCmd task = tasks.peek();
+		if(task == null) {
+			return; 
+		}
+		AGVRobot robot = null;
+		//判断被绑定的robotid
+		int robotid = task.getMissiongroups().get(0).getRobotid();
+		if(robotid == 0) {
+			robot = getAFreeRobot();
+		}else {
+			robot = getRobotById(robotid);
+		}
+		//如果取得Robot则出列
+		if(robot != null) {
+			tasks.poll();
 			TaskExcutor excutor = new TaskExcutor(getAFreeRobot(), task);
 			excutor.start();
 		}
 	}
 	
 	
+	/**
+	 * 随机获取一个空闲的机器
+	 */
 	private AGVRobot getAFreeRobot() {
 		List<AGVRobot> freeRobotIds = new ArrayList<>();
 		for (AGVRobot robot : MockRobotInfoSocket.getRobots().values()) {
@@ -71,6 +85,19 @@ public class TaskPool extends Thread{
 		}else {
 			AGVRobot robot = freeRobotIds.get(Math.abs(new Random().nextInt()) % freeRobotIds.size());
 			return robot;
+		}
+	}
+	
+	
+	/**
+	 * 获取指定机器，如果非空闲则返回null 
+	 */
+	private AGVRobot getRobotById(int robotId) {
+		AGVRobot robot = MockRobotInfoSocket.getRobots().get(robotId);
+		if((robot.getStatus() == 0 || robot.getStatus() == 4) && robot.getEnable() == 2) {
+			return robot;
+		}else {
+			return null;
 		}
 	}
 	
