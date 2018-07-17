@@ -71,7 +71,7 @@ public class TaskService {
 		return task.update();
 	}
 
-	public List<AGVIOTaskItem> start(Task task, Integer id, Integer window) {
+	public boolean start(Task task, Integer id, Integer window) {
 		List<PackingListItem> items = PackingListItem.dao.find(getTaskMaterialIdSql, id);
 		// 根据套料单、物料类型表生成任务条目
 		List<AGVIOTaskItem> taskItems = new ArrayList<AGVIOTaskItem>();
@@ -79,10 +79,11 @@ public class TaskService {
 			AGVIOTaskItem a = new AGVIOTaskItem(item);
 			taskItems.add(a);
 		}
+		// 把任务条目均匀插入到队列til中
+		TaskItemRedisDAO.addTaskItem(taskItems);
 		task.setState(2);
 		task.keep("id", "type", "file_name", "window", "state", "createtime");
-		task.update();
-		return taskItems;
+		return task.update();
 	}
 
 	public boolean cancel(Task task, Integer id) {
