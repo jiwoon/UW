@@ -1,11 +1,15 @@
 package com.jimi.uw_server.service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.jfinal.aop.Enhancer;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
+import com.jimi.uw_server.agv.entity.bo.AGVRobot;
 import com.jimi.uw_server.model.Robot;
 import com.jimi.uw_server.model.vo.RobotVO;
 import com.jimi.uw_server.service.base.SelectService;
@@ -67,4 +71,33 @@ public class RobotService extends SelectService {
 		return res;
 	}
 
+	
+	public void updateRobotInfo(Map<Integer, AGVRobot> newRobots, Map<Integer, AGVRobot> robots) {
+		//获取新增项
+		Set<Integer> addRobotsIds = new HashSet<>(newRobots.keySet());
+		addRobotsIds.removeAll(robots.keySet());
+		//新增机器记录
+		for (Integer id : addRobotsIds) {
+			Robot robot = AGVRobot.toModel(newRobots.get(id));
+			robot.save();
+		}
+		
+		//获取减少项
+		Set<Integer> removeRobotsIds = new HashSet<>(robots.keySet());
+		removeRobotsIds.removeAll(newRobots.keySet());
+		//删除机器记录
+		for (Integer id : removeRobotsIds) {
+			Robot.dao.deleteById(id);
+		}
+		
+		//获取修改项
+		Set<Integer> modifyRobotsIds = new HashSet<>(newRobots.keySet());
+		modifyRobotsIds.retainAll(robots.keySet());
+		//修改机器记录
+		for (Integer id : modifyRobotsIds) {
+			Robot robot = AGVRobot.toModel(newRobots.get(id));
+			robot.update();
+		}
+	}
+	
 }

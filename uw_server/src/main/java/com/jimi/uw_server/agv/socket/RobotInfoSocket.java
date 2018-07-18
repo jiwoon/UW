@@ -1,7 +1,6 @@
 package com.jimi.uw_server.agv.socket;
 
 import java.net.URI;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,10 +13,12 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
 
+import com.jfinal.aop.Enhancer;
 import com.jfinal.json.Json;
 import com.jimi.uw_server.agv.entity.bo.AGVRobot;
 import com.jimi.uw_server.agv.entity.cmd.AGVRobotInfoCmd;
 import com.jimi.uw_server.model.Robot;
+import com.jimi.uw_server.service.RobotService;
 import com.jimi.uw_server.util.ErrorLogWritter;
 
 /**
@@ -29,17 +30,28 @@ import com.jimi.uw_server.util.ErrorLogWritter;
 @ClientEndpoint
 public class RobotInfoSocket{
 	
+	private static final String GET_ALL_SQL = "SELECT * FROM robot";
+	
 	private static String uri;
+	
+	private static RobotService robotService = Enhancer.enhance(RobotService.class);
 	
 	/**
 	 * 机器实体集合
 	 */
-	private static Map<Integer, Robot> robots;
+	private static Map<Integer, AGVRobot> robots;
+	
+	
 	
 	
 	public static void init(String uri) {
 		try {
 			robots = new HashMap<>();
+			//从数据库获取叉车数据
+			for (Robot robot : Robot.dao.find(GET_ALL_SQL)) {
+				AGVRobot agvRobot = AGVRobot.fromModel(robot);
+				robots.put(agvRobot.getRobotid(), agvRobot);
+			}
 			//连接AGV服务器
 			RobotInfoSocket.uri = uri;
 			connect(uri);
@@ -76,22 +88,21 @@ public class RobotInfoSocket{
 	@OnMessage
 	public void onMessage(String message ,Session session) {
 		try {
-			System.out.println("["+ new Date().toString() +"]" + "receiver message:" + message);
+//			System.out.println("["+ new Date().toString() +"]" + "receiver message:" + message);
+			
+			//获取新的机器数据
+			Map<Integer, AGVRobot> newRobots = new HashMap<>();
 			AGVRobotInfoCmd robotInfoCmd = Json.getJson().parse(message, AGVRobotInfoCmd.class);
-			for (AGVRobot agvRobot : robotInfoCmd.getRobotarry()) {
-				Integer robotid = agvRobot.getRobotid();
-				Robot robot = Robot.dao.findById(robotid);
-				robot.setBattery(agvRobot.getBatteryPower());
-				robot.setEnabled(agvRobot.getEnable());
-				robot.setError(agvRobot.getErrorcode());
-				robot.setWarn(agvRobot.getWarncode());
-				robot.setX(agvRobot.getPosX());
-				robot.setY(agvRobot.getPosY());
-				robot.setStatus(agvRobot.getStatus());
-				robot.setPause(agvRobot.getSystem_pause());
-				robots.put(robotid, robot);
-				robot.update();
+			for (AGVRobot agvRobot : robotInfoCmd.getRobotarray()) {
+				newRobots.put(agvRobot.getRobotid(), agvRobot);
 			}
+			
+			//更新机器信息（新机器会增加记录，不存在的机器会直接清除）
+			robotService.updateRobotInfo(newRobots, robots);
+			
+			//修改引用
+			robots = newRobots;
+			
 		}catch (Exception e) {
 			ErrorLogWritter.save(e.getClass().getSimpleName() + ":" + e.getMessage());
 			e.printStackTrace();
@@ -105,7 +116,7 @@ public class RobotInfoSocket{
 	}
 
 	
-	public static Map<Integer, Robot> getRobots() {
+	public static Map<Integer, AGVRobot> getRobots() {
 		return robots;
 	}
 	

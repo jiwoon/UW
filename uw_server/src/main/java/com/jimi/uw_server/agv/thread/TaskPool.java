@@ -16,17 +16,21 @@ public class TaskPool extends Thread{
 	@Override
 	public void run() {
 		System.out.println("TaskPool is running NOW...");
-		try {
-			while(true) {
+		while(true) {
+			try {
 				sleep(TASK_POOL_CYCLE);
 				//判断是否存在停止分配标志位
 				if(TaskItemRedisDAO.isPauseAssign() == 1){
 					continue;
 				}
 				LSSLHandler.sendLS();
+			} catch (Exception e) {
+				if(e instanceof InterruptedException) {
+					break;
+				}else {
+					e.printStackTrace();
+				}
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 	

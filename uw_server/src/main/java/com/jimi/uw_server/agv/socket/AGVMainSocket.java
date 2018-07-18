@@ -145,34 +145,19 @@ public class AGVMainSocket implements UncaughtExceptionHandler{
 	 * 使用websocket发送一条消息到AGV服务器
 	 */
 	public static void sendMessage(String message) {
-//		synchronized (AGVMainSocket.class) {
-			int cmdid = Json.getJson().parse(message, AGVBaseCmd.class).getCmdid();
-			try {
-//				//判断只要存在任何一条没有被ack的指令，则该发送操作阻塞
-//				while (true) {
-//					boolean isAllAck = true;
-//					for (Boolean isAck : sendCmdidAckMap.values()) {
-//						if (!isAck) {
-//							isAllAck = false;
-//						}
-//					}
-//					if (isAllAck) {
-//						break;
-//					}
-//					Thread.sleep(WAIT_ACK_TIMEOUT);
-//				}
+		int cmdid = Json.getJson().parse(message, AGVBaseCmd.class).getCmdid();
+		try {
+			send(message);
+			sendCmdidAckMap.put(cmdid, false);
+			Thread.sleep(WAIT_ACK_TIMEOUT);
+			while (!sendCmdidAckMap.get(cmdid)) {
 				send(message);
-				sendCmdidAckMap.put(cmdid, false);
 				Thread.sleep(WAIT_ACK_TIMEOUT);
-				while (!sendCmdidAckMap.get(cmdid)) {
-					send(message);
-					Thread.sleep(WAIT_ACK_TIMEOUT);
-				}
-			} catch (Exception e) {
-				ErrorLogWritter.save(e.getClass().getSimpleName() + ":" + e.getMessage());
-				e.printStackTrace();
 			}
-//		}
+		} catch (Exception e) {
+			ErrorLogWritter.save(e.getClass().getSimpleName() + ":" + e.getMessage());
+			e.printStackTrace();
+		}
 	}
 	
 	
