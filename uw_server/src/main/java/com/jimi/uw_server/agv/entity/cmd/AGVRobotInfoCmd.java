@@ -13,14 +13,14 @@ import com.jimi.uw_server.agv.entity.cmd.base.AGVBaseCmd;
  */
 public class AGVRobotInfoCmd extends AGVBaseCmd{
 	
-	private List<AGVRobot> robotarry;
+	private List<AGVRobot> robotarray;
 
-	public List<AGVRobot> getRobotarry() {
-		return robotarry;
+	public List<AGVRobot> getRobotarray() {
+		return robotarray;
 	}
 
-	public void setRobotarry(List<AGVRobot> robotarry) {
-		this.robotarry = robotarry;
+	public void setRobotarray(List<AGVRobot> robotarray) {
+		this.robotarray = robotarray;
 	}
 	
 }

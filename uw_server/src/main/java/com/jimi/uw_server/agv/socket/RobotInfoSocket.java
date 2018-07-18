@@ -1,12 +1,10 @@
 package com.jimi.uw_server.agv.socket;
 
 import java.net.URI;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.websocket.ClientEndpoint;
@@ -94,7 +92,7 @@ public class RobotInfoSocket{
 			//获取新的机器数据
 			Map<Integer, AGVRobot> newRobots = new HashMap<>();
 			AGVRobotInfoCmd robotInfoCmd = Json.getJson().parse(message, AGVRobotInfoCmd.class);
-			for (AGVRobot agvRobot : robotInfoCmd.getRobotarry()) {
+			for (AGVRobot agvRobot : robotInfoCmd.getRobotarray()) {
 				newRobots.put(agvRobot.getRobotid(), agvRobot);
 			}
 			
