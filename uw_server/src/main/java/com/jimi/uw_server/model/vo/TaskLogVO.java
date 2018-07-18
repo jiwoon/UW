@@ -3,7 +3,6 @@ package com.jimi.uw_server.model.vo;
 import java.util.Date;
 
 import com.jimi.uw_server.model.TaskLog;
-import com.jimi.uw_server.model.User;
 
 /**
  * @author HardyYao
@@ -19,9 +18,7 @@ public class TaskLogVO extends TaskLog {
 	private String autoString;
 
 	private String taskTypeString;
-	
-	private String operatorName;
-	
+
 	public String getAutoString(boolean auto) {
 		if(auto) {
 			this.autoString = "自动";
@@ -44,12 +41,6 @@ public class TaskLogVO extends TaskLog {
 		return taskTypeString;
 	}
 
-	public String getOperatorName(String operator) {
-		User user = User.dao.findById(operator);
-		operatorName = user.getName();
-		return operatorName;
-	}
-
 	public TaskLogVO(Integer id, Integer taskId, Integer type, String materialId, String materialNo, Integer quantity,
 			String operator, boolean auto, Date time) {
 		this.setId(id);
@@ -59,7 +50,7 @@ public class TaskLogVO extends TaskLog {
 		this.set("materialNo", materialNo);
 		this.setQuantity(quantity);
 		this.setOperator(operator);
-		this.set("operatorName", getOperatorName(operator));
+		this.set("operatorName", operator);
 		this.set("auto", getAutoString(auto));
 		this.setTime(time);
 	}

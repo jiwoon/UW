@@ -158,7 +158,7 @@ public class SelectService {
 
 	private Page<Record> paginateAndFillWhereValues(String[]tables, Integer pageNo, Integer pageSize, StringBuffer sql, List<String> questionValues) {
 		if((pageNo != null && pageSize == null) || (pageNo == null && pageSize != null)) {
-			throw new ParameterException("ascBy and descBy must be provided at the same time");
+			throw new ParameterException("pageNo and pageSize must be provided at the same time");
 		}
 		String resultSet = createResultSet(tables);
 		if(pageNo == null && pageSize == null) {
