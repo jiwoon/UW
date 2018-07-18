@@ -258,7 +258,8 @@
                 }
               } else {
                 alert('日期格式错误');
-                this.setLoading(false)
+                this.setLoading(false);
+                return
               }
             }
           }

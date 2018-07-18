@@ -69,7 +69,8 @@ public class TaskController extends Controller {
 	}
 
 	public void check(Integer id) {
-		renderJson(ResultUtil.failed("该功能尚在开发中！"));
+		renderJson(ResultUtil.succeed(taskService.check(id)));
+//		renderJson(ResultUtil.failed("该功能尚在开发中！"));
 	}
 	
 	public void select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){

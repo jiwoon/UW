@@ -48,7 +48,7 @@ public class RobotService extends SelectService {
 		Robot robot = new Robot();
 		robot.setId(id);
 		robot.setEnabled(enabled);
-		robot.keep("id", "status", "battery", "x", "y", "enabled", "errorcode", "warncode", "pause");
+		robot.keep("id", "status", "battery", "x", "y", "enabled", "error", "warn", "pause");
 		return robot.update();
 	}
 	
@@ -61,7 +61,7 @@ public class RobotService extends SelectService {
 			id = rId.getId();
 			robot.setId(id);
 			robot.setPause(pause);
-			robot.keep("id", "status", "battery", "x", "y", "enabled", "errorcode", "warncode", "pause");
+			robot.keep("id", "status", "battery", "x", "y", "enabled", "error", "warn", "pause");
 			res = robot.update();
 		}
 		return res;

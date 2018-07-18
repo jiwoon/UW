@@ -1,8 +1,8 @@
 <template>
   <div class="user-options form-row">
-    <!--<div class="btn pl-1 pr-1" title="详细" @click="checkTaskDetails(row)">-->
-      <!--<icon name="list" scale="1.8"></icon>-->
-    <!--</div>-->
+    <div class="btn pl-1 pr-1" title="详细" @click="checkTaskDetails(row)">
+      <icon name="list" scale="1.8"></icon>
+    </div>
     <div class="btn pl-1 pr-1" title="状态" @click="isEditing = true">
       <icon name="menu" scale="1.8"></icon>
     </div>
@@ -40,10 +40,15 @@
     methods: {
       ...mapActions(['setTaskActiveState', 'setTaskData', 'setLoading']),
       checkTaskDetails: function (val) {
-        this.setLoading(true);
-        this.setTaskActiveState(true);
-        this.setTaskData('');
-        this.setTaskData(val.id)
+        if (val.type <= 1) {
+          this.setLoading(true);
+          this.setTaskActiveState(true);
+          this.setTaskData('');
+          this.setTaskData(val)
+        } else {
+          alert('暂不支持此类型任务的详情查看');
+          return;
+        }
       }
     }
   }

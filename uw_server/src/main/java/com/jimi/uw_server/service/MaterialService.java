@@ -66,6 +66,7 @@ public class MaterialService extends SelectService{
 
 	public Object getEntities(Material material, Integer type) {
 		List<Material> materialEntities;
+		// 判断该物料是否有库存
 		if(Material.dao.find(entitySearchSql, type).size() == 0) {
 			return null;
 		}

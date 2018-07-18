@@ -56,6 +56,7 @@ public class UserService extends SelectService{
 	}
 
 	public boolean update(User user) {
+		// 更新用户信息时，如果修改了密码，需要对密码进行加密
 		if (!(user.getPassword() == null)) {
 			user.setPassword(MD5Util.MD5(user.getPassword()));
 		}
@@ -63,7 +64,7 @@ public class UserService extends SelectService{
 		return user.update();
 	}
 
-	public Object select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
+	public Object select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {		
 		List<UserVO> userVO = new ArrayList<UserVO>();
 		Page<Record> result = selectService.select("user", pageNo, pageSize, ascBy, descBy, filter);
 

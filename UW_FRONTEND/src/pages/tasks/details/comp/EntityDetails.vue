@@ -37,9 +37,9 @@
         data: [],
         columns: [
           {title: '料号', field: 'materialNo', colStyle: {width: '100px'}},
-          {title: '请求数量', field: 'requestQuantity', colStyle: {width: '60px'}},
-          {title: '实际数量', field: 'actualQuantity', colStyle: {width: '60px'}},
-          {title: '完成时间', field: 'finishTime', colStyle: {width: '120px'}}
+          {title: '套料单条目', field: 'requestQuantity', colStyle: {width: '120px'}},
+          {title: '实际变动数目', field: 'actualQuantity', colStyle: {width: '120px'}},
+          {title: '操作时间', field: 'finishTime', colStyle: {width: '120px'}}
         ],
         total: 0,
         query: {"limit": 20, "offset": 0},
@@ -56,13 +56,25 @@
         this.total = 0;
       },
       fetchData: function (val) {
-        console.log(val)
         if (!this.isPending) {
           this.isPending = true;
+
+
+          //patch
+          if (1) {
+            alert('暂不支持任务详情查看');
+            this.isPending = false;
+            this.setLoading(false);
+            this.closePanel();
+            return;
+          }
+
+
           let options = {
             url: taskCheckUrl,
             data: {
-              id: val
+              id: val.id,
+              type: val.type
             }
           };
           axiosPost(options).then(response => {
