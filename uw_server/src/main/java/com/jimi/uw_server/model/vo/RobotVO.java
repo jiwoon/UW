@@ -26,10 +26,12 @@ public class RobotVO extends Robot{
 	}
 
 	public String getEnableString(Integer enabled) {
-		if(enabled == 1) {
-			this.enableString = "是";
+		if(enabled == 0) {
+			this.enableString = "初始禁用";
+		} else if (enabled == 1) {
+			this.enableString = "手动禁用";
 		} else {
-			this.enableString = "否";
+			this.enableString = "启用";
 		}
 		return enableString;
 	}
@@ -54,9 +56,9 @@ public class RobotVO extends Robot{
 
 	public String getPauseString(boolean pause) {
 		if (pause) {
-			pauseString = "是";
+			pauseString = "暂停中";
  		} else {
- 			pauseString = "否";
+ 			pauseString = "启动中";
  		}
 		return pauseString;
 	}

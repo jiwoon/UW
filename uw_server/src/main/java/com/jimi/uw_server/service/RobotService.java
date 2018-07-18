@@ -30,7 +30,7 @@ public class RobotService extends SelectService {
 		int totallyRow =  result.getTotalRow();
 		for (Record res : result.getList()) {
 			RobotVO r = new RobotVO(res.get("id"), res.get("status"), res.get("battery"),
-					res.get("x"), res.get("y"), res.get("enabled"), res.get("errorcode"), res.get("warncode"), res.get("pause"));
+					res.get("x"), res.get("y"), res.get("enabled"), res.get("error"), res.get("warn"), res.get("pause"));
 			robotVO.add(r);
 		}
 
@@ -48,7 +48,7 @@ public class RobotService extends SelectService {
 		Robot robot = new Robot();
 		robot.setId(id);
 		robot.setEnabled(enabled);
-		robot.keep("id", "status", "battery", "x", "y", "enabled", "errorcode", "warncode", "pause");
+		robot.keep("id", "status", "battery", "x", "y", "enabled", "error", "warn", "pause");
 		return robot.update();
 	}
 	
@@ -61,7 +61,7 @@ public class RobotService extends SelectService {
 			id = rId.getId();
 			robot.setId(id);
 			robot.setPause(pause);
-			robot.keep("id", "status", "battery", "x", "y", "enabled", "errorcode", "warncode", "pause");
+			robot.keep("id", "status", "battery", "x", "y", "enabled", "error", "warn", "pause");
 			res = robot.update();
 		}
 		return res;

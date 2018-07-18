@@ -183,7 +183,8 @@ public class ExcelHelper{
 				//如果是第一行则校验表头
 				if(i == startRowNum) {
 					if(!e.head().equals(getString(i, e.col()))){
-						throw new Exception("表头校验失败");
+						return null;
+//						throw new Exception("表头校验失败");
 					}
 				}
 				//填充list

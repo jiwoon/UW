@@ -63,22 +63,22 @@ public abstract class BaseRobot<M extends BaseRobot<M>> extends Model<M> impleme
 		return getInt("enabled");
 	}
 
-	public M setErrorcode(java.lang.Integer errorcode) {
-		set("errorcode", errorcode);
+	public M setError(java.lang.Integer error) {
+		set("error", error);
 		return (M)this;
 	}
 	
-	public java.lang.Integer getErrorcode() {
-		return getInt("errorcode");
+	public java.lang.Integer getError() {
+		return getInt("error");
 	}
 
-	public M setWarncode(java.lang.Integer warncode) {
-		set("warncode", warncode);
+	public M setWarn(java.lang.Integer warn) {
+		set("warn", warn);
 		return (M)this;
 	}
 	
-	public java.lang.Integer getWarncode() {
-		return getInt("warncode");
+	public java.lang.Integer getWarn() {
+		return getInt("warn");
 	}
 
 	public M setPause(java.lang.Boolean pause) {

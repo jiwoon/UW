@@ -22,9 +22,10 @@ public class LogService extends SelectService {
 	private static SelectService selectService = Enhancer.enhance(SelectService.class);
 
 	public Object selectLog(String table, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
+		// 查询「接口调用日志」
 		if (table.equals("action_log")) {
 			return selectService.select(table, pageNo, pageSize, ascBy, descBy, filter);
-		} else if(table.equals("task_log")) {
+		} else if(table.equals("task_log")) {	// 查询「任务日志」
 
 			if (filter != null) {
 				if (filter.contains("taskId")) {
@@ -48,14 +49,14 @@ public class LogService extends SelectService {
 			}
 
 			List<TaskLogVO> taskLogVO = new ArrayList<TaskLogVO>();
-			Page<Record> result = selectService.select(new String[] {"task_log", "task", "material_type", "material"},
-					new String[] {"task_log.task_id = task.id", "task_log.material_id = material.id", "material_type.id = material.type"}, 
-					pageNo, pageSize, ascBy, descBy, filter);
+			Page<Record> result = selectService.select(new String[] {"task_log", "task", "material_type", "material", "user"},
+					new String[] {"task_log.task_id = task.id", "task_log.material_id = material.id", "material_type.id = material.type", 
+							"task_log.operator = user.uid"}, pageNo, pageSize, ascBy, descBy, filter);
 
 			int totallyRow =  result.getTotalRow();
 			for (Record res : result.getList()) {
 				TaskLogVO t = new TaskLogVO(res.get("TaskLog_Id"), res.get("TaskLog_TaskId"), res.get("Task_Type"), res.get("TaskLog_MaterialId"), 
-						res.get("MaterialType_No"), res.get("TaskLog_Quantity"), res.get("TaskLog_Operator"), res.get("TaskLog_Auto"), 
+						res.get("MaterialType_No"), res.get("TaskLog_Quantity"), res.get("User_Uid"), res.get("TaskLog_Auto"), 
 						res.get("TaskLog_Time"));
 				taskLogVO.add(t);
 			}
@@ -68,7 +69,7 @@ public class LogService extends SelectService {
 
 			return pagePaginate;
 
-		} else if(table.equals("position_log")){
+		} else if(table.equals("position_log")){	// 查询「物料位置转移日志」
 
 			if (filter != null) {
 				if (filter.contains("materialNo")) {

@@ -16,7 +16,8 @@ import com.jfinal.plugin.activerecord.tx.Tx;
 import com.jfinal.plugin.druid.DruidPlugin;
 import com.jfinal.plugin.redis.RedisPlugin;
 import com.jfinal.template.Engine;
-import com.jimi.uw_server.agv.socket.AGVWebSocket;
+import com.jimi.uw_server.agv.socket.AGVMainSocket;
+import com.jimi.uw_server.agv.socket.RobotInfoSocket;
 import com.jimi.uw_server.controller.LogController;
 import com.jimi.uw_server.controller.MaterialController;
 import com.jimi.uw_server.controller.RobotController;
@@ -37,7 +38,7 @@ public class UwConfig extends JFinalConfig {
 
 	@Override
 	public void configConstant(Constants me) {
-		me.setDevMode(true);
+		me.setDevMode(false);
 		me.setJsonFactory(new MixedJsonFactory());
 	}
 
@@ -78,7 +79,7 @@ public class UwConfig extends JFinalConfig {
 		//配置ORM
 	    ActiveRecordPlugin arp = new ActiveRecordPlugin(dp);
 	    arp.setDialect(new MysqlDialect());	// 用什么数据库，就设置什么Dialect
-	    arp.setShowSql(true);
+	    arp.setShowSql(false);
 	    MappingKit.mapping(arp);
 	    me.add(arp);
 	}
@@ -95,7 +96,8 @@ public class UwConfig extends JFinalConfig {
 	@Override
 	public void afterJFinalStart() {
 		TokenBox.start(PropKit.use("properties.ini").getInt("sessionTimeout"));
-		AGVWebSocket.connect(PropKit.use("properties.ini").get("agvServerURI"));
+		AGVMainSocket.init(PropKit.use("properties.ini").get("agvServerURI"));
+		RobotInfoSocket.init(PropKit.use("properties.ini").get("robotInfoURI"));
 		System.out.println("Uw Server is Running now...");
 	}
 	

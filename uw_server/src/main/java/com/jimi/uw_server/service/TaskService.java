@@ -9,7 +9,7 @@ import com.jfinal.aop.Enhancer;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jimi.uw_server.agv.dao.TaskItemRedisDAO;
-import com.jimi.uw_server.agv.entity.AGVIOTaskItem;
+import com.jimi.uw_server.agv.entity.bo.AGVIOTaskItem;
 import com.jimi.uw_server.exception.OperationException;
 import com.jimi.uw_server.model.Material;
 import com.jimi.uw_server.model.MaterialType;
@@ -17,6 +17,7 @@ import com.jimi.uw_server.model.PackingListItem;
 import com.jimi.uw_server.model.Task;
 import com.jimi.uw_server.model.Window;
 import com.jimi.uw_server.model.bo.PackingListItemBO;
+import com.jimi.uw_server.model.vo.IOTaskDetailVO;
 import com.jimi.uw_server.model.vo.TaskVO;
 import com.jimi.uw_server.service.base.SelectService;
 import com.jimi.uw_server.service.entity.PagePaginate;
@@ -33,7 +34,7 @@ public class TaskService {
 
 	private static final String getWindowsSql = "SELECT id FROM window";
 
-	private static final String getTaskMaterialIdSql = "SELECT material_type_id FROM packing_list_item WHERE task_id = ?";
+	private static final String getTaskMaterialIdSql = "SELECT * FROM packing_list_item WHERE task_id = ?";
 
 	private static final String getNewTaskIdSql = "SELECT MAX(id) as newId FROM task";
 
@@ -46,11 +47,24 @@ public class TaskService {
 
 	private static final String getMaterialIdSql = "SELECT id FROM material WHERE type = (SELECT type FROM material WHERE type = ?)";
 
-	public synchronized boolean create(Task task, Integer type, String fileName) {
-		task.setType(type);
-		task.setFileName(fileName);
-		task.setState(0);
-		task.setCreateTime(new Date());
+	public synchronized boolean createIOTask(Task task, Integer type, String fileName, String fullFileName) throws Exception {
+		// 如果文件格式不对，则返回false，提示检查文件格式及内容格式
+		if (!(fileName.endsWith(".xls") || fileName.endsWith(".xlsx"))) {
+			return false;
+		}
+		List<PackingListItemBO> items;
+		File file = new File(fullFileName);
+		ExcelHelper fileReader = ExcelHelper.from(file);
+		items = fileReader.unfill(PackingListItemBO.class, 2);
+		// 如果套料单表头不对，则返回false，提示检查文件格式及内容格式
+		if (items == null) {
+			return false;
+		} else {	// 如果套料单格式正确，则创建一条新的任务记录
+			task.setType(type);
+			task.setFileName(fileName);
+			task.setState(0);
+			task.setCreateTime(new Date());
+		}
 		return task.save();
 	}
 
@@ -61,15 +75,14 @@ public class TaskService {
 	}
 
 	public boolean start(Task task, Integer id, Integer window) {
-		Window getwindow = Window.dao.findById(window);
 		List<PackingListItem> items = PackingListItem.dao.find(getTaskMaterialIdSql, id);
 		// 根据套料单、物料类型表生成任务条目
 		List<AGVIOTaskItem> taskItems = new ArrayList<AGVIOTaskItem>();
 		for (PackingListItem item : items) {
-			AGVIOTaskItem a = new AGVIOTaskItem(item.getMaterialTypeId(), getwindow.getRow(), getwindow.getCol(), id);
+			AGVIOTaskItem a = new AGVIOTaskItem(item);
 			taskItems.add(a);
 		}
-		// 把任务条目均匀插入到队列til中（线程同步方法）
+		// 把任务条目均匀插入到队列til中
 		TaskItemRedisDAO.addTaskItem(taskItems);
 		task.setState(2);
 		task.keep("id", "type", "file_name", "window", "state", "createtime");
@@ -97,19 +110,26 @@ public class TaskService {
 	public Object check(Integer id) {
  		Task task = Task.dao.findById(id);
 		Integer type = task.getType();
-		Page<Record> result = new Page<Record>();
+		// 如果任务类型为出入库
 		if (type == 0 || type == 1) {
-			result = selectService.select(new String[] {"task_log", "packing_list_item", "material", "material_type"},
-					new String[] {"task_log.task_id = packing_list_item.task_id", "task_log.material_id = material.id", 
+			List<IOTaskDetailVO> ioTaskDetailVO = new ArrayList<IOTaskDetailVO>();
+			Page<Record> result = selectService.select(new String[] {"task", "task_log", "packing_list_item", "material", "material_type"}, 
+					new String[] {"task.id = task_log.task_id", "task_log.material_id = material.id", "task_log.task_id = packing_list_item.task_id", 
 							"material_type.id = material.type"}, null, null, null, null, null);
-			System.out.println("result: " + result);
-		} else if (type == 2) {
-			
-		} else if (type == 3) {
-			
+			for (Record res : result.getList()) {
+				IOTaskDetailVO i = new IOTaskDetailVO(res.get("MaterialType_No"), res.get("PackingListItem_Quantity"), res.get("TaskLog_Quantity"), 
+						res.get("TaskLog_Time"));
+				if (res.get("Task_Id") == id) {
+					ioTaskDetailVO.add(i);
+				}
+			}
+			return ioTaskDetailVO;
+		} else if (type == 2) {		//如果任务类型为盘点
+			return null;
+		} else if (type == 3) {		//如果任务类型为位置优化
+			return null;
 		}
-		
-		return result;
+		return null;
 	}
 
 	public List<Window> getWindows(Window window) {
@@ -175,7 +195,8 @@ public class TaskService {
 			// 获取将要入库/出库的物料的库存数量
 			MaterialType checkQuantitySql = MaterialType.dao.findFirst(getQuantitySql, item.getNo());
 			if (checkQuantitySql.get("remainderQuantity") == null) {
-				throw new OperationException(item.getNo() + "插入套料单失败，可能是物料实体表里面不存在套料单中对应的物料类型！");
+				continue;
+//				throw new OperationException(item.getNo() + "插入套料单失败，可能是物料实体表里面不存在套料单中对应的物料类型！");
 			} else {
 				remainderQuantity = Integer.parseInt(checkQuantitySql.get("remainderQuantity").toString());
 			}
@@ -236,12 +257,12 @@ public class TaskService {
 
 	//更新物料实体表中的库存数量
 	public static void updateMaterialQuantity(Material material, Integer taskType, Integer remainderQuantity, Integer planQuantity, Integer materialTypeId) {
-		if (taskType == 1) {
+		if (taskType == 1) {	//如果是出库
 			remainderQuantity -= planQuantity;
 			material = material.findFirst(getMaterialIdSql, materialTypeId);
 			String materialId = material.getId();
 			material.findById(materialId).set("remainder_quantity", remainderQuantity).update();
-		} else if (taskType == 0) {
+		} else if (taskType == 0) {		//如果是入库
 			remainderQuantity += planQuantity;
 			material = material.findFirst(getMaterialIdSql, materialTypeId);
 			String materialId = material.getId();

@@ -1,10 +1,11 @@
 package com.jimi.uw_server.controller;
 
+import java.io.File;
+
 import com.jfinal.aop.Enhancer;
 import com.jfinal.core.Controller;
 import com.jfinal.core.paragetter.Para;
 import com.jfinal.upload.UploadFile;
-import com.jimi.uw_server.exception.OperationException;
 import com.jimi.uw_server.model.PackingListItem;
 import com.jimi.uw_server.model.Task;
 import com.jimi.uw_server.model.Window;
@@ -21,18 +22,26 @@ public class TaskController extends Controller {
 	private static TaskService taskService = Enhancer.enhance(TaskService.class);
 
 	public void create(@Para("") Task task, @Para("") PackingListItem packingListItem, UploadFile file, Integer type) throws Exception {
-		file = getFile();
-		String fileName = file.getFileName();
-		String fullFileName = file.getUploadPath() + "\\" + file.getFileName();
-		if(taskService.create(task, type, fileName)) {
-			if (TaskService.insertPackingList(packingListItem, type, fullFileName)) {
-				renderJson(ResultUtil.succeed());
+		// 如果是创建「出入库任务」，入库type为0，出库type为1
+		if (type.equals(0) || type.equals(1)) {
+			file = getFile();
+			String fileName = file.getFileName();
+			String fullFileName = file.getUploadPath() + File.separator + file.getFileName();
+			if(taskService.createIOTask(task, type, fileName, fullFileName)) {
+				if (TaskService.insertPackingList(packingListItem, type, fullFileName)) {
+					renderJson(ResultUtil.succeed());
+				} else {
+					renderJson(ResultUtil.failed(412));
+				}
 			} else {
-				renderJson(ResultUtil.failed(412));
+				renderJson(ResultUtil.failed("创建任务失败，请检查套料单的文件格式及内容格式！"));
 			}
-		} else {
-			throw new OperationException("创建任务失败，请检查套料单 " + fileName + " 的格式！");
+		} else if (type.equals(2) ) {	//如果是创建「盘点任务」
+			renderJson(ResultUtil.failed("该功能尚在开发中！"));
+		} else if (type.equals(3)) {	//如果是创建「位置优化任务」
+			renderJson(ResultUtil.failed("该功能尚在开发中！"));
 		}
+		
 	}
 
 	public void pass(@Para("") Task task, Integer id) {
@@ -61,6 +70,7 @@ public class TaskController extends Controller {
 
 	public void check(Integer id) {
 		renderJson(ResultUtil.succeed(taskService.check(id)));
+//		renderJson(ResultUtil.failed("该功能尚在开发中！"));
 	}
 	
 	public void select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){

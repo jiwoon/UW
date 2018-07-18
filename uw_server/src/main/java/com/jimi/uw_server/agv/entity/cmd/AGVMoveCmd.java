@@ -1,6 +1,9 @@
-package com.jimi.agv_mock.entity;
+package com.jimi.uw_server.agv.entity.cmd;
 
 import java.util.List;
+
+import com.jimi.uw_server.agv.entity.bo.AGVMissionGroup;
+import com.jimi.uw_server.agv.entity.cmd.base.AGVBaseCmd;
 
 /**
  * AGV移动、拣料、回库等相关指令类
