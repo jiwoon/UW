@@ -9,12 +9,12 @@ import com.jfinal.json.Json;
 import com.jimi.uw_server.agv.dao.TaskItemRedisDAO;
 import com.jimi.uw_server.agv.entity.bo.AGVIOTaskItem;
 import com.jimi.uw_server.agv.entity.bo.AGVMissionGroup;
+import com.jimi.uw_server.agv.entity.bo.AGVRobot;
 import com.jimi.uw_server.agv.entity.cmd.AGVMoveCmd;
 import com.jimi.uw_server.agv.entity.cmd.AGVStatusCmd;
 import com.jimi.uw_server.agv.socket.AGVMainSocket;
 import com.jimi.uw_server.agv.socket.RobotInfoSocket;
 import com.jimi.uw_server.model.MaterialType;
-import com.jimi.uw_server.model.Robot;
 import com.jimi.uw_server.model.Task;
 import com.jimi.uw_server.model.Window;
 
@@ -208,10 +208,10 @@ public class LSSLHandler {
 	
 	
 	private static int countFreeRobot() {
-		List<Robot> freeRobots = new ArrayList<>();
-		for (Robot robot : RobotInfoSocket.getRobots().values()) {
+		List<AGVRobot> freeRobots = new ArrayList<>();
+		for (AGVRobot robot : RobotInfoSocket.getRobots().values()) {
 			//筛选空闲或充电状态的处于启用中的叉车
-			if((robot.getStatus() == 0 || robot.getStatus() == 4) && robot.getEnabled() == 2) {
+			if((robot.getStatus() == 0 || robot.getStatus() == 4) && robot.getEnable() == 2) {
 				freeRobots.add(robot);
 			}
 		}

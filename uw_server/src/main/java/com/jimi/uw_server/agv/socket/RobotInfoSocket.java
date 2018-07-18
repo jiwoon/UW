@@ -1,9 +1,13 @@
 package com.jimi.uw_server.agv.socket;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.websocket.ClientEndpoint;
 import javax.websocket.CloseReason;
@@ -29,17 +33,26 @@ import com.jimi.uw_server.util.ErrorLogWritter;
 @ClientEndpoint
 public class RobotInfoSocket{
 	
+	private static final String GET_ALL_SQL = "SELECT * FROM robot";
+	
 	private static String uri;
 	
 	/**
 	 * 机器实体集合
 	 */
-	private static Map<Integer, Robot> robots;
+	private static Map<Integer, AGVRobot> robots;
+	
+	
 	
 	
 	public static void init(String uri) {
 		try {
 			robots = new HashMap<>();
+			//从数据库获取叉车数据
+			for (Robot robot : Robot.dao.find(GET_ALL_SQL)) {
+				AGVRobot agvRobot = AGVRobot.fromModel(robot);
+				robots.put(agvRobot.getRobotid(), agvRobot);
+			}
 			//连接AGV服务器
 			RobotInfoSocket.uri = uri;
 			connect(uri);
@@ -77,35 +90,56 @@ public class RobotInfoSocket{
 	public void onMessage(String message ,Session session) {
 		try {
 			System.out.println("["+ new Date().toString() +"]" + "receiver message:" + message);
+			
+			//获取新的机器数据
+			Map<Integer, AGVRobot> newRobots = new HashMap<>();
 			AGVRobotInfoCmd robotInfoCmd = Json.getJson().parse(message, AGVRobotInfoCmd.class);
 			for (AGVRobot agvRobot : robotInfoCmd.getRobotarry()) {
-				Integer robotid = agvRobot.getRobotid();
-				Robot robot = Robot.dao.findById(robotid);
-				robot.setBattery(agvRobot.getBatteryPower());
-				robot.setEnabled(agvRobot.getEnable());
-				robot.setError(agvRobot.getErrorcode());
-				robot.setWarn(agvRobot.getWarncode());
-				robot.setX(agvRobot.getPosX());
-				robot.setY(agvRobot.getPosY());
-				robot.setStatus(agvRobot.getStatus());
-				robot.setPause(agvRobot.getSystem_pause());
-				robots.put(robotid, robot);
+				newRobots.put(agvRobot.getRobotid(), agvRobot);
+			}
+			
+			//获取新增项
+			Set<Integer> addRobotsIds = new HashSet<>(newRobots.keySet());
+			addRobotsIds.removeAll(robots.keySet());
+			//新增机器记录
+			for (Integer id : addRobotsIds) {
+				Robot robot = AGVRobot.toModel(newRobots.get(id));
+				robot.save();
+			}
+			
+			//获取减少项
+			Set<Integer> removeRobotsIds = new HashSet<>(robots.keySet());
+			removeRobotsIds.removeAll(newRobots.keySet());
+			//删除机器记录
+			for (Integer id : removeRobotsIds) {
+				Robot.dao.deleteById(id);
+			}
+			
+			//获取修改项
+			Set<Integer> modifyRobotsIds = new HashSet<>(newRobots.keySet());
+			modifyRobotsIds.retainAll(robots.keySet());
+			//修改机器记录
+			for (Integer id : modifyRobotsIds) {
+				Robot robot = AGVRobot.toModel(newRobots.get(id));
 				robot.update();
 			}
+			
+			robots = newRobots;
+			
 		}catch (Exception e) {
 			ErrorLogWritter.save(e.getClass().getSimpleName() + ":" + e.getMessage());
 			e.printStackTrace();
 		}
 	}
 
-
+	
 	private static void connect(String uri) throws Exception {
 		WebSocketContainer container = ContainerProvider.getWebSocketContainer();
 		container.connectToServer(new RobotInfoSocket(), new URI(uri));
 	}
 
 	
-	public static Map<Integer, Robot> getRobots() {
+	public static Map<Integer, AGVRobot> getRobots() {
 		return robots;
 	}
 	
