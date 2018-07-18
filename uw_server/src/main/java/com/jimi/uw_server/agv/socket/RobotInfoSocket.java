@@ -1,6 +1,9 @@
 package com.jimi.uw_server.agv.socket;
 
 import java.net.URI;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.websocket.ClientEndpoint;
 import javax.websocket.CloseReason;
@@ -28,9 +31,15 @@ public class RobotInfoSocket{
 	
 	private static String uri;
 	
+	/**
+	 * 机器实体集合
+	 */
+	private static Map<Integer, Robot> robots;
+	
 	
 	public static void init(String uri) {
 		try {
+			robots = new HashMap<>();
 			//连接AGV服务器
 			RobotInfoSocket.uri = uri;
 			connect(uri);
@@ -67,6 +76,7 @@ public class RobotInfoSocket{
 	@OnMessage
 	public void onMessage(String message ,Session session) {
 		try {
+			System.out.println("["+ new Date().toString() +"]" + "receiver message:" + message);
 			AGVRobotInfoCmd robotInfoCmd = Json.getJson().parse(message, AGVRobotInfoCmd.class);
 			for (AGVRobot agvRobot : robotInfoCmd.getRobotarry()) {
 				Integer robotid = agvRobot.getRobotid();
@@ -79,6 +89,7 @@ public class RobotInfoSocket{
 				robot.setY(agvRobot.getPosY());
 				robot.setStatus(agvRobot.getStatus());
 				robot.setPause(agvRobot.getSystem_pause());
+				robots.put(robotid, robot);
 				robot.update();
 			}
 		}catch (Exception e) {
@@ -93,6 +104,9 @@ public class RobotInfoSocket{
 		container.connectToServer(new RobotInfoSocket(), new URI(uri));
 	}
 
-
+	
+	public static Map<Integer, Robot> getRobots() {
+		return robots;
+	}
 	
 }

@@ -12,9 +12,11 @@ import com.jimi.uw_server.agv.entity.bo.AGVMissionGroup;
 import com.jimi.uw_server.agv.entity.cmd.AGVMoveCmd;
 import com.jimi.uw_server.agv.entity.cmd.AGVStatusCmd;
 import com.jimi.uw_server.agv.socket.AGVMainSocket;
+import com.jimi.uw_server.agv.socket.RobotInfoSocket;
 import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.model.Robot;
 import com.jimi.uw_server.model.Task;
+import com.jimi.uw_server.model.Window;
 
 /**
  * LS、SL命令处理器
@@ -24,7 +26,6 @@ import com.jimi.uw_server.model.Task;
  */
 public class LSSLHandler {
 
-	private static final String ENABLED_ROBOT_SQL = "SELECT * FROM robot WHERE enabled = ?";
 	private static final String SPECIFIED_ID_MATERIAL_TYPE_SQL = "SELECT * FROM material_type WHERE id IN()";
 	private static final String SPECIFIED_POSITION_MATERIAL_TYEP_SQL = "SELECT * FROM material_type WHERE row = ? AND col = ? AND height = ?";
 	
@@ -33,32 +34,13 @@ public class LSSLHandler {
 	 * 发送LS指令
 	 */
 	public static void sendLS() {
-		//判断是否存在停止分配标志位
-		if(TaskItemRedisDAO.isPauseAssign() == 1){
-			return;
-		}
-
-		//判断til是否为空
+		//判断til是否为空或者cn为0
+		int cn = countFreeRobot();
 		List<AGVIOTaskItem> taskItems = new ArrayList<>();
 		TaskItemRedisDAO.appendTaskItems(taskItems);
-		if (taskItems.isEmpty()) {
-			TaskItemRedisDAO.setLcn(0);
+		if (taskItems.isEmpty() || cn == 0) {
 			return;
 		}
-		
-		//统计当前有效robot数目赋值到cn
-		int cn = Robot.dao.find(ENABLED_ROBOT_SQL, 1).size();
-		int lcn = Integer.valueOf(TaskItemRedisDAO.getLcn());
-		if (lcn > cn - 1) {
-			lcn = cn - 1;
-			TaskItemRedisDAO.setLcn(lcn);
-			return;
-		}
-		int b = cn;
-		cn = cn - lcn;
-		lcn = b - 1;
-		int a = 0;
-		TaskItemRedisDAO.setLcn(lcn);
 		
 		//根据materialType表生成物料是否在架情况映射mtc
 		Map<Integer, MaterialType> mtc = new HashMap<>();
@@ -76,7 +58,8 @@ public class LSSLHandler {
 		}
 		
 		//获取第a个元素
-		while(cn != 0 && a != taskItems.size()) {
+		int a = 0;
+		do{
 			AGVIOTaskItem item = taskItems.get(a);
 			MaterialType materialType = mtc.get(item.getMaterialTypeId());
 			
@@ -110,7 +93,7 @@ public class LSSLHandler {
 				cn--;
 			}
 			a++;
-		}
+		}while(cn != 0 && a != taskItems.size());
 	}
 
 
@@ -131,11 +114,13 @@ public class LSSLHandler {
 		
 		//判断是LS指令还是SL指令第二动作完成，状态是1说明是LS，状态2是SL
 		for (AGVIOTaskItem item : TaskItemRedisDAO.getTaskItems()) {
-			if(groupid.equals(item.toString().split("#")[0])) {
+			if(groupid.equals(item.getGroupId())) {
 				//查询对应物料类型
 				MaterialType materialType = MaterialType.dao.findById(groupid.split(":")[0]);
 				
 				if(item.getState() == 1) {//LS执行完成时：（这部分逻辑下一个版本放到APP中）
+					//更新tsakitems里对应item的robotid
+					TaskItemRedisDAO.updateTaskItemRobot(item, statusCmd.getRobotid());
 					//构建SL指令，令指定robot把料送回原仓位
 					AGVMoveCmd moveCmd = createSLCmd(statusCmd, groupid, materialType, item);
 					//发送SL>>>
@@ -161,21 +146,18 @@ public class LSSLHandler {
 					*/
 					boolean isAllFinish = true;
 					for (AGVIOTaskItem item1 : TaskItemRedisDAO.getTaskItems()) {
-						if(groupid.split(":")[3].equals(item1.toString().split("#")[0].split(":")[3]) && item1.getState() != 3) {
+						if(groupid.split(":")[1].equals(item1.getGroupId().split(":")[1]) && item1.getState() != 3) {
 							isAllFinish = false;
 						}
 					}
 					if(isAllFinish) {
-						int taskId = Integer.valueOf(groupid.split(":")[3]);
+						int taskId = Integer.valueOf(groupid.split(":")[1]);
 						TaskItemRedisDAO.removeTaskItemByTaskId(taskId);
 						Task task = new Task();
 						task.setId(taskId);
 						task.setState(3);
 						task.update();
 					}
-					
-					//调用指令发送发方法发送下一条指令
-					sendLS();
 				}
 			}
 		}
@@ -188,8 +170,10 @@ public class LSSLHandler {
 		AGVMissionGroup group = new AGVMissionGroup();
 		group.setMissiongroupid(groupid);//missionGroupId要和LS指令相同
 		group.setRobotid(statusCmd.getRobotid());//robotId要和LS指令相同
-		group.setStartx(item.getWindowPositionX());//起点X为仓口X
-		group.setStarty(item.getWindowPositionY());//起点Y为仓口Y
+		int windowId = Task.dao.findById(item.getTaskId()).getWindow();
+		Window window = Window.dao.findById(windowId);
+		group.setStartx(window.getRow());//起点X为仓口X
+		group.setStarty(window.getCol());//起点Y为仓口Y
 		group.setEndx(materialType.getRow());//设置X
 		group.setEndy(materialType.getCol());//设置Y
 		group.setEndz(materialType.getHeight());//设置Z
@@ -204,13 +188,15 @@ public class LSSLHandler {
 
 	private static AGVMoveCmd createLSCmd(MaterialType materialType, AGVIOTaskItem item) {
 		AGVMissionGroup group = new AGVMissionGroup();
-		group.setMissiongroupid(item.toString().split("#")[0]);
+		group.setMissiongroupid(item.getGroupId());
 		group.setRobotid(0);//让AGV系统自动分配
 		group.setStartx(materialType.getRow());//物料Row
 		group.setStarty(materialType.getCol());//物料Col
 		group.setStartz(materialType.getHeight());//物料Height
-		group.setEndx(item.getWindowPositionX());//仓口X
-		group.setEndy(item.getWindowPositionY());//仓口Y
+		int windowId = Task.dao.findById(item.getTaskId()).getWindow();
+		Window window = Window.dao.findById(windowId);
+		group.setEndx(window.getRow());//终点X为仓口X
+		group.setEndy(window.getCol());//终点Y为仓口Y
 		List<AGVMissionGroup> groups = new ArrayList<>();
 		groups.add(group);
 		AGVMoveCmd cmd = new AGVMoveCmd();
@@ -220,4 +206,15 @@ public class LSSLHandler {
 		return cmd;
 	}
 	
+	
+	private static int countFreeRobot() {
+		List<Robot> freeRobots = new ArrayList<>();
+		for (Robot robot : RobotInfoSocket.getRobots().values()) {
+			//筛选空闲或充电状态的处于启用中的叉车
+			if((robot.getStatus() == 0 || robot.getStatus() == 4) && robot.getEnabled() == 2) {
+				freeRobots.add(robot);
+			}
+		}
+		return freeRobots.size();
+	}
 }

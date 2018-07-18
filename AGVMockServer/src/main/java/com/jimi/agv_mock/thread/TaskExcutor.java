@@ -37,6 +37,9 @@ public class TaskExcutor extends Thread{
 	@Override
 	public void run() {
 		try {
+			//设置叉车忙碌
+			robot.setStatus(1);
+			
 			AGVStatusCmd statusCmd = new AGVStatusCmd();
 			
 			//判断SL or LS
@@ -86,6 +89,8 @@ public class TaskExcutor extends Thread{
 				Thread.sleep(1000);
 			}
 			
+			//设置叉车空闲
+			robot.setStatus(0);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}

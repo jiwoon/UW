@@ -38,7 +38,7 @@ public class UwConfig extends JFinalConfig {
 
 	@Override
 	public void configConstant(Constants me) {
-		me.setDevMode(true);
+		me.setDevMode(false);
 		me.setJsonFactory(new MixedJsonFactory());
 	}
 
@@ -79,7 +79,7 @@ public class UwConfig extends JFinalConfig {
 		//配置ORM
 	    ActiveRecordPlugin arp = new ActiveRecordPlugin(dp);
 	    arp.setDialect(new MysqlDialect());	// 用什么数据库，就设置什么Dialect
-	    arp.setShowSql(true);
+	    arp.setShowSql(false);
 	    MappingKit.mapping(arp);
 	    me.add(arp);
 	}

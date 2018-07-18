@@ -1,96 +1,92 @@
 package com.jimi.uw_server.agv.entity.bo;
 
+import com.jimi.uw_server.model.PackingListItem;
+
 /**
- * AGV出入库任务条目
- * <br>
+ * AGV出入库任务条目 <br>
  * <b>2018年6月15日</b>
+ * 
  * @author 沫熊工作室 <a href="http://www.darhao.cc">www.darhao.cc</a>
  */
 public class AGVIOTaskItem {
 
-	private int materialTypeId;
-	
-	private int windowPositionX;
-	
-	private int windowPositionY;
-	
-	private int taskId;
-	
+	private Integer id;
+
+	private Integer taskId;
+
+	private Integer materialTypeId;
+
+	private Integer quantity;
+
+	private Integer robotId;
+
 	/**
-	 * 0：未分配
-	 * 1：已分配
-	 * 2：已拣料到站
-	 * 3：已回库完成
+	 * 0：未分配 1：已分配 2：已拣料到站 3：已回库完成
 	 */
-	private int state;
+	private Integer state;
 
 	
-	public int getMaterialTypeId() {
-		return materialTypeId;
+	public AGVIOTaskItem() {}
+	
+	
+	public AGVIOTaskItem(PackingListItem packingListItem) {
+		this.id = packingListItem.getId();
+		this.taskId = packingListItem.getTaskId();
+		this.materialTypeId = packingListItem.getMaterialTypeId();
+		this.quantity = packingListItem.getQuantity();
+		this.robotId = 0;
+		this.state = 0;
 	}
 
-	public void setMaterialTypeId(int materialId) {
-		this.materialTypeId = materialId;
+	public Integer getRobotId() {
+		return robotId;
 	}
 
-	public int getTaskId() {
-		return taskId;
+	public void setRobotId(Integer robotId) {
+		this.robotId = robotId;
 	}
 
-	public void setTaskId(int taskId) {
-		this.taskId = taskId;
-	}
-
-	public int getWindowPositionY() {
-		return windowPositionY;
-	}
-
-	public void setWindowPositionY(int windowPositionY) {
-		this.windowPositionY = windowPositionY;
-	}
-
-	public int getWindowPositionX() {
-		return windowPositionX;
-	}
-
-	public void setWindowPositionX(int windowPositionX) {
-		this.windowPositionX = windowPositionX;
-	}
-
-	public int getState() {
+	public Integer getState() {
 		return state;
 	}
 
-	public void setState(int state) {
+	public void setState(Integer state) {
 		this.state = state;
 	}
 
-	public AGVIOTaskItem(int materialId, int windowPositionX, int windowPositionY, int taskId) {
-		this.materialTypeId = materialId;
-		this.windowPositionX = windowPositionX;
-		this.windowPositionY = windowPositionY;
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public Integer getTaskId() {
+		return taskId;
+	}
+
+	public void setTaskId(Integer taskId) {
 		this.taskId = taskId;
-		this.state = 0;
 	}
-	
-	
-	/**
-	 * 把GroupId转成Item
-	 */
-	@Override
-	public String toString() {
-		return materialTypeId + ":" + windowPositionX + ":" + windowPositionY + ":" + taskId + "#" + state;
+
+	public Integer getMaterialTypeId() {
+		return materialTypeId;
 	}
-	
-	
-	/**
-	 * 把Item转成GroupId
-	 */
-	public static AGVIOTaskItem fromString(String string) {
-		String[] attrsAndState = string.split("#");
-		String[] attrs = attrsAndState[0].split(":");
-		AGVIOTaskItem item = new AGVIOTaskItem(Integer.valueOf(attrs[0]), Integer.valueOf(attrs[1]), Integer.valueOf(attrs[2]), Integer.valueOf(attrs[3]));
-		item.setState(Integer.valueOf(attrsAndState[1]));
-		return item;
+
+	public void setMaterialTypeId(Integer materialTypeId) {
+		this.materialTypeId = materialTypeId;
+	}
+
+	public Integer getQuantity() {
+		return quantity;
+	}
+
+	public void setQuantity(Integer quantity) {
+		this.quantity = quantity;
+	}
+
+	public String getGroupId() {
+		return materialTypeId + ":" + taskId;
 	}
 }

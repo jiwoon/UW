@@ -2,7 +2,7 @@ package com.jimi.agv_mock.handle;
 
 import com.alibaba.fastjson.JSON;
 import com.jimi.agv_mock.entity.cmd.AGVMoveCmd;
-import com.jimi.agv_mock.thread.TaskExcutor;
+import com.jimi.agv_mock.socket.MockMainSocket;
 
 /**
  * LSSL处理器
@@ -17,7 +17,7 @@ public class LSSLHandler {
 		//转换成实体类
 		AGVMoveCmd moveCmd = JSON.parseObject(message, AGVMoveCmd.class);
 		//放入任务池
-		//...
+		MockMainSocket.getTaskPool().addTask(moveCmd);
 	}
 
 }
