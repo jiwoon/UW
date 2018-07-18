@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.jfinal.aop.Enhancer;
 import com.jfinal.json.Json;
 import com.jimi.uw_server.agv.dao.TaskItemRedisDAO;
 import com.jimi.uw_server.agv.entity.bo.AGVIOTaskItem;
@@ -17,6 +18,8 @@ import com.jimi.uw_server.agv.socket.RobotInfoSocket;
 import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.model.Task;
 import com.jimi.uw_server.model.Window;
+import com.jimi.uw_server.service.MaterialService;
+import com.jimi.uw_server.service.TaskService;
 
 /**
  * LS、SL命令处理器
@@ -28,6 +31,9 @@ public class LSSLHandler {
 
 	private static final String SPECIFIED_ID_MATERIAL_TYPE_SQL = "SELECT * FROM material_type WHERE id IN()";
 	private static final String SPECIFIED_POSITION_MATERIAL_TYEP_SQL = "SELECT * FROM material_type WHERE row = ? AND col = ? AND height = ?";
+	
+	private static TaskService taskService = Enhancer.enhance(TaskService.class);
+	private static MaterialService materialService = Enhancer.enhance(MaterialService.class);
 	
 	
 	/**
@@ -76,6 +82,7 @@ public class LSSLHandler {
 				}
 				
 				//发送LS>>>
+				System.out.println("当前有空的机器数:" + countFreeRobot());
 				AGVMoveCmd cmd = createLSCmd(materialType, item);
 				AGVMainSocket.sendMessage(Json.getJson().toJson(cmd));
 				
@@ -84,7 +91,7 @@ public class LSSLHandler {
 						materialType.getRow(), materialType.getCol(), materialType.getHeight());
 				for (MaterialType mt: specifiedPositionMaterialTypes) {
 					mt.setIsOnShelf(false);
-					mt.update();
+					materialService.update(mt);
 				}
 				
 				//更新任务条目状态为已分配***
@@ -134,7 +141,7 @@ public class LSSLHandler {
 							materialType.getRow(), materialType.getCol(), materialType.getHeight());
 					for (MaterialType mt: specifiedPositionMaterialTypes) {
 						mt.setIsOnShelf(true);
-						mt.update();
+						materialService.update(mt);
 					}
 					
 					//更改taskitems里对应item状态为3（已回库完成）***
@@ -153,10 +160,7 @@ public class LSSLHandler {
 					if(isAllFinish) {
 						int taskId = Integer.valueOf(groupid.split(":")[1]);
 						TaskItemRedisDAO.removeTaskItemByTaskId(taskId);
-						Task task = new Task();
-						task.setId(taskId);
-						task.setState(3);
-						task.update();
+						taskService.finish(taskId);
 					}
 				}
 			}

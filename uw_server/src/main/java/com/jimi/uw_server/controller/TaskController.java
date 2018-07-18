@@ -28,7 +28,7 @@ public class TaskController extends Controller {
 			String fileName = file.getFileName();
 			String fullFileName = file.getUploadPath() + File.separator + file.getFileName();
 			if(taskService.createIOTask(task, type, fileName, fullFileName)) {
-				if (TaskService.insertPackingList(packingListItem, type, fullFileName)) {
+				if (taskService.insertPackingList(packingListItem, type, fullFileName)) {
 					renderJson(ResultUtil.succeed());
 				} else {
 					renderJson(ResultUtil.failed(412));

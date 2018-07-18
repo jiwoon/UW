@@ -1,11 +1,8 @@
 package com.jimi.uw_server.agv.socket;
 
 import java.net.URI;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import javax.websocket.ClientEndpoint;
 import javax.websocket.CloseReason;
@@ -16,10 +13,12 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.WebSocketContainer;
 
+import com.jfinal.aop.Enhancer;
 import com.jfinal.json.Json;
 import com.jimi.uw_server.agv.entity.bo.AGVRobot;
 import com.jimi.uw_server.agv.entity.cmd.AGVRobotInfoCmd;
 import com.jimi.uw_server.model.Robot;
+import com.jimi.uw_server.service.RobotService;
 import com.jimi.uw_server.util.ErrorLogWritter;
 
 /**
@@ -34,6 +33,8 @@ public class RobotInfoSocket{
 	private static final String GET_ALL_SQL = "SELECT * FROM robot";
 	
 	private static String uri;
+	
+	private static RobotService robotService = Enhancer.enhance(RobotService.class);
 	
 	/**
 	 * 机器实体集合
@@ -87,7 +88,7 @@ public class RobotInfoSocket{
 	@OnMessage
 	public void onMessage(String message ,Session session) {
 		try {
-			System.out.println("["+ new Date().toString() +"]" + "receiver message:" + message);
+//			System.out.println("["+ new Date().toString() +"]" + "receiver message:" + message);
 			
 			//获取新的机器数据
 			Map<Integer, AGVRobot> newRobots = new HashMap<>();
@@ -96,32 +97,10 @@ public class RobotInfoSocket{
 				newRobots.put(agvRobot.getRobotid(), agvRobot);
 			}
 			
-			//获取新增项
-			Set<Integer> addRobotsIds = new HashSet<>(newRobots.keySet());
-			addRobotsIds.removeAll(robots.keySet());
-			//新增机器记录
-			for (Integer id : addRobotsIds) {
-				Robot robot = AGVRobot.toModel(newRobots.get(id));
-				robot.save();
-			}
+			//更新机器信息（新机器会增加记录，不存在的机器会直接清除）
+			robotService.updateRobotInfo(newRobots, robots);
 			
-			//获取减少项
-			Set<Integer> removeRobotsIds = new HashSet<>(robots.keySet());
-			removeRobotsIds.removeAll(newRobots.keySet());
-			//删除机器记录
-			for (Integer id : removeRobotsIds) {
-				Robot.dao.deleteById(id);
-			}
-			
-			//获取修改项
-			Set<Integer> modifyRobotsIds = new HashSet<>(newRobots.keySet());
-			modifyRobotsIds.retainAll(robots.keySet());
-			//修改机器记录
-			for (Integer id : modifyRobotsIds) {
-				Robot robot = AGVRobot.toModel(newRobots.get(id));
-				robot.update();
-			}
-			
+			//修改引用
 			robots = newRobots;
 			
 		}catch (Exception e) {
@@ -130,7 +109,7 @@ public class RobotInfoSocket{
 		}
 	}
 
-	
+
 	private static void connect(String uri) throws Exception {
 		WebSocketContainer container = ContainerProvider.getWebSocketContainer();
 		container.connectToServer(new RobotInfoSocket(), new URI(uri));
