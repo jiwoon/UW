@@ -4,8 +4,8 @@ import {setLoginToken} from "../store/actions";
 import store from "../store";
 import router from '../router';
 
-axios.defaults.timeout = 5000;
-axios.defaults.baseURL = window.g.API_URL + '/mes_server/';
+//axios.defaults.timeout = 5000;
+//axios.defaults.baseURL = window.g.API_URL;
 
 axios.interceptors.request.use(
   config => {

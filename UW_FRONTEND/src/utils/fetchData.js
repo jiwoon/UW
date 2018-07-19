@@ -1,6 +1,6 @@
 import Qs from 'qs'
 //import axios from 'axios'
-import axios from '../config/http'
+import axios from 'axios'
 export const axiosPost = (opt) =>{
   return axios({
     method: 'post',
