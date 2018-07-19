@@ -44,6 +44,7 @@ public class SwitchHandler {
 		}else {
 			cmd.setCmdcode("allpause");
 		}
+		AGVMainSocket.sendMessage(Json.getJson().toJson(cmd));
 	}
 
 
