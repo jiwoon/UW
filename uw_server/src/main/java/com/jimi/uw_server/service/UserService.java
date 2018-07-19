@@ -31,6 +31,7 @@ public class UserService extends SelectService{
 
 	private static final String getUserTypeSql = "SELECT id,name FROM user_type";
 
+
 	public User login(String uid, String password) {
 		User user = User.dao.findFirst(loginSql, uid, MD5Util.MD5(password));
 		if(user == null) {
@@ -41,6 +42,7 @@ public class UserService extends SelectService{
 		}
 		return user;
 	}
+
 
 	public boolean add(User user) {
 		if (user.getUid() == null || user.getPassword() == null || user.getName() == null || user.getType() == null) {
@@ -55,6 +57,7 @@ public class UserService extends SelectService{
 		return user.save();
 	}
 
+
 	public boolean update(User user) {
 		// 更新用户信息时，如果修改了密码，需要对密码进行加密
 		if (!(user.getPassword() == null)) {
@@ -64,7 +67,14 @@ public class UserService extends SelectService{
 		return user.update();
 	}
 
-	public Object select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {		
+
+	public Object select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
+		if (filter != null) {
+			if (filter.contains("enabled")) {
+				filter = filter.replace("true", "1");
+			}
+		}
+		
 		List<UserVO> userVO = new ArrayList<UserVO>();
 		Page<Record> result = selectService.select("user", pageNo, pageSize, ascBy, descBy, filter);
 
@@ -83,6 +93,7 @@ public class UserService extends SelectService{
 
 		return pagePaginate;
 	}
+
 
 	public List<UserType> getTypes() {
 		List<UserType> userTypes = new ArrayList<UserType>();

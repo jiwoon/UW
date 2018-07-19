@@ -22,6 +22,7 @@ public class UserController extends Controller {
 
 	public static final String SESSION_KEY_LOGIN_USER = "loginUser";
 
+
 	public void login(String uid, String password) {
 		User user = userService.login(uid, password);
 		//判断是否重复登录
@@ -38,6 +39,7 @@ public class UserController extends Controller {
 		renderJson(ResultUtil.succeed(user));
 	}
 
+
 	public void checkLogined() {
 		User user = TokenBox.get(getPara(TokenBox.TOKEN_ID_KEY_NAME), SESSION_KEY_LOGIN_USER);
 		if(user != null) {
@@ -47,6 +49,7 @@ public class UserController extends Controller {
 		}
 	}
 
+
 	public void add(@Para("") User user) {
 		if(userService.add(user)) {
 			renderJson(ResultUtil.succeed());
@@ -55,21 +58,32 @@ public class UserController extends Controller {
 		}
 	}
 
+
 	public void update(@Para("") User user) {
 		if(userService.update(user)) {
 			renderJson(ResultUtil.succeed());
+			if (!user.getEnabled()) {
+				String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
+				User user1 = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
+				if (user.getUid().equals(user1.getUid())) {
+					logout();
+				}
+			}
 		} else {
 			renderJson(ResultUtil.failed());
 		}
 	}
 
+
 	public void select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
 		renderJson(ResultUtil.succeed(userService.select(pageNo, pageSize, ascBy, descBy, filter)));
 	}
 	
+
 	public void getTypes() {
 		renderJson(ResultUtil.succeed(userService.getTypes()));
 	}
+
 
 	public void logout() {
 		//判断是否未登录

@@ -82,8 +82,8 @@ public class PagePaginate {
 	public List<?> getList() {
 		return list;
 	}
-	public void setList(List<?> materialTypeVO) {
-		this.list = materialTypeVO;
+	public void setList(List<?> entitiesVO) {
+		this.list = entitiesVO;
 	}
 }
  

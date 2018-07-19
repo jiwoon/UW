@@ -5,11 +5,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.jfinal.aop.Enhancer;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jimi.uw_server.agv.entity.bo.AGVRobot;
+import com.jimi.uw_server.agv.handle.SwitchHandler;
 import com.jimi.uw_server.model.Robot;
 import com.jimi.uw_server.model.vo.RobotVO;
 import com.jimi.uw_server.service.base.SelectService;
@@ -23,7 +25,7 @@ import com.jimi.uw_server.service.entity.PagePaginate;
 public class RobotService extends SelectService {
 
 	private static SelectService selectService = Enhancer.enhance(SelectService.class);
-	
+
 	public static final String getRobotAllId = "SELECT id FROM robot";
 
 	public Object select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
@@ -48,30 +50,26 @@ public class RobotService extends SelectService {
 		return pagePaginate;
 	}
 
-	public boolean robotSwitch(Integer id, Integer enabled) {
-		Robot robot = new Robot();
-		robot.setId(id);
-		robot.setEnabled(enabled);
-		robot.keep("id", "status", "battery", "x", "y", "enabled", "error", "warn", "pause");
-		return robot.update();
-	}
-	
-	public boolean pause(boolean pause) {
-		Robot robot = new Robot();
-		List<Robot> robotId = Robot.dao.find(getRobotAllId);
-		Integer id;
-		boolean res = true;
-		for (Robot rId : robotId) {
-			id = rId.getId();
-			robot.setId(id);
-			robot.setPause(pause);
-			robot.keep("id", "status", "battery", "x", "y", "enabled", "error", "warn", "pause");
-			res = robot.update();
+
+	public void robotSwitch(String id, Integer enabled) {
+		List<Integer> idList = java.util.Arrays.asList(id.split(",")).stream().map(s -> Integer.parseInt(s.trim())).collect(Collectors.toList());
+		if (enabled == 2) {
+			SwitchHandler.sendEnable(idList);
+		} else if (enabled == 1) {
+			SwitchHandler.sendDisable(idList);
 		}
-		return res;
 	}
 
-	
+
+	public void pause(boolean pause) {
+		if (pause) {
+			SwitchHandler.sendAllStart();
+		} else {
+			SwitchHandler.sendAllPause();
+		}
+	}
+
+
 	public void updateRobotInfo(Map<Integer, AGVRobot> newRobots, Map<Integer, AGVRobot> robots) {
 		//获取新增项
 		Set<Integer> addRobotsIds = new HashSet<>(newRobots.keySet());
@@ -99,5 +97,5 @@ public class RobotService extends SelectService {
 			robot.update();
 		}
 	}
-	
+
 }
