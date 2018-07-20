@@ -4,8 +4,8 @@
       <div class="form-row pr-3 pl-3 justify-content-start">
         <div class="col-auto">
           <div class="btn btn-primary btn-sm" @click="selectAll">{{checkedData.length !== robotData.length ? '全选' : '取消全选'}}</div>
-          <div class="btn btn-secondary btn-sm" @click="setEnable(checkedData.toString(), 0)">禁用所选</div>
-          <div class="btn btn-primary btn-sm" @click="setEnable(checkedData.toString(), 1)">启用所选</div>
+          <div class="btn btn-secondary btn-sm" @click="setEnable(checkedData.toString(), 1)">禁用所选</div>
+          <div class="btn btn-primary btn-sm" @click="setEnable(checkedData.toString(), 2)">启用所选</div>
         </div>
         <div id="vertical-divider" class="ml-3 mr-3"></div>
 
@@ -36,7 +36,7 @@
           <p class="card-text col">错误状态: {{item.errorString}}</p>
         </div>
         <div class="card-body row pb-3 pt-0">
-          <p class="card-text col">启停状态: {{item.enabled === 0 ? '停用' : "启用"}}</p>
+          <p class="card-text col">启停状态: {{item.enabledString}}</p>
         </div>
         <div class="card-body row pb-0 pt-1">
           <p class="card-text col">X: {{item.x}}</p>
@@ -53,8 +53,8 @@
         </div>
         <div class="dropdown-divider"></div>
         <div class="card-body form-row justify-content-around">
-          <a class="btn btn-secondary col mr-1 text-white" @click="setEnable(item.id, 0)">停用</a>
-          <a class="btn btn-primary col ml-1 text-white" @click="setEnable(item.id, 1)">启用</a>
+          <a class="btn btn-secondary col mr-1 text-white" @click="setEnable(item.id, 1)">停用</a>
+          <a class="btn btn-primary col ml-1 text-white" @click="setEnable(item.id, 2)">启用</a>
         </div>
       </div>
     </div>
