@@ -1,14 +1,42 @@
 <template>
   <div class="main-details  mt-1 mb-3">
+    <div class="batch-control">
+      <div class="form-row pr-3 pl-3 justify-content-start">
+        <div class="col-auto">
+          <div class="btn btn-primary btn-sm" @click="selectAll">{{checkedData.length !== robotData.length ? '全选' : '取消全选'}}</div>
+          <div class="btn btn-secondary btn-sm" @click="setEnable(checkedData.toString(), 1)">禁用所选</div>
+          <div class="btn btn-primary btn-sm" @click="setEnable(checkedData.toString(), 2)">启用所选</div>
+        </div>
+        <div id="vertical-divider" class="ml-3 mr-3"></div>
+
+        <div class="col-auto">
+          <div class="btn btn-primary btn-sm" @click="setPause(0)">暂停所有叉车</div>
+          <div class="btn btn-primary btn-sm" @click="setPause(1)">取消暂停所有叉车</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="dropdown-divider"></div>
     <div class="row">
       <div class="card col-12 col-sm-5 col-lg-3 col-xl-2  card-board justify-content-between" v-for="item in robotData">
+        <div class="position-absolute mt-3 ml-2">
+          <label :for="item.id + '-checkbox'">
+            <icon :name="checkedData.indexOf(item.id) === -1  ? 'check-empty' : 'check' " scale="3.4"></icon>
+          </label>
+          <input type="checkbox" class="checkbox d-none" :value="item.id" :id="item.id + '-checkbox'"
+                 v-model="checkedData">
+        </div>
         <img class="card-img-top" src="/static/img/robot.jpg">
         <div class="card-body row pb-0 pt-1">
           <p class="card-text col">ID: {{item.id}}</p>
-          <p class="card-text col">状态: {{robotStatus(item.status)}}</p>
+          <p class="card-text col">运行状态: {{item.pauseString}}</p>
+        </div>
+        <div class="card-body row pb-0 pt-1">
+          <p class="card-text col">警告状态: {{item.warnString}}</p>
+          <p class="card-text col">错误状态: {{item.errorString}}</p>
         </div>
         <div class="card-body row pb-3 pt-0">
-          <p class="card-text col">启停状态: {{item.enabled === 0 ? '停用' : "启用"}}</p>
+          <p class="card-text col">启停状态: {{item.enabledString}}</p>
         </div>
         <div class="card-body row pb-0 pt-1">
           <p class="card-text col">X: {{item.x}}</p>
@@ -25,8 +53,8 @@
         </div>
         <div class="dropdown-divider"></div>
         <div class="card-body form-row justify-content-around">
-          <a class="btn btn-secondary col mr-1 text-white" @click="setEnable(item.id, 0)">停用</a>
-          <a class="btn btn-primary col ml-1 text-white" @click="setEnable(item.id, 1)">启用</a>
+          <a class="btn btn-secondary col mr-1 text-white" @click="setEnable(item.id, 1)">停用</a>
+          <a class="btn btn-primary col ml-1 text-white" @click="setEnable(item.id, 2)">启用</a>
         </div>
       </div>
     </div>
@@ -36,7 +64,7 @@
 <script>
   import {mapActions} from 'vuex'
   import {axiosPost} from "../../../../utils/fetchData";
-  import {robotSelectUrl, robotSwitchUrl} from "../../../../config/globalUrl";
+  import {robotSelectUrl, robotSwitchUrl, robotPauseUrl} from "../../../../config/globalUrl";
   import {errHandler} from "../../../../utils/errorHandler";
 
   export default {
@@ -44,7 +72,8 @@
     data() {
       return {
         robotData: [],
-        isPending: false
+        isPending: false,
+        checkedData: []
       }
     },
     watch: {
@@ -82,7 +111,10 @@
           pageSize: 99999
         }
       };
-      this.fetchData(options)
+      this.fetchData(options);
+      setInterval(() => {
+        this.fetchData(options)
+      }, 6000)
     },
     methods: {
       ...mapActions(['setLoading']),
@@ -142,6 +174,40 @@
             alert('请求超时，请刷新重试')
           })
         }
+      },
+      selectAll: function () {
+        if (this.checkedData.length === 0) {
+          this.checkedData = this.robotData.map((item) => {
+            return item.id;
+          })
+        } else {
+          this.checkedData = []
+        }
+      },
+      setPause: function (enabled) {
+        if (!this.isPending) {
+          this.isPending = true;
+          let options = {
+            url: robotPauseUrl,
+            data: {
+              pause: enabled
+            }
+          };
+          axiosPost(options).then(response => {
+            if (response.data.result === 200) {
+              this.isPending = false;
+              alert((enabled === 0 ? "暂停" : "启用") + "成功");
+              let path = this.$route.path;
+              this.$router.replace('_empty');
+              this.$router.push(path);
+            }
+
+          }).catch(err => {
+            this.isPending = false;
+            console.log(JSON.stringify(err));
+            alert('请求超时，请刷新重试')
+          })
+        }
       }
     }
   }
@@ -158,5 +224,10 @@
 
   .card-board {
     margin: 20px;
+  }
+
+  #vertical-divider {
+    width: 2px;
+    border-left: 1px solid #e9ecef;
   }
 </style>

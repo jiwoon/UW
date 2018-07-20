@@ -1,9 +1,4 @@
-let url;
-if (process.env.NODE_ENV === 'production') {
-  url = window.g.API_URL
-} else {
-  url = window.g.LOCAL_URL
-}
+
 //0入库 1出库 2盘点 3位置优化
 export const getCheckConfig = (name) => {
   switch (name) {

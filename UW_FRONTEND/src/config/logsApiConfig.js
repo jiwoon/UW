@@ -1,9 +1,4 @@
-let url;
-if (process.env.NODE_ENV === 'production') {
-  url = window.g.API_URL
-} else {
-  url = window.g.LOCAL_URL
-}
+
 export const getLogsConfig = (name) => {
   if (name === 'task_log') {
     return TASK_CONFIG;
