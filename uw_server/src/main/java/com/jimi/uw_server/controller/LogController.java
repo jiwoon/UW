@@ -15,7 +15,14 @@ public class LogController extends Controller {
 	private static LogService logService = Enhancer.enhance(LogService.class);
 
 	public void select(String table, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
-		renderJson(ResultUtil.succeed(logService.selectLog(table, pageNo, pageSize, ascBy, descBy, filter)));
+		if (table.equals("action_log")) {
+			renderJson(ResultUtil.succeed(logService.select(table, pageNo, pageSize, ascBy, descBy, filter)));
+		} else if(table.equals("task_log")) {	// 查询「任务日志」
+			renderJson(ResultUtil.succeed(logService.selectTaskLog(table, pageNo, pageSize, ascBy, descBy, filter)));
+		} else if(table.equals("position_log")) {	// 查询「物料位置转移日志」
+			renderJson(ResultUtil.succeed(logService.selectPositionLog(table, pageNo, pageSize, ascBy, descBy, filter)));
+		}
+		
 	}
 	
 }
