@@ -36,13 +36,8 @@ public class RobotService extends SelectService {
 
 		int totallyRow = result.getTotalRow();
 		for (Record res : result.getList()) {
-<<<<<<< HEAD
 			RobotVO r = new RobotVO(res.get("id"), res.get("status"), res.get("battery"), res.get("x"), res.get("y"), 
 					res.get("enabled"), res.get("error"), res.get("warn"), res.get("pause"), res.get("load_exception"));
-=======
-			RobotVO r = new RobotVO(res.get("id"), res.get("status"), res.get("battery"), res.get("x"), res.get("y"),
-					res.get("enabled"), res.get("error"), res.get("warn"), res.get("pause"));
->>>>>>> 1b668b07af9470fb0200cc7f0bfe69c0b90fe965
 			robotVO.add(r);
 		}
 
