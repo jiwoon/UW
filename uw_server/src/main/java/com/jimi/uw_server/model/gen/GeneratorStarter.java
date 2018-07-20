@@ -4,7 +4,7 @@ import javax.sql.DataSource;
 
 import com.jfinal.kit.PathKit;
 import com.jfinal.kit.PropKit;
-import com.jfinal.plugin.activerecord.dialect.SqlServerDialect;
+import com.jfinal.plugin.activerecord.dialect.MysqlDialect;
 import com.jfinal.plugin.activerecord.generator.Generator;
 import com.jfinal.plugin.druid.DruidPlugin;
 
@@ -37,13 +37,11 @@ public class GeneratorStarter {
 		// 设置是否生成链式 setter 方法
 		generator.setGenerateChainSetter(true);
 		//设置方言
-		generator.setDialect(new SqlServerDialect());
+		generator.setDialect(new MysqlDialect());
 		//设置Mapping名字
 		generator.setMappingKitClassName("MappingKit");
 		// 设置是否在 Model 中生成 dao 对象
 		generator.setGenerateDaoInModel(true);
-		//设置过滤器
-		generator.setMetaBuilder(new SqlServerTableFilter(dataSource));
 		// 生成
 		generator.generate();
 	}

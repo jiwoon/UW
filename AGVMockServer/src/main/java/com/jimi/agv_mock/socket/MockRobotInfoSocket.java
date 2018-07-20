@@ -1,7 +1,6 @@
 package com.jimi.agv_mock.socket;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -68,7 +67,7 @@ public class MockRobotInfoSocket {
 	public static synchronized void sendMessage(String message) {
         try {
 			session.getBasicRemote().sendText(message);
-			System.out.println("["+ new Date().toString() +"]" + "send message:" + message);
+//			System.out.println("["+ new Date().toString() +"]" + "send message:" + message);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
