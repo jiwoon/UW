@@ -4,6 +4,7 @@ import com.jfinal.json.Json;
 import com.jimi.uw_server.agv.dao.TaskItemRedisDAO;
 import com.jimi.uw_server.agv.entity.bo.AGVIOTaskItem;
 import com.jimi.uw_server.agv.entity.cmd.AGVLoadExceptionCmd;
+import com.jimi.uw_server.model.MaterialType;
 
 /**
  * 异常处理器
@@ -14,15 +15,21 @@ import com.jimi.uw_server.agv.entity.cmd.AGVLoadExceptionCmd;
 public class ExceptionHandler {
 
 	public static void handleLoadException(String message) {
-		//把负载异常的条目回滚到状态0
+		
 		AGVLoadExceptionCmd loadExceptionCmd = Json.getJson().parse(message, AGVLoadExceptionCmd.class);
 		String groupid = loadExceptionCmd.getMissiongroupid();
 		for(AGVIOTaskItem item : TaskItemRedisDAO.getTaskItems()) {
 			if(item.getGroupId().equals(groupid)) {
+				//把物料设置为在架
+				MaterialType materialType = MaterialType.dao.findById(item.getMaterialTypeId());
+				materialType.setIsOnShelf(true);
+				materialType.update();
+				//把负载异常的条目回滚到状态0
 				TaskItemRedisDAO.updateTaskItemState(item, 0);
 				break;
 			}
 		}
+		
 	}
 	
 }

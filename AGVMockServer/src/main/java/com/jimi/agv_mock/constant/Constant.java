@@ -11,7 +11,7 @@ public class Constant {
 	/**
 	 * 叉车数组
 	 */
-	public static final int[] ROBOT_IDS = new int[] {1111, 2222, 3333, 4444};
+	public static final int[] ROBOT_IDS = new int[] {2222, 3333, 4444, 1111};
 	
 	/**
 	 * 叉车实时信息发送周期

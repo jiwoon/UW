@@ -52,7 +52,7 @@ public class RobotInfoReporter extends Thread{
 		for (AGVRobot robot : robots.values()) {
 			agvRobots.add(robot);
 		}
-		cmd.setRobotarry(agvRobots);
+		cmd.setRobotarray(agvRobots);
 		MockRobotInfoSocket.sendMessage(JSON.toJSONString(cmd));
 	}
 	

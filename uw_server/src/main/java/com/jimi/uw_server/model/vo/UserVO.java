@@ -17,6 +17,7 @@ public class UserVO extends User {
 	
 	private String typeString;
 
+	
 	public String getEnabledString(boolean enabled) {
 		if (enabled) {
 			this.enabledString = "是";
@@ -26,6 +27,7 @@ public class UserVO extends User {
 		return enabledString;
 	}
 
+	
 	public String getTypeString(Integer type) {
 		if (this.getType() == 0) {
 			this.typeString = "游客";
@@ -36,6 +38,7 @@ public class UserVO extends User {
 		}
 		return typeString;
 	}
+	
 	
 	public UserVO(String uid, String password, String name, Integer type, boolean enabled) {
 		this.setUid(uid);

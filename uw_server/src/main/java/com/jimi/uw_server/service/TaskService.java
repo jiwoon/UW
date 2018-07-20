@@ -47,7 +47,7 @@ public class TaskService {
 
 	private static final String getMaterialIdSql = "SELECT id FROM material WHERE type = (SELECT type FROM material WHERE type = ?)";
 
-	public synchronized boolean createIOTask(Task task, Integer type, String fileName, String fullFileName) throws Exception {
+	public boolean createIOTask(Task task, Integer type, String fileName, String fullFileName) throws Exception {
 		// 如果文件格式不对，则返回false，提示检查文件格式及内容格式
 		if (!(fileName.endsWith(".xls") || fileName.endsWith(".xlsx"))) {
 			return false;
@@ -169,7 +169,7 @@ public class TaskService {
 	}
 
 	//将excel表格的物料相关信息写入套料单数据表
-	public static boolean insertPackingList(PackingListItem packingListItem, Integer type, String fullFileName) throws Exception {
+	public boolean insertPackingList(PackingListItem packingListItem, Integer type, String fullFileName) throws Exception {
 		List<PackingListItemBO> items;
 
 		File file = new File(fullFileName);
@@ -256,7 +256,7 @@ public class TaskService {
 	}
 
 	//更新物料实体表中的库存数量
-	public static void updateMaterialQuantity(Material material, Integer taskType, Integer remainderQuantity, Integer planQuantity, Integer materialTypeId) {
+	public void updateMaterialQuantity(Material material, Integer taskType, Integer remainderQuantity, Integer planQuantity, Integer materialTypeId) {
 		if (taskType == 1) {	//如果是出库
 			remainderQuantity -= planQuantity;
 			material = material.findFirst(getMaterialIdSql, materialTypeId);
@@ -270,6 +270,14 @@ public class TaskService {
 		} else {
 			return ;
 		}
+	}
+	
+	
+	public void finish(Integer taskId) {
+		Task task = new Task();
+		task.setId(taskId);
+		task.setState(3);
+		task.update();
 	}
 
 }

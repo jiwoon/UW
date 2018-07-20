@@ -19,21 +19,17 @@ public class RobotController extends Controller {
 		renderJson(ResultUtil.succeed(robotService.select(pageNo, pageSize, ascBy, descBy, filter)));
 	}
 
+
 	@ActionKey("/manage/robot/switch")
-	public void robotSwitch(Integer id, Integer enabled) {
-		if (robotService.robotSwitch(id, enabled)) {
-			renderJson(ResultUtil.succeed());
-		} else {
-			renderJson(ResultUtil.failed());
-		}
+	public void robotSwitch(String id, Integer enabled) {
+		robotService.robotSwitch(id, enabled);
+		renderJson(ResultUtil.succeed());
 	}
 	
+
 	public void pause(boolean pause) {
-		if (robotService.pause(pause)) {
-			renderJson(ResultUtil.succeed());
-		} else {
-			renderJson(ResultUtil.failed());
-		}
+		robotService.pause(pause);
+		renderJson(ResultUtil.succeed());
 	}
 	
 }
