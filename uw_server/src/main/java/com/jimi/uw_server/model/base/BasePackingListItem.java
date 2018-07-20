@@ -45,4 +45,13 @@ public abstract class BasePackingListItem<M extends BasePackingListItem<M>> exte
 		return getInt("task_id");
 	}
 
+	public M setFinishTime(java.util.Date finishTime) {
+		set("finish_time", finishTime);
+		return (M)this;
+	}
+	
+	public java.util.Date getFinishTime() {
+		return get("finish_time");
+	}
+
 }
