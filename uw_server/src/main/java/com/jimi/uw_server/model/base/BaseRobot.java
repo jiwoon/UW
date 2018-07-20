@@ -90,4 +90,13 @@ public abstract class BaseRobot<M extends BaseRobot<M>> extends Model<M> impleme
 		return get("pause");
 	}
 
+	public M setLoadException(java.lang.Boolean loadException) {
+		set("load_exception", loadException);
+		return (M)this;
+	}
+	
+	public java.lang.Boolean getLoadException() {
+		return get("load_exception");
+	}
+
 }

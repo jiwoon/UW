@@ -70,7 +70,6 @@ public class TaskService {
 
 	public boolean pass(Task task, Integer id) {
 		task.setState(1);
-		task.keep("id", "type", "file_name", "window", "state", "createtime");
 		return task.update();
 	}
 
@@ -85,7 +84,6 @@ public class TaskService {
 		// 把任务条目均匀插入到队列til中
 		TaskItemRedisDAO.addTaskItem(taskItems);
 		task.setState(2);
-		task.keep("id", "type", "file_name", "window", "state", "createtime");
 		return task.update();
 	}
 
@@ -103,7 +101,6 @@ public class TaskService {
 //			AGVTaskItemRedisDAO.removeTaskItemByTaskId(id);
 //		}
 		task.setState(4);
-		task.keep("id", "type", "file_name", "window", "state", "creattime");
 		return task.update();
 	}
 
@@ -114,13 +111,17 @@ public class TaskService {
 		if (type == 0 || type == 1) {
 			List<IOTaskDetailVO> ioTaskDetailVO = new ArrayList<IOTaskDetailVO>();
 			Page<Record> result = selectService.select(new String[] {"task", "task_log", "packing_list_item", "material", "material_type"}, 
-					new String[] {"task.id = task_log.task_id", "task_log.material_id = material.id", "task_log.task_id = packing_list_item.task_id", 
-							"material_type.id = material.type"}, null, null, null, null, null);
+					new String[] {"task.id = task_log.task_id", "task_log.task_id = packing_list_item.task_id", "task_log.material_id = material.id", 
+							"packing_list_item.material_type_id = material_type.id", "material_type.id = material.type"}, null, null, null, null, null);
 			for (Record res : result.getList()) {
-				IOTaskDetailVO i = new IOTaskDetailVO(res.get("MaterialType_No"), res.get("PackingListItem_Quantity"), res.get("TaskLog_Quantity"), 
-						res.get("TaskLog_Time"));
-				if (res.get("Task_Id") == id) {
-					ioTaskDetailVO.add(i);
+				IOTaskDetailVO io = new IOTaskDetailVO(res.get("PackingListItem_Id"), res.get("MaterialType_No"), res.get("PackingListItem_Quantity"), 
+						res.get("PackingListItem_MaterialTypeId"), res.get("PackingListItem_FinishTime"));
+//				"SELECT id, quantity FROM material WHERE type IN (SELECT id FROM material_type WHERE no = )", res.get("MaterialType_No")
+//				List<Material> test = Material.dao.find("SELECT material.id, material.remainder_quantity FROM material WHERE type IN "
+//						+ "(SELECT material_type.id FROM material_type WHERE material_type.no = ?)", res.get("MaterialType_No").toString());
+//				io.setDetails(test);
+				if (res.get("Task_Id").equals(id)) {
+					ioTaskDetailVO.add(io);
 				}
 			}
 			return ioTaskDetailVO;
