@@ -111,23 +111,47 @@ public class LSSLHandler {
 		//转换成实体类
 		AGVStatusCmd statusCmd = Json.getJson().parse(message, AGVStatusCmd.class);
 		
-		//判断是否是第二动作完成
-		if(statusCmd.getStatus() != 2) {
-			return;
+		//判断是否是开始执行任务
+		if(statusCmd.getStatus() == 0) {
+			handleStatus0(statusCmd);
 		}
 		
+		//判断是否是第二动作完成
+		if(statusCmd.getStatus() == 2) {
+			handleStatus2(statusCmd);
+		}
+		
+		
+	}
+	
+	
+	private static void handleStatus0(AGVStatusCmd statusCmd) {
 		//获取groupid
 		String groupid = statusCmd.getMissiongroupid();
 		
-		//判断是LS指令还是SL指令第二动作完成，状态是1说明是LS，状态2是SL
+		//匹配groupid
+		for (AGVIOTaskItem item : TaskItemRedisDAO.getTaskItems()) {
+			if(groupid.equals(item.getGroupId())) {
+				//更新tsakitems里对应item的robotid
+				TaskItemRedisDAO.updateTaskItemRobot(item, statusCmd.getRobotid());
+				break;
+			}
+		}
+	}
+
+
+	private static void handleStatus2(AGVStatusCmd statusCmd) {
+		//获取groupid
+		String groupid = statusCmd.getMissiongroupid();
+		
+		//匹配groupid
 		for (AGVIOTaskItem item : TaskItemRedisDAO.getTaskItems()) {
 			if(groupid.equals(item.getGroupId())) {
 				//查询对应物料类型
 				MaterialType materialType = MaterialType.dao.findById(groupid.split(":")[0]);
 				
+				//判断是LS指令还是SL指令第二动作完成，状态是1说明是LS，状态2是SL
 				if(item.getState() == 1) {//LS执行完成时：（这部分逻辑下一个版本放到APP中）
-					//更新tsakitems里对应item的robotid
-					TaskItemRedisDAO.updateTaskItemRobot(item, statusCmd.getRobotid());
 					//构建SL指令，令指定robot把料送回原仓位
 					AGVMoveCmd moveCmd = createSLCmd(statusCmd, groupid, materialType, item);
 					//发送SL>>>

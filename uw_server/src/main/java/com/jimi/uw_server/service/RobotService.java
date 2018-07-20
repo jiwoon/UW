@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.jfinal.aop.Enhancer;
 import com.jfinal.plugin.activerecord.Page;
@@ -54,8 +53,11 @@ public class RobotService extends SelectService {
 
 	
 	public void robotSwitch(String id, Integer enabled) {
-		List<Integer> idList = java.util.Arrays.asList(id.split(",")).stream().map(s -> Integer.parseInt(s.trim()))
-				.collect(Collectors.toList());
+		List<Integer> idList = new ArrayList<>();
+		String[] ids = id.split(",");
+		for (String string : ids) {
+			idList.add(Integer.parseInt(string));
+		}
 		if (enabled == 2) {
 			SwitchHandler.sendEnable(idList);
 		} else if (enabled == 1) {

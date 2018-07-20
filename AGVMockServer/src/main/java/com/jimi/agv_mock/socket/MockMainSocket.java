@@ -113,8 +113,6 @@ public class MockMainSocket implements UncaughtExceptionHandler{
 	 */
 	public static void sendACK(String message) {
 		try {
-			//模拟延迟
-//			Thread.sleep(Constant.WAIT_ACK_TIMEOUT + new Random().nextInt() % 500);
 			send(message);
 		} catch (Exception e) {
 			e.printStackTrace();

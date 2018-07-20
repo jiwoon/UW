@@ -60,11 +60,11 @@ public class Constant {
 	/**
 	 * 产生负载异常的概率
 	 */
-	public static final int LOAD_EXCEPTION_PERCENTAGE = 5;
+	public static final int LOAD_EXCEPTION_PERCENTAGE = 15;
 	/**
 	 * 不回复ACK的概率
 	 */
-	public static final int DONT_SEND_ACK_PERCENTAGE = 20;
+	public static final int DONT_SEND_ACK_PERCENTAGE = 33;
 	/**
 	 * 回复ACK的基础延迟
 	 */

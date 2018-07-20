@@ -75,7 +75,7 @@ public class TaskExcutor extends Thread{
 			//设置叉车空闲
 			robot.setStatus(0);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			System.out.println(" A task has been interrupted");
 		}
 	}
 

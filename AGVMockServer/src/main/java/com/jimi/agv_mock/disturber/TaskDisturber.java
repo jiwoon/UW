@@ -23,13 +23,13 @@ public class TaskDisturber {
 	
 	
 	public void disturbStart() throws InterruptedException {
-		long delay = (long) (Constant.START_CMD_DELAY * (1 + ((new Random().nextInt() % Constant.TASK_FLOATING_PERCENTAGE) / 100.0)));
+		long delay = (long) (Constant.START_CMD_DELAY * (1 + ((new Random().nextInt() % (Constant.TASK_FLOATING_PERCENTAGE + 1)) / 100.0)));
 		delay(delay);
 	}
 
 
 	public void disturbFirstAction() throws InterruptedException {
-		long delay = (long) (Constant.FIRST_ACTION_DELAY * (1 + ((new Random().nextInt() % Constant.TASK_FLOATING_PERCENTAGE) / 100.0)));
+		long delay = (long) (Constant.FIRST_ACTION_DELAY * (1 + ((new Random().nextInt() % (Constant.TASK_FLOATING_PERCENTAGE + 1)) / 100.0)));
 		delay(delay);
 		//一定概率出负载异常
 		randomLoadException();
@@ -37,7 +37,7 @@ public class TaskDisturber {
 	
 	
 	public void disturbSecondAction() throws InterruptedException {
-		long delay = (long) (Constant.SECOND_ACTION_DELAY * (1 + ((new Random().nextInt() % Constant.TASK_FLOATING_PERCENTAGE) / 100.0)));
+		long delay = (long) (Constant.SECOND_ACTION_DELAY * (1 + ((new Random().nextInt() % (Constant.TASK_FLOATING_PERCENTAGE + 1)) / 100.0)));
 		delay(delay);
 	}
 	
@@ -79,6 +79,8 @@ public class TaskDisturber {
 				int robotid = excutor.getRobot().getRobotid();
 				String missionGroupId = excutor.getMoveCmd().getMissiongroups().get(0).getMissiongroupid();
 				ExceptionHandler.sendLoadException(robotid, missionGroupId);
+				//中断该任务
+				excutor.interrupt();
 			}
 		}
 	}
