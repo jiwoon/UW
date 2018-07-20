@@ -29,7 +29,11 @@
         <img class="card-img-top" src="/static/img/robot.jpg">
         <div class="card-body row pb-0 pt-1">
           <p class="card-text col">ID: {{item.id}}</p>
-          <p class="card-text col">状态: {{robotStatus(item.status)}}</p>
+          <p class="card-text col">运行状态: {{item.pauseString}}</p>
+        </div>
+        <div class="card-body row pb-0 pt-1">
+          <p class="card-text col">警告状态: {{item.warnString}}</p>
+          <p class="card-text col">错误状态: {{item.errorString}}</p>
         </div>
         <div class="card-body row pb-3 pt-0">
           <p class="card-text col">启停状态: {{item.enabled === 0 ? '停用' : "启用"}}</p>
@@ -186,7 +190,7 @@
           let options = {
             url: robotPauseUrl,
             data: {
-              enabled: enabled
+              pause: enabled
             }
           };
           axiosPost(options).then(response => {
