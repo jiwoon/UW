@@ -7,6 +7,7 @@ import com.jimi.uw_server.agv.entity.bo.AGVIOTaskItem;
 import com.jimi.uw_server.agv.entity.cmd.AGVLoadExceptionCmd;
 import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.service.MaterialService;
+import com.jimi.uw_server.service.RobotService;
 
 /**
  * 异常处理器
@@ -17,6 +18,8 @@ import com.jimi.uw_server.service.MaterialService;
 public class ExceptionHandler {
 
 	private static MaterialService materialService = Enhancer.enhance(MaterialService.class);
+	
+	private static RobotService robotService = Enhancer.enhance(RobotService.class);
 	
 	
 	public static void handleLoadException(String message) {
@@ -29,9 +32,13 @@ public class ExceptionHandler {
 				MaterialType materialType = MaterialType.dao.findById(item.getMaterialTypeId());
 				materialType.setIsOnShelf(true);
 				materialService.update(materialType);
+				
 				//把负载异常的条目回滚到状态0
 				TaskItemRedisDAO.updateTaskItemState(item, 0);
-				//把指定叉车状态置为取空异常
+				
+				//把指定叉车的取空异常置为真
+				 robotService.setloadException(item.getRobotId());
+				
 				break;
 			}
 		}

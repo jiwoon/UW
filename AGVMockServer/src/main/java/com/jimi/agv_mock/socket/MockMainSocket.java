@@ -68,6 +68,8 @@ public class MockMainSocket implements UncaughtExceptionHandler{
 	@OnClose
 	public void onClose(Session userSession, CloseReason reason) {
 		System.out.println("Client was disconnected.");
+		//暂停系统
+		SwitchHandler.pauseOrStartAll(true);
 	}
     
 

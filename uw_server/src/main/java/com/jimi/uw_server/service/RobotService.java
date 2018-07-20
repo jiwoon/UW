@@ -19,58 +19,62 @@ import com.jimi.uw_server.service.entity.PagePaginate;
 
 /**
  * 叉车业务层
+ * 
  * @author HardyYao
  * @createTime 2018年6月8日
  */
 public class RobotService extends SelectService {
 
-    private static SelectService selectService = Enhancer.enhance(SelectService.class);
+	private static SelectService selectService = Enhancer.enhance(SelectService.class);
 
-    public static final String getRobotAllId = "SELECT id FROM robot";
+	public static final String getRobotAllId = "SELECT id FROM robot";
 
-    public Object select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
-        List<RobotVO> robotVO = new ArrayList<RobotVO>();
+	
+	public Object select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
+		List<RobotVO> robotVO = new ArrayList<RobotVO>();
 
-        Page<Record> result = selectService.select("robot", pageNo, pageSize, ascBy, descBy, filter);
+		Page<Record> result = selectService.select("robot", pageNo, pageSize, ascBy, descBy, filter);
 
-        int totallyRow =  result.getTotalRow();
-        for (Record res : result.getList()) {
-            RobotVO r = new RobotVO(res.get("id"), res.get("status"), res.get("battery"),
-                    res.get("x"), res.get("y"), res.get("enabled"), res.get("error"), res.get("warn"), res.get("pause"));
-            robotVO.add(r);
-        }
+		int totallyRow = result.getTotalRow();
+		for (Record res : result.getList()) {
+			RobotVO r = new RobotVO(res.get("id"), res.get("status"), res.get("battery"), res.get("x"), res.get("y"),
+					res.get("enabled"), res.get("error"), res.get("warn"), res.get("pause"));
+			robotVO.add(r);
+		}
 
-        PagePaginate pagePaginate = new PagePaginate();
-        pagePaginate.setPageNumber(pageNo);
-        pagePaginate.setPageSize(pageSize);
-        pagePaginate.setTotalRow(totallyRow);
+		PagePaginate pagePaginate = new PagePaginate();
+		pagePaginate.setPageNumber(pageNo);
+		pagePaginate.setPageSize(pageSize);
+		pagePaginate.setTotalRow(totallyRow);
 
-        pagePaginate.setList(robotVO);
+		pagePaginate.setList(robotVO);
 
-        return pagePaginate;
-    }
+		return pagePaginate;
+	}
 
+	
+	public void robotSwitch(String id, Integer enabled) {
+		List<Integer> idList = java.util.Arrays.asList(id.split(",")).stream().map(s -> Integer.parseInt(s.trim()))
+				.collect(Collectors.toList());
+		if (enabled == 2) {
+			SwitchHandler.sendEnable(idList);
+		} else if (enabled == 1) {
+			SwitchHandler.sendDisable(idList);
+		}
+	}
 
-
-    public void robotSwitch(String id, Integer enabled) {
-        List<Integer> idList = java.util.Arrays.asList(id.split(",")).stream().map(s -> Integer.parseInt(s.trim())).collect(Collectors.toList());
-        if (enabled == 2) {
-            SwitchHandler.sendEnable(idList);
-        } else if (enabled == 1) {
-            SwitchHandler.sendDisable(idList);
-        }
-    }
-
-
-
-    public void pause(boolean pause) {
+	
+	public void pause(boolean pause) {
         if (pause) {
             SwitchHandler.sendAllStart();
+            clearLoadException();
         } else {
             SwitchHandler.sendAllPause();
-
         }
-    public void updateRobotInfo(Map<Integer, AGVRobot> newRobots, Map<Integer, AGVRobot> robots) {
+	}
+
+	
+	public void updateRobotInfo(Map<Integer, AGVRobot> newRobots, Map<Integer, AGVRobot> robots) {
         //获取新增项
         Set<Integer> addRobotsIds = new HashSet<>(newRobots.keySet());
         addRobotsIds.removeAll(robots.keySet());
@@ -98,7 +102,27 @@ public class RobotService extends SelectService {
         }
     }
 
-
-    public void setloadException()
+	
+	/**
+	 * 设置某台机器的负载异常为真
+	 */
+	public void setloadException(int id) {
+		Robot robot = new Robot();
+		robot.setId(id);
+		robot.setLoadException(true);
+		robot.update();
+	}
+	
+	
+	/**
+	 * 清除全部负载异常
+	 */
+	public void clearLoadException() {
+		List<Robot> robots = Robot.dao.find(getRobotAllId);
+		for (Robot robot : robots) {
+			robot.setLoadException(false);
+			robot.update();
+		}
+	}
 
 }
