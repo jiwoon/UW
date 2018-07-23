@@ -52,13 +52,13 @@ public class Constant {
 	/**
 	 * 干扰总开关（影响异常的产生、回复ACK的是否丢失）
 	 */
-	public static final boolean DISTURB_SWITCH = true;
+	public static final boolean DISTURB_SWITCH = false;
 	/**
-	 * 产生普通异常的概率
+	 * 任务执行时每秒产生普通异常的概率
 	 */
 	public static final int EXCEPTION_PERCENTAGE = 2;
 	/**
-	 * 产生负载异常的概率
+	 * 第一动作完成后产生负载异常的概率
 	 */
 	public static final int LOAD_EXCEPTION_PERCENTAGE = 15;
 	/**

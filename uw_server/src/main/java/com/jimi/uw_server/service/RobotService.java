@@ -9,7 +9,10 @@ import java.util.Set;
 import com.jfinal.aop.Enhancer;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
+import com.jimi.uw_server.agv.dao.TaskItemRedisDAO;
+import com.jimi.uw_server.agv.entity.bo.AGVIOTaskItem;
 import com.jimi.uw_server.agv.entity.bo.AGVRobot;
+import com.jimi.uw_server.agv.handle.LSSLHandler;
 import com.jimi.uw_server.agv.handle.SwitchHandler;
 import com.jimi.uw_server.model.Robot;
 import com.jimi.uw_server.model.vo.RobotVO;
@@ -66,7 +69,7 @@ public class RobotService extends SelectService {
 	}
 
 	
-	public void pause(boolean pause) {
+	public void pause(Boolean pause) {
         if (pause) {
             SwitchHandler.sendAllStart();
             clearLoadException();
@@ -124,6 +127,18 @@ public class RobotService extends SelectService {
 		for (Robot robot : robots) {
 			robot.setLoadException(false);
 			robot.update();
+		}
+	}
+
+
+	/**
+	 * 叉车回库SL
+	 */
+	public void back(Integer id) {
+		for (AGVIOTaskItem item : TaskItemRedisDAO.getTaskItems()) {
+			if(id.equals(item.getId())) {
+				LSSLHandler.sendSL(item);
+			}
 		}
 	}
 
