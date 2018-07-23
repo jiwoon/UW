@@ -6,8 +6,11 @@ import java.util.Date;
 import java.util.List;
 
 import com.jfinal.aop.Enhancer;
+import com.jfinal.json.Json;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
+import com.jfinal.plugin.redis.Cache;
+import com.jfinal.plugin.redis.Redis;
 import com.jimi.uw_server.agv.dao.TaskItemRedisDAO;
 import com.jimi.uw_server.agv.entity.bo.AGVIOTaskItem;
 import com.jimi.uw_server.exception.OperationException;
@@ -15,6 +18,7 @@ import com.jimi.uw_server.model.Material;
 import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.model.PackingListItem;
 import com.jimi.uw_server.model.Task;
+import com.jimi.uw_server.model.TaskLog;
 import com.jimi.uw_server.model.Window;
 import com.jimi.uw_server.model.bo.PackingListItemBO;
 import com.jimi.uw_server.model.vo.IOTaskDetailVO;
@@ -29,6 +33,8 @@ import com.jimi.uw_server.util.ExcelHelper;
  * @createTime 2018年6月8日
  */
 public class TaskService {
+	
+	private static Cache cache = Redis.use();
 
 	private static SelectService selectService = Enhancer.enhance(SelectService.class);
 
@@ -46,6 +52,16 @@ public class TaskService {
 	private static final String getNoSql = "SELECT id FROM material_type WHERE no = ?";
 
 	private static final String getMaterialIdSql = "SELECT id FROM material WHERE type = (SELECT type FROM material WHERE type = ?)";
+	
+//	private static final String getPackingListItemSql = "SELECT packing_list_item.id, material_type.no, packing_list_item.quantity, "
+//			+ "packing_list_item.finish_time FROM packing_list_item, material_type WHERE packing_list_item.task_id = ? "
+//			+ "AND material_type.id = packing_list_item.material_type_id";
+	
+	private static final String getItemdetails = "SELECT material_id, quantity FROM task_log WHERE task_id = ? AND material_id In"
+			+ "(SELECT id FROM material WHERE type = (SELECT id FROM material_type WHERE no = ?))";
+	
+//	private static final String getTaskInProcessSql = "SELECT id FROM task WHERE state = 2 AND window = ?";
+
 
 	public boolean createIOTask(Task task, Integer type, String fileName, String fullFileName) throws Exception {
 		// 如果文件格式不对，则返回false，提示检查文件格式及内容格式
@@ -68,12 +84,16 @@ public class TaskService {
 		return task.save();
 	}
 
-	public boolean pass(Task task, Integer id) {
+
+	public boolean pass(Integer id) {
+		Task task = Task.dao.findById(id);
 		task.setState(1);
 		return task.update();
 	}
 
-	public boolean start(Task task, Integer id, Integer window) {
+
+	public boolean start(Integer id, Integer window) {
+		Task task = Task.dao.findById(id);
 		List<PackingListItem> items = PackingListItem.dao.find(getTaskMaterialIdSql, id);
 		// 根据套料单、物料类型表生成任务条目
 		List<AGVIOTaskItem> taskItems = new ArrayList<AGVIOTaskItem>();
@@ -87,7 +107,9 @@ public class TaskService {
 		return task.update();
 	}
 
-	public boolean cancel(Task task, Integer id) {
+
+	public boolean cancel(Integer id) {
+		Task task = Task.dao.findById(id);
 		// 判断任务是否处于进行中状态，若是，则把相关的任务条目从til中剔除（线程同步方法），并更新任务状态为作废；
 		int state = task.findById(id).getState();
 		if (state == 2) {
@@ -104,27 +126,49 @@ public class TaskService {
 		return task.update();
 	}
 
-	public Object check(Integer id) {
+
+	// 查看任务详情
+	public Object check(Integer id, Integer pageSize, Integer pageNo) {
  		Task task = Task.dao.findById(id);
 		Integer type = task.getType();
 		// 如果任务类型为出入库
 		if (type == 0 || type == 1) {
 			List<IOTaskDetailVO> ioTaskDetailVO = new ArrayList<IOTaskDetailVO>();
-			Page<Record> result = selectService.select(new String[] {"task", "task_log", "packing_list_item", "material", "material_type"}, 
-					new String[] {"task.id = task_log.task_id", "task_log.task_id = packing_list_item.task_id", "task_log.material_id = material.id", 
-							"packing_list_item.material_type_id = material_type.id", "material_type.id = material.type"}, null, null, null, null, null);
-			for (Record res : result.getList()) {
-				IOTaskDetailVO io = new IOTaskDetailVO(res.get("PackingListItem_Id"), res.get("MaterialType_No"), res.get("PackingListItem_Quantity"), 
-						res.get("PackingListItem_MaterialTypeId"), res.get("PackingListItem_FinishTime"));
-//				"SELECT id, quantity FROM material WHERE type IN (SELECT id FROM material_type WHERE no = )", res.get("MaterialType_No")
-//				List<Material> test = Material.dao.find("SELECT material.id, material.remainder_quantity FROM material WHERE type IN "
-//						+ "(SELECT material_type.id FROM material_type WHERE material_type.no = ?)", res.get("MaterialType_No").toString());
-//				io.setDetails(test);
-				if (res.get("Task_Id").equals(id)) {
-					ioTaskDetailVO.add(io);
+
+			// 先查询出同一个任务id的套料单表的id,物料类型表的料号no,套料单表的计划出入库数量quantity,套料单表对应任务的实际完成时间finish_time
+//			List<PackingListItem> packingList = PackingListItem.dao.find(getPackingListItemSql, id);
+			Page<Record> packingListItems = selectService.select(new String[] {"packing_list_item", "material_type"}, 
+					new String[] {"packing_list_item.task_id = " + id.toString(), "material_type.id = packing_list_item.material_type_id"}, 
+					pageNo, pageSize, null, null, null);
+
+			// 获取查询记录总行数
+			int totallyRow =  packingListItems.getTotalRow();
+
+			// 遍历同一个任务id的套料单数据
+			for (Record packingListItem : packingListItems.getList()) {
+				// 查询task_log中的material_id,quantity
+				// 这里在for循环中执行了sql查询，会影响执行效率，暂时还没想到两全其美的解决方案，争取这周(7.23-7.28)想出解决方案
+				List<TaskLog> taskLog = TaskLog.dao.find(getItemdetails, id, packingListItem.get("MaterialType_No"));
+				Integer actualQuantity = 0;
+				// 实际出入库数量要根据task_log中的出入库数量记录进行累加得到
+				for (TaskLog t : taskLog) {
+					actualQuantity += t.getQuantity();
 				}
+				IOTaskDetailVO io = new IOTaskDetailVO(packingListItem.get("PackingListItem_Id"), packingListItem.get("MaterialType_No"), packingListItem.get("PackingListItem_Quantity"), 
+						actualQuantity, packingListItem.get("PackingListItem_FinishTime"));
+				io.setDetails(taskLog);
+				ioTaskDetailVO.add(io);
 			}
-			return ioTaskDetailVO;
+
+			// 分页，设置页码，每页显示条目等
+			PagePaginate pagePaginate = new PagePaginate();
+			pagePaginate.setPageSize(pageSize);
+			pagePaginate.setPageNumber(pageNo);
+			pagePaginate.setTotalRow(totallyRow);
+
+			pagePaginate.setList(ioTaskDetailVO);
+
+			return pagePaginate;
 		} else if (type == 2) {		//如果任务类型为盘点
 			return null;
 		} else if (type == 3) {		//如果任务类型为位置优化
@@ -133,11 +177,13 @@ public class TaskService {
 		return null;
 	}
 
+
 	public List<Window> getWindows(Window window) {
 		List<Window> windowId;
 		windowId = Window.dao.find(getWindowsSql);
 		return windowId;
 	}
+
 
 	public Object select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
 		List<TaskVO> taskVO = new ArrayList<TaskVO>();
@@ -153,12 +199,14 @@ public class TaskService {
 
 		Page<Record> result = selectService.select("task", pageNo, pageSize, ascBy, descBy, filter);
 
+		// 获取查询记录总行数
 		int totallyRow =  result.getTotalRow();
 		for (Record res : result.getList()) {
 			TaskVO t = new TaskVO(res.get("id"), res.get("state"), res.get("type"), res.get("file_name"), res.get("create_time"));
 			taskVO.add(t);
 		}
 
+		// 分页，设置页码，每页显示条目等
 		PagePaginate pagePaginate = new PagePaginate();
 		pagePaginate.setPageSize(pageSize);
 		pagePaginate.setPageNumber(pageNo);
@@ -168,6 +216,12 @@ public class TaskService {
 
 		return pagePaginate;
 	}
+	
+	
+	public void getWindowTaskItems(Integer id) {
+		
+	}
+
 
 	//将excel表格的物料相关信息写入套料单数据表
 	public boolean insertPackingList(PackingListItem packingListItem, Integer type, String fullFileName) throws Exception {
@@ -256,6 +310,7 @@ public class TaskService {
 		return true;
 	}
 
+
 	//更新物料实体表中的库存数量
 	public void updateMaterialQuantity(Material material, Integer taskType, Integer remainderQuantity, Integer planQuantity, Integer materialTypeId) {
 		if (taskType == 1) {	//如果是出库
@@ -279,6 +334,19 @@ public class TaskService {
 		task.setId(taskId);
 		task.setState(3);
 		task.update();
+	}
+	
+	
+	public void finishItem(Integer id) {
+		for (int i = 0; i < cache.llen("til"); i++) {
+			byte[] item = cache.lindex("til", i);
+			AGVIOTaskItem agvioTaskItem = Json.getJson().parse(new String(item), AGVIOTaskItem.class);
+			if(id.equals(agvioTaskItem.getId().intValue())){
+				agvioTaskItem.setState(3);
+				cache.lset("til", i, Json.getJson().toJson(agvioTaskItem).getBytes());
+				break;
+			}
+		}
 	}
 
 }

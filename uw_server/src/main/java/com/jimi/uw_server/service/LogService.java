@@ -1,11 +1,14 @@
 package com.jimi.uw_server.service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import com.jfinal.aop.Enhancer;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
+import com.jimi.uw_server.model.TaskLog;
+import com.jimi.uw_server.model.User;
 import com.jimi.uw_server.model.vo.PositionLogVO;
 import com.jimi.uw_server.model.vo.TaskLogVO;
 import com.jimi.uw_server.service.base.SelectService;
@@ -96,6 +99,20 @@ public class LogService extends SelectService {
 		pagePaginate.setList(positionLogVO);
 
 		return pagePaginate;
+	}
+	
+	
+	public boolean writeIO(Integer taskId, String materialId, Integer quantity, User user) {
+		TaskLog taskLog = new TaskLog();
+		taskLog.setTaskId(taskId);
+		taskLog.setMaterialId(materialId);
+		taskLog.setQuantity(quantity);
+		// 写入当前使用系统用户的Uid
+		taskLog.setOperator(user.getUid());
+		// 区分出入库操作人工还是机器操作,暂时先统一写成机器操作
+		taskLog.setAuto(true);
+		taskLog.setTime(new Date());
+		return taskLog.save();
 	}
 
 }

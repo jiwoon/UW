@@ -24,11 +24,11 @@ public class IOTaskDetailVO extends TaskLog {
 		return MaterialTypeId;
 	}
 
-	public IOTaskDetailVO(Integer packingListItemId, String materialNo, Integer planQuantity, Integer MaterialTypeId, Date finishTime) {
+	public IOTaskDetailVO(Integer packingListItemId, String materialNo, Integer planQuantity, Integer actualQuantity, Date finishTime) {
 		this.set("id", packingListItemId);
 		this.set("materialNo", materialNo);
 		this.set("planQuantity", planQuantity);
-		this.set("actualQuantity", getActualQuantity(MaterialTypeId));
+		this.set("actualQuantity", actualQuantity);
 		this.set("finishTime", finishTime);
 	}
 

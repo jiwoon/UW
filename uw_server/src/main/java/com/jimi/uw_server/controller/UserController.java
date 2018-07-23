@@ -18,8 +18,6 @@ public class UserController extends Controller {
 
 	private UserService userService = Enhancer.enhance(UserService.class);
 
-	public static final String USER_TABLE_NAME = "User";
-
 	public static final String SESSION_KEY_LOGIN_USER = "loginUser";
 
 
@@ -50,8 +48,8 @@ public class UserController extends Controller {
 	}
 
 
-	public void add(@Para("") User user) {
-		if(userService.add(user)) {
+	public void add(String uid, String name, String password, Integer type) {
+		if(userService.add(uid, name, password, type)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed("请完善用户信息！"));
