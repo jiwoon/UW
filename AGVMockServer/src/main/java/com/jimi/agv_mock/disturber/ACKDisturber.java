@@ -27,6 +27,8 @@ public class ACKDisturber {
 				}
 				MockMainSocket.sendACK(message);
 			}
+		}else {
+			MockMainSocket.sendACK(message);
 		}
 		
 	}
