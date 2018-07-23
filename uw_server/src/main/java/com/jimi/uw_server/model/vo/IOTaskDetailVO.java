@@ -1,6 +1,7 @@
 package com.jimi.uw_server.model.vo;
 
 import java.util.Date;
+import java.util.List;
 
 import com.jimi.uw_server.model.TaskLog;
 
@@ -16,11 +17,28 @@ public class IOTaskDetailVO extends TaskLog {
 	 */
 	private static final long serialVersionUID = -3361161172340670552L;
 
-	public IOTaskDetailVO(String materialNo, Integer requestQuantity, Integer actualQuantity, Date finishTime) {
+	private List<?> details;
+
+	public Integer getActualQuantity(Integer MaterialTypeId) {
+		
+		return MaterialTypeId;
+	}
+
+	public IOTaskDetailVO(Integer packingListItemId, String materialNo, Integer planQuantity, Integer MaterialTypeId, Date finishTime) {
+		this.set("id", packingListItemId);
 		this.set("materialNo", materialNo);
-		this.set("requestQuantity", requestQuantity);
-		this.set("actualQuantity", actualQuantity);
+		this.set("planQuantity", planQuantity);
+		this.set("actualQuantity", getActualQuantity(MaterialTypeId));
 		this.set("finishTime", finishTime);
 	}
+
+	public List<?> getDetails() {
+		return details;
+	}
+
+	public void setDetails(List<?> details) {
+		this.set("details", details);
+	}
+
 
 }

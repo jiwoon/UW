@@ -96,7 +96,6 @@ public class MaterialService extends SelectService{
 	}
 
 	public boolean update(MaterialType materialType) {
-		materialType.keep("id","no","area","row","col","height","enabled", "is_on_shelf");
 		return materialType.update();
 	}
 

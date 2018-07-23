@@ -13,31 +13,33 @@ public class RobotVO extends Robot{
 	 */
 	private static final long serialVersionUID = -7771022031487042995L;
 
-	private String enableString;
+	private String enabledString;
 
 	private String errorString;
 
 	private String warnString;
 
 	private String pauseString;
+	
+	private String loadExceptionString;
 
-	public void setEnableString(String enableString) {
-		this.enableString = enableString;
+	public void setEnabledString(String enabledString) {
+		this.enabledString = enabledString;
 	}
 
-	public String getEnableString(Integer enabled) {
+	public String getEnabledString(Integer enabled) {
 		switch(enabled) {
 		case 0:
-			enableString = "初始禁用";
+			enabledString = "已禁用";
 			break;
 		case 1:
-			enableString = "手动禁用";
+			enabledString = "已禁用";
 			break;
 		case 2:
-			this.enableString = "启用";
+			this.enabledString = "已启用";
 			break;
 		}
-		return enableString;
+		return enabledString;
 	}
 
 	public String getErrorString(Integer error) {
@@ -121,7 +123,7 @@ public class RobotVO extends Robot{
 			errorString = "命令错误";
 			break;
 		case 255:
-			errorString = "正常";
+			errorString = "";
 			break;
 		}
 		return errorString;
@@ -148,7 +150,7 @@ public class RobotVO extends Robot{
 			warnString = "该机器已经断线超过三分钟以上";
 			break;
 		case 255:
-			warnString = "正常";
+			warnString = "";
 			break;
 		}
 	
@@ -157,27 +159,39 @@ public class RobotVO extends Robot{
 
 	public String getPauseString(boolean pause) {
 		if (pause) {
-			pauseString = "暂停中";
+			pauseString = "已暂停";
  		} else {
- 			pauseString = "启动中";
+ 			pauseString = "已启动";
  		}
 		return pauseString;
 	}
+	
+	public String getLoadExceptionString(boolean loadException) {
+		if (loadException) {
+			loadExceptionString = "取空异常";
+		} else {
+			loadExceptionString = "";
+		}
+		return loadExceptionString;
+	}
 
-	public RobotVO(Integer id, Integer status, Integer battery, int x, int y, Integer enabled, Integer error, Integer warn, boolean pause) {
+	public RobotVO(Integer id, Integer status, Integer battery, int x, int y, Integer enabled, Integer error, Integer warn, boolean pause, 
+			boolean loadException) {
 		this.setId(id);
 		this.setStatus(status);
 		this.setBattery(battery);
 		this.setX(x);
 		this.setY(y);
 		this.setEnabled(enabled);
-		this.set("enableString", getEnableString(enabled));
+		this.set("enabledString", getEnabledString(enabled));
 		this.set("error", error);
 		this.set("errorString", getErrorString(error));
 		this.set("warn", warn);
 		this.set("warnString", getWarnString(warn));
 		this.setPause(pause);
 		this.set("pauseString", getPauseString(pause));
+		this.set("loadException", loadException);
+		this.set("loadExceptionString", getLoadExceptionString(loadException));
 	}
 
 }

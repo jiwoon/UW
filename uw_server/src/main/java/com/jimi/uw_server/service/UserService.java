@@ -52,7 +52,6 @@ public class UserService extends SelectService{
 		if(User.dao.find(uniqueCheckSql, user.getUid()).size() != 0) {
 			throw new OperationException("用户" + user.getUid() + "已存在！");
 		}
-		user.keep("uid","name","password", "enabled","type");
 		user.setPassword(MD5Util.MD5(user.getPassword()));
 		return user.save();
 	}
@@ -63,7 +62,6 @@ public class UserService extends SelectService{
 		if (!(user.getPassword() == null)) {
 			user.setPassword(MD5Util.MD5(user.getPassword()));
 		}
-		user.keep("uid","name","password", "enabled","type");
 		return user.update();
 	}
 

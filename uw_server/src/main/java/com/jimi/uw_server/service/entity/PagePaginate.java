@@ -25,6 +25,7 @@ public class PagePaginate {
 	public Integer getPageNumber() {
 		return pageNumber;
 	}
+
 	public void setPageNumber(Integer pageNumber) {
 		if(pageNumber == null || pageNumber <= 0) {
 			this.pageNumber = 1;
@@ -32,9 +33,11 @@ public class PagePaginate {
 			this.pageNumber = pageNumber;
 		}
 	}
+
 	public Integer getPageSize() {
 		return pageSize;
 	}
+
 	public void setPageSize(Integer pageSize) {
 		if(pageSize == null || pageSize <= 0) {
 			this.pageSize = 20;
@@ -42,6 +45,7 @@ public class PagePaginate {
 			this.pageSize = pageSize;
 		}
 	}
+
 	public boolean isFirstPage() {
 		if(this.getPageNumber() == 1) {
 			this.firstPage = true;
@@ -50,6 +54,7 @@ public class PagePaginate {
 		}
 		return firstPage;
 	}
+
 	public boolean isLastPage() {
 		if(this.getPageNumber() == totalPage) {
 			this.lastPage = true;
@@ -58,18 +63,22 @@ public class PagePaginate {
 		}
 		return lastPage;
 	}
+
 	public Integer getTotalPage() {
 		return totalPage;
 	}
+
 	public void setTotalPage(Integer totalPage) {
 		this.totalPage = totalPage;
 		if (this.totalPage<this.pageNumber) {
 			this.setPageNumber(totalPage);
 		}
 	}
+
 	public Integer getTotalRow() {
 		return totalRow;
 	}
+
 	public void setTotalRow(Integer totallyData) {
 		this.totalRow = totallyData;
 		if(this.totalRow == null && this.totalRow <= 0) {
@@ -79,11 +88,14 @@ public class PagePaginate {
 					+ (this.totalRow % this.getPageSize() == 0 ? 0: 1));
 		}
 	}
+
 	public List<?> getList() {
 		return list;
 	}
-	public void setList(List<?> entitiesVO) {
-		this.list = entitiesVO;
+
+	public void setList(List<?> list) {
+		this.list = list;
 	}
+
 }
  
