@@ -31,7 +31,7 @@ public class LogController extends Controller {
 	
 	
 	public void writeIO(Integer taskId, String materialId, Integer quantity) {
-		// 获取当前使用系统的用户名
+		// 获取当前使用系统的用户，以便获取操作员uid
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		User user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
 		if (logService.writeIO(taskId, materialId, quantity, user)) {

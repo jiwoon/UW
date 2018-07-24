@@ -88,8 +88,8 @@ public class TaskController extends Controller {
 	}
 	
 	
-	public void getWindowTaskItems(Integer id) {
-		
+	public void getWindowTaskItems(Integer id, Integer pageNo, Integer pageSize) {
+		renderJson(ResultUtil.succeed(taskService.getWindowTaskItems(id, pageNo, pageSize)));
 	}
 
 	

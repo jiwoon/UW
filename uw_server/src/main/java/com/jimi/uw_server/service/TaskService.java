@@ -20,6 +20,7 @@ import com.jimi.uw_server.model.Window;
 import com.jimi.uw_server.model.bo.PackingListItemBO;
 import com.jimi.uw_server.model.vo.IOTaskDetailVO;
 import com.jimi.uw_server.model.vo.TaskVO;
+import com.jimi.uw_server.model.vo.WindowTaskItemsVO;
 import com.jimi.uw_server.service.base.SelectService;
 import com.jimi.uw_server.service.entity.PagePaginate;
 import com.jimi.uw_server.util.ExcelHelper;
@@ -52,10 +53,10 @@ public class TaskService {
 //			+ "packing_list_item.finish_time FROM packing_list_item, material_type WHERE packing_list_item.task_id = ? "
 //			+ "AND material_type.id = packing_list_item.material_type_id";
 	
-	private static final String getItemdetails = "SELECT material_id, quantity FROM task_log WHERE task_id = ? AND material_id In"
+	private static final String getItemdetails = "SELECT material_id as materialId, quantity FROM task_log WHERE task_id = ? AND material_id In"
 			+ "(SELECT id FROM material WHERE type = (SELECT id FROM material_type WHERE no = ?))";
 	
-//	private static final String getTaskInProcessSql = "SELECT id FROM task WHERE state = 2 AND window = ?";
+	private static final String getTaskInProcessSql = "SELECT id FROM task WHERE state = 2 AND window = ?";
 
 
 	public boolean createIOTask(Task task, Integer type, String fileName, String fullFileName) throws Exception {
@@ -89,6 +90,7 @@ public class TaskService {
 
 	public boolean start(Integer id, Integer window) {
 		Task task = Task.dao.findById(id);
+		task.setWindow(window);
 		List<PackingListItem> items = PackingListItem.dao.find(getTaskMaterialIdSql, id);
 		// 根据套料单、物料类型表生成任务条目
 		List<AGVIOTaskItem> taskItems = new ArrayList<AGVIOTaskItem>();
@@ -106,7 +108,7 @@ public class TaskService {
 	public boolean cancel(Integer id) {
 		Task task = Task.dao.findById(id);
 		// 判断任务是否处于进行中状态，若是，则把相关的任务条目从til中剔除（线程同步方法），并更新任务状态为作废；
-		int state = task.findById(id).getState();
+		int state = task.getState();
 		if (state == 2) {
 			TaskItemRedisDAO.removeTaskItemByTaskId(id);
 		}
@@ -130,7 +132,7 @@ public class TaskService {
 		if (type == 0 || type == 1) {
 			List<IOTaskDetailVO> ioTaskDetailVO = new ArrayList<IOTaskDetailVO>();
 
-			// 先查询出同一个任务id的套料单表的id,物料类型表的料号no,套料单表的计划出入库数量quantity,套料单表对应任务的实际完成时间finish_time
+			// 先进行多表查询，查询出同一个任务id的套料单表的id,物料类型表的料号no,套料单表的计划出入库数量quantity,套料单表对应任务的实际完成时间finish_time
 //			List<PackingListItem> packingList = PackingListItem.dao.find(getPackingListItemSql, id);
 			Page<Record> packingListItems = selectService.select(new String[] {"packing_list_item", "material_type"}, 
 					new String[] {"packing_list_item.task_id = " + id.toString(), "material_type.id = packing_list_item.material_type_id"}, 
@@ -146,8 +148,8 @@ public class TaskService {
 				List<TaskLog> taskLog = TaskLog.dao.find(getItemdetails, id, packingListItem.get("MaterialType_No"));
 				Integer actualQuantity = 0;
 				// 实际出入库数量要根据task_log中的出入库数量记录进行累加得到
-				for (TaskLog t : taskLog) {
-					actualQuantity += t.getQuantity();
+				for (TaskLog tl : taskLog) {
+					actualQuantity += tl.getQuantity();
 				}
 				IOTaskDetailVO io = new IOTaskDetailVO(packingListItem.get("PackingListItem_Id"), packingListItem.get("MaterialType_No"), packingListItem.get("PackingListItem_Quantity"), 
 						actualQuantity, packingListItem.get("PackingListItem_FinishTime"));
@@ -213,8 +215,49 @@ public class TaskService {
 	}
 	
 	
-	public void getWindowTaskItems(Integer id) {
+	public Object getWindowTaskItems(Integer id, Integer pageNo, Integer pageSize) {
+		List<Task> task = Task.dao.find(getTaskInProcessSql, id);
+		List<WindowTaskItemsVO> windowTaskItemsVO = new ArrayList<WindowTaskItemsVO>();
 		
+		PagePaginate pagePaginate = new PagePaginate();
+		int totallyRow = 0;
+		for (Task t : task) {
+			Integer taskId = t.getId();
+			
+			// 先进行多表查询，查询出仓口id绑定的正在执行中的任务的套料单表的id,套料单文件名，物料类型表的料号no,套料单表的计划出入库数量quantity,套料单表对应任务的实际完成时间finish_time
+			Page<Record> windowTaskItems = selectService.select(new String[] {"packing_list_item", "material_type", "task"}, 
+					new String[] {"packing_list_item.task_id = " + taskId.toString(), "material_type.id = packing_list_item.material_type_id", 
+							"task.id = " + taskId.toString()}, pageNo, pageSize, null, null, null);
+			
+			// 记录获取查询记录总行数
+			totallyRow += windowTaskItems.getTotalRow();
+			
+			// 遍历同一个任务id的套料单数据
+			for (Record windowTaskItem : windowTaskItems.getList()) {
+				// 查询task_log中的material_id,quantity
+				// 这里在for循环中执行了sql查询，会影响执行效率，暂时还没想到两全其美的解决方案，争取这周(7.23-7.28)想出解决方案
+				List<TaskLog> taskLog = TaskLog.dao.find(getItemdetails, id, windowTaskItem.get("MaterialType_No"));
+				Integer actualQuantity = 0;
+				// 实际出入库数量要根据task_log中的出入库数量记录进行累加得到
+				for (TaskLog tl : taskLog) {
+					actualQuantity += tl.getQuantity();
+				}
+				WindowTaskItemsVO wt = new WindowTaskItemsVO(windowTaskItem.get("PackingListItem_Id"), windowTaskItem.get("Task_FileName"), 
+						windowTaskItem.get("MaterialType_No"), windowTaskItem.get("PackingListItem_Quantity"), 
+						actualQuantity, windowTaskItem.get("PackingListItem_FinishTime"));
+				wt.setDetails(taskLog);
+				windowTaskItemsVO.add(wt);
+			}
+	
+		}
+		// 分页，设置页码，每页显示条目等
+		pagePaginate.setPageSize(pageSize);
+		pagePaginate.setPageNumber(pageNo);
+		pagePaginate.setTotalRow(totallyRow);
+
+		pagePaginate.setList(windowTaskItemsVO);
+		
+		return pagePaginate;
 	}
 
 
