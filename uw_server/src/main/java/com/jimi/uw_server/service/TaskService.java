@@ -6,11 +6,8 @@ import java.util.Date;
 import java.util.List;
 
 import com.jfinal.aop.Enhancer;
-import com.jfinal.json.Json;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
-import com.jfinal.plugin.redis.Cache;
-import com.jfinal.plugin.redis.Redis;
 import com.jimi.uw_server.agv.dao.TaskItemRedisDAO;
 import com.jimi.uw_server.agv.entity.bo.AGVIOTaskItem;
 import com.jimi.uw_server.exception.OperationException;
@@ -33,8 +30,6 @@ import com.jimi.uw_server.util.ExcelHelper;
  * @createTime 2018年6月8日
  */
 public class TaskService {
-	
-	private static Cache cache = Redis.use();
 
 	private static SelectService selectService = Enhancer.enhance(SelectService.class);
 
@@ -338,15 +333,12 @@ public class TaskService {
 	
 	
 	public void finishItem(Integer id) {
-		for (int i = 0; i < cache.llen("til"); i++) {
-			byte[] item = cache.lindex("til", i);
-			AGVIOTaskItem agvioTaskItem = Json.getJson().parse(new String(item), AGVIOTaskItem.class);
-			if(id.equals(agvioTaskItem.getId().intValue())){
-				agvioTaskItem.setState(3);
-				cache.lset("til", i, Json.getJson().toJson(agvioTaskItem).getBytes());
-				break;
+		for (AGVIOTaskItem item : TaskItemRedisDAO.getTaskItems()) {
+			if(id.equals(item.getId())) {
+				item.setState(3);
 			}
 		}
 	}
+
 
 }
