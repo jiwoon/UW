@@ -374,14 +374,6 @@ public class TaskService {
 		task.setState(3);
 		task.update();
 	}
-	
-	
-	public void finishItem(Integer packingListItemid) {
-		PackingListItem packingListItem = new PackingListItem();
-		packingListItem.setId(packingListItemid);
-		packingListItem.setFinishTime(new Date());
-		packingListItem.update();
-	}
 
 
 	public boolean io(Integer packListItemId, String materialId, Integer quantity, User user) {
