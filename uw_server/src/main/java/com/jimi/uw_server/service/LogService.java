@@ -100,19 +100,6 @@ public class LogService extends SelectService {
 
 		return pagePaginate;
 	}
-	
-	
-	public boolean writeIO(Integer taskId, String materialId, Integer quantity, User user) {
-		TaskLog taskLog = new TaskLog();
-		taskLog.setTaskId(taskId);
-		taskLog.setMaterialId(materialId);
-		taskLog.setQuantity(quantity);
-		// 写入当前使用系统用户的Uid
-		taskLog.setOperator(user.getUid());
-		// 区分出入库操作人工还是机器操作,暂时先统一写成机器操作
-		taskLog.setAuto(true);
-		taskLog.setTime(new Date());
-		return taskLog.save();
-	}
+
 
 }

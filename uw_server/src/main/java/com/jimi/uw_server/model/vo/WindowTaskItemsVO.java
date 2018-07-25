@@ -30,7 +30,12 @@ public class WindowTaskItemsVO extends TaskLog {
 		this.set("materialNo", materialNo);
 		this.set("planQuantity", planQuantity);
 		this.set("actualQuantity", actualQuantity);
-		this.set("finishTime", finishTime);
+		if (finishTime == null) {
+			this.set("finishTime", "no");
+		} else {
+			this.set("finishTime", finishTime);
+		}
+		
 	}
 
 	public List<?> getDetails() {
