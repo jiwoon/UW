@@ -376,12 +376,11 @@ public class TaskService {
 	}
 	
 	
-	public void finishItem(Integer id) {
-		for (AGVIOTaskItem item : TaskItemRedisDAO.getTaskItems()) {
-			if(id.equals(item.getId())) {
-				item.setState(3);
-			}
-		}
+	public void finishItem(Integer packingListItemid) {
+		PackingListItem packingListItem = new PackingListItem();
+		packingListItem.setId(packingListItemid);
+		packingListItem.setFinishTime(new Date());
+		packingListItem.update();
 	}
 
 
