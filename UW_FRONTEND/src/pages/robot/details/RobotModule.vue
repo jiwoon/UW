@@ -1,6 +1,6 @@
 <template>
   <div>
-    <options/>
+    <!--<options/>-->
     <robot-details/>
   </div>
 </template>
