@@ -36,7 +36,7 @@ public class TaskController extends Controller {
 				if (taskService.insertPackingList(packingListItem, type, fullFileName)) {
 					renderJson(ResultUtil.succeed());
 				} else {
-					renderJson(ResultUtil.failed(412));
+					renderJson(ResultUtil.failed("插入套料单失败，该任务已作废，请确保套料单中所有料号都在物料类型表中有对应记录再进行导入！"));
 				}
 			} else {
 				renderJson(ResultUtil.failed("创建任务失败，请检查套料单的文件格式及内容格式！"));
@@ -97,11 +97,11 @@ public class TaskController extends Controller {
 	}
 	
 	
-	public void io(Integer packListItemId, String materialId, Integer quantity) {
-		// 获取当前使用系统的用户，以便获取操作员uid
+	public void io(Integer packListItemId, String materialId, Integer quantity, String no) {
+		// 获取当前使用系统的用户，以便获取操作员uid(APP有传#TOKEN#过来，后面直接获取#TOKEN#即可)
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		User user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
-		if (taskService.io(packListItemId, materialId, quantity, user)) {
+		if (taskService.io(packListItemId, materialId, quantity, no, user)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());

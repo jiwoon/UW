@@ -48,16 +48,22 @@ public class TaskService {
 
 	private static final String getNoSql = "SELECT id FROM material_type WHERE no = ?";
 
-	private static final String getMaterialIdSql = "SELECT id FROM material WHERE type = (SELECT type FROM material WHERE type = ?)";
+//	private static final String getMaterialIdSql = "SELECT id FROM material WHERE type = (SELECT type FROM material WHERE type = ?)";
 	
 //	private static final String getPackingListItemSql = "SELECT packing_list_item.id, material_type.no, packing_list_item.quantity, "
 //			+ "packing_list_item.finish_time FROM packing_list_item, material_type WHERE packing_list_item.task_id = ? "
 //			+ "AND material_type.id = packing_list_item.material_type_id";
 	
-	private static final String getItemdetails = "SELECT material_id as materialId, quantity FROM task_log WHERE task_id = ? AND material_id In"
-			+ "(SELECT id FROM material WHERE type = (SELECT id FROM material_type WHERE no = ?))";
+//	private static final String getItemdetails = "SELECT material_id as materialId, quantity FROM task_log WHERE task_id = ? AND material_id In"
+//			+ "(SELECT id FROM material WHERE type = (SELECT id FROM material_type WHERE no = ?))";
+	
+	private static final String getItemdetails = "SELECT task_log.material_id as materialId, task_log.quantity FROM task_log, packing_list_item, "
+			+ "material_type WHERE task_log.task_id = ? AND packing_list_item.task_id = ? AND "
+			+ "packing_list_item.material_type_id = material_type.id AND material_type.no = ?";
 	
 	private static final String getTaskInProcessSql = "SELECT id FROM task WHERE state = 2 AND window = ?";
+	
+	private static final String getMaterialTypeSql = "SELECT material.type FROM material, material_type WHERE material_type.no = ?";
 
 
 	public boolean createIOTask(Task task, Integer type, String fileName, String fullFileName) throws Exception {
@@ -146,7 +152,7 @@ public class TaskService {
 			for (Record packingListItem : packingListItems.getList()) {
 				// 查询task_log中的material_id,quantity
 				// 这里在for循环中执行了sql查询，会影响执行效率，暂时还没想到两全其美的解决方案，争取这周(7.23-7.28)想出解决方案
-				List<TaskLog> taskLog = TaskLog.dao.find(getItemdetails, id, packingListItem.get("MaterialType_No"));
+				List<TaskLog> taskLog = TaskLog.dao.find(getItemdetails, id, id, packingListItem.get("MaterialType_No"));
 				Integer actualQuantity = 0;
 				// 实际出入库数量要根据task_log中的出入库数量记录进行累加得到
 				for (TaskLog tl : taskLog) {
@@ -232,12 +238,12 @@ public class TaskService {
 			
 			// 记录获取查询记录总行数
 			totallyRow += windowTaskItems.getTotalRow();
-			
+
 			// 遍历同一个任务id的套料单数据
 			for (Record windowTaskItem : windowTaskItems.getList()) {
 				// 查询task_log中的material_id,quantity
 				// 这里在for循环中执行了sql查询，会影响执行效率，暂时还没想到两全其美的解决方案，争取这周(7.23-7.28)想出解决方案
-				List<TaskLog> taskLog = TaskLog.dao.find(getItemdetails, id, windowTaskItem.get("MaterialType_No"));
+				List<TaskLog> taskLog = TaskLog.dao.find(getItemdetails, taskId.toString(), taskId.toString(), windowTaskItem.get("MaterialType_No"));
 				Integer actualQuantity = 0;
 				// 实际出入库数量要根据task_log中的出入库数量记录进行累加得到
 				for (TaskLog tl : taskLog) {
@@ -274,7 +280,7 @@ public class TaskService {
 		Task taskTypeSql = Task.dao.findFirst(getTaskTypeSql, newTaskId);
 		Integer taskType = taskTypeSql.getType();
 
-		Material material = new Material();
+//		Material material = new Material();
 
 		// 读取excel表格的套料单数据，将数据一条条写入到套料单表；如果任务类型为出/入库，还需要修改物料实体表中对应物料的库存数量
 		ExcelHelper fileReader = ExcelHelper.from(file);
@@ -286,11 +292,19 @@ public class TaskService {
 
 			Integer remainderQuantity = 0;
 
+			// 判断物料类型表中是否存在对应的料号，若不存在，应将对应的任务记录作废掉，并提示操作员检查套料单、新增对应的物料类型
+			MaterialType findNoSql = MaterialType.dao.findFirst(getNoSql, item.getNo());
+			if (findNoSql == null) {
+				Task task = Task.dao.findById(newTaskId);
+				task.setState(4);
+				task.update();
+				return false;
+			}
+			
 			// 获取将要入库/出库的物料的库存数量
 			MaterialType checkQuantitySql = MaterialType.dao.findFirst(getQuantitySql, item.getNo());
 			if (checkQuantitySql.get("remainderQuantity") == null) {
-				continue;
-//				throw new OperationException(item.getNo() + "插入套料单失败，可能是物料实体表里面不存在套料单中对应的物料类型！");
+				remainderQuantity = 0;
 			} else {
 				remainderQuantity = Integer.parseInt(checkQuantitySql.get("remainderQuantity").toString());
 			}
@@ -299,18 +313,18 @@ public class TaskService {
 				// 逐条判断库存是否足够，若是，则插入套料单数据
 				if (remainderQuantity >= planQuantity) {
 				// 添加物料类型id
-				MaterialType findNoSql = MaterialType.dao.findFirst(getNoSql, item.getNo());
-				Integer materialId = findNoSql.getId();
-				packingListItem.setMaterialTypeId(materialId);
+				findNoSql = MaterialType.dao.findFirst(getNoSql, item.getNo());
+				Integer materialTypeId = findNoSql.getId();
+				packingListItem.setMaterialTypeId(materialTypeId);
 				// 添加计划出入库数量
 				packingListItem.setQuantity(planQuantity);
-				// 添加任务id
+//				// 添加任务id
 				packingListItem.setTaskId(newTaskId);
-				// 保存该记录到套料单表
+//				// 保存该记录到套料单表
 				packingListItem.save();
 
 				// 更新物料数量
-				updateMaterialQuantity(material, taskType, remainderQuantity, planQuantity, materialId);
+//				updateMaterialQuantity(material, taskType, remainderQuantity, planQuantity, materialId);
 
 				// new一个PackingListItem，否则前面的记录会被覆盖掉
 				packingListItem = new PackingListItem();
@@ -320,22 +334,22 @@ public class TaskService {
 				}	
 			} else {
 				// 添加物料类型id
-				MaterialType findNoSql = MaterialType.dao.findFirst(getNoSql, item.getNo());
-				Integer materialId = findNoSql.getId();
-				packingListItem.setMaterialTypeId(materialId);
-				// 添加计划出入库数量
+				findNoSql = MaterialType.dao.findFirst(getNoSql, item.getNo());
+				Integer materialTypeId = findNoSql.getId();
+				packingListItem.setMaterialTypeId(materialTypeId);
+//				// 添加计划出入库数量
 				packingListItem.setQuantity(planQuantity);
-				// 添加任务id
+//				// 添加任务id
 				packingListItem.setTaskId(newTaskId);
-				// 保存该记录到套料单表
+//				// 保存该记录到套料单表
 				packingListItem.save();
 
 				// 更新物料数量
-				updateMaterialQuantity(material, taskType, remainderQuantity, planQuantity, materialId);
+//				updateMaterialQuantity(material, taskType, remainderQuantity, planQuantity, materialId);
 
 				// new一个PackingListItem，否则前面的记录会被覆盖掉
 				packingListItem = new PackingListItem();
-
+//
 				}
 
 			}
@@ -351,21 +365,21 @@ public class TaskService {
 
 
 	//更新物料实体表中的库存数量
-	public void updateMaterialQuantity(Material material, Integer taskType, Integer remainderQuantity, Integer planQuantity, Integer materialTypeId) {
-		if (taskType == 1) {	//如果是出库
-			remainderQuantity -= planQuantity;
-			material = material.findFirst(getMaterialIdSql, materialTypeId);
-			String materialId = material.getId();
-			material.findById(materialId).set("remainder_quantity", remainderQuantity).update();
-		} else if (taskType == 0) {		//如果是入库
-			remainderQuantity += planQuantity;
-			material = material.findFirst(getMaterialIdSql, materialTypeId);
-			String materialId = material.getId();
-			material.findById(materialId).set("remainder_quantity", remainderQuantity).update();
-		} else {
-			return ;
-		}
-	}
+//	public void updateMaterialQuantity(Material material, Integer taskType, Integer remainderQuantity, Integer planQuantity, Integer materialTypeId) {
+//		if (taskType == 1) {	//如果是出库
+//			remainderQuantity -= planQuantity;
+//			material = material.findFirst(getMaterialIdSql, materialTypeId);
+//			String materialId = material.getId();
+//			material.findById(materialId).set("remainder_quantity", remainderQuantity).update();
+//		} else if (taskType == 0) {		//如果是入库
+//			remainderQuantity += planQuantity;
+//			material = material.findFirst(getMaterialIdSql, materialTypeId);
+//			String materialId = material.getId();
+//			material.findById(materialId).set("remainder_quantity", remainderQuantity).update();
+//		} else {
+//			return ;
+//		}
+//	}
 	
 	
 	public void finish(Integer taskId) {
@@ -384,11 +398,37 @@ public class TaskService {
 	}
 
 
-	public boolean io(Integer packListItemId, String materialId, Integer quantity, User user) {
+	public boolean io(Integer packListItemId, String materialId, Integer quantity, String no, User user) {
+		Material material = new Material();
 		TaskLog taskLog = new TaskLog();
 		
 		// 根据套料单id，获取对应的任务id
 		PackingListItem packingListItem = PackingListItem.dao.findById(packListItemId);
+		
+		/*
+		 *  新增或减少物料表记录
+		 */
+		// 判断是出库还是入库
+		Task task = Task.dao.findById(packingListItem.getTaskId());
+		Integer type = task.getType();
+		if (type == 0) {	//如果是入库，则新增一条记录
+			material.setId(materialId);
+			// 根据料号获取物料类型
+			Material getType = Material.dao.findFirst(getMaterialTypeSql, no);
+			material.setType(getType.getType());
+			material.setRow(0);
+			material.setCol(0);
+			material.setRemainderQuantity(quantity);
+			material.save();
+		} else if (type == 1) {	// 如果是出库，则删除对应的物料实体表记录
+			Material getMaterial = Material.dao.findById(materialId);
+			if (getMaterial == null) {
+			} else {
+				material.deleteById(materialId);
+			}
+		}
+		
+		// 写入一条出入库任务日志
 		taskLog.setTaskId(packingListItem.getTaskId());
 
 		taskLog.setMaterialId(materialId);
