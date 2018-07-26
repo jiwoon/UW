@@ -1,6 +1,7 @@
 package com.jimi.agv_mock.handle;
 
 import com.alibaba.fastjson.JSON;
+import com.jimi.agv_mock.disturber.ACKDisturber;
 import com.jimi.agv_mock.entity.cmd.base.AGVBaseCmd;
 import com.jimi.agv_mock.socket.MockMainSocket;
 
@@ -35,7 +36,7 @@ public class ACKHandler {
 		}
 		//发送ack
 		baseCmd.setCmdcode("ack");
-		MockMainSocket.sendACK(JSON.toJSONString(baseCmd));
+		ACKDisturber.disturbe(JSON.toJSONString(baseCmd));
 		//添加到已经ACK的非ACK指令CMDID集合
 		MockMainSocket.getReceiveNotAckCmdidSet().add(baseCmd.getCmdid());
 		return true;

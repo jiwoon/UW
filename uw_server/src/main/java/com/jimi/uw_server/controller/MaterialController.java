@@ -4,7 +4,6 @@ import com.jfinal.aop.Enhancer;
 import com.jfinal.core.Controller;
 import com.jfinal.core.paragetter.Para;
 import com.jimi.uw_server.exception.OperationException;
-import com.jimi.uw_server.model.Material;
 import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.service.MaterialService;
 import com.jimi.uw_server.util.ResultUtil;
@@ -29,8 +28,8 @@ public class MaterialController extends Controller {
 	}
 
 	// 获取物料实体
-	public void getEntities(@Para("") Material material, Integer type) {
-		Object entities = materialService.getEntities(material, type);
+	public void getEntities(Integer type) {
+		Object entities = materialService.getEntities(type);
 		if (entities != null) {
 			renderJson(ResultUtil.succeed(entities));
 		} else {
@@ -39,8 +38,8 @@ public class MaterialController extends Controller {
 	}
 
 	// 添加物料类型#
-	public void add(@Para("") MaterialType materialType) {
-		if(materialService.add(materialType)) {
+	public void add(String no, Integer area, Integer row, Integer col, Integer height) {
+		if(materialService.add(no, area, row, col, height)) {
 			renderJson(ResultUtil.succeed());
 		}else {
 			renderJson(ResultUtil.failed(412));

@@ -1,9 +1,7 @@
 package com.jimi.agv_mock.thread;
 
-import java.util.Random;
-
 import com.alibaba.fastjson.JSON;
-import com.jimi.agv_mock.constant.Constant;
+import com.jimi.agv_mock.disturber.TaskDisturber;
 import com.jimi.agv_mock.entity.bo.AGVRobot;
 import com.jimi.agv_mock.entity.cmd.AGVMoveCmd;
 import com.jimi.agv_mock.entity.cmd.AGVStatusCmd;
@@ -53,47 +51,42 @@ public class TaskExcutor extends Thread{
 			statusCmd.setCmdcode("status");
 			statusCmd.setMissiongroupid(moveCmd.getMissiongroups().get(0).getMissiongroupid());
 			
+			//创建干扰者
+			TaskDisturber disturber = new TaskDisturber(this);
+			
 			//延迟并发送已开始任务状态指令
-			Thread.sleep((long) (Constant.START_CMD_DELAY * (1 + ((new Random().nextInt() 
-					% Constant.FLOATING_PERCENTAGE) / 100.0))));
+			disturber.disturbStart();
 			statusCmd.setCmdid(MockMainSocket.getCmdId());
 			statusCmd.setStatus(0);
 			MockMainSocket.sendMessage((JSON.toJSONString(statusCmd)));
 			
-			//判断系统是否被暂停
-			while(robot.getSystem_pause()) {
-				Thread.sleep(1000);
-			}
-			
 			//延迟并发送已完成第一动作状态指令
-			Thread.sleep((long) (Constant.FIRST_ACTION_DELAY * (1 + ((new Random().nextInt() 
-					% Constant.FLOATING_PERCENTAGE) / 100.0))));
+			disturber.disturbFirstAction();
 			statusCmd.setCmdid(MockMainSocket.getCmdId());
 			statusCmd.setStatus(1);
 			MockMainSocket.sendMessage(JSON.toJSONString(statusCmd));
 			
-			//判断系统是否被暂停
-			while(robot.getSystem_pause()) {
-				Thread.sleep(1000);
-			}
-			
 			//延迟并发送已完成第二动作状态指令
-			Thread.sleep((long) (Constant.SECOND_ACTION_DELAY * (1 + ((new Random().nextInt() 
-					% Constant.FLOATING_PERCENTAGE) / 100.0))));
+			disturber.disturbSecondAction();
 			statusCmd.setCmdid(MockMainSocket.getCmdId());
 			statusCmd.setStatus(2);
 			MockMainSocket.sendMessage(JSON.toJSONString(statusCmd));
 			
-			//判断系统是否被暂停
-			while(robot.getSystem_pause()) {
-				Thread.sleep(1000);
-			}
-			
 			//设置叉车空闲
 			robot.setStatus(0);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			System.out.println(" A task has been interrupted");
 		}
+	}
+
+
+	public AGVMoveCmd getMoveCmd() {
+		return moveCmd;
+	}
+
+
+	public AGVRobot getRobot() {
+		return robot;
 	}
 	
 }

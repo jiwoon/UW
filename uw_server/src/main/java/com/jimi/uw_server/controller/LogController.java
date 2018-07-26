@@ -14,6 +14,7 @@ public class LogController extends Controller {
 
 	private static LogService logService = Enhancer.enhance(LogService.class);
 
+
 	public void select(String table, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
 		if (table.equals("action_log")) {
 			renderJson(ResultUtil.succeed(logService.select(table, pageNo, pageSize, ascBy, descBy, filter)));
@@ -24,5 +25,6 @@ public class LogController extends Controller {
 		}
 		
 	}
+
 	
 }

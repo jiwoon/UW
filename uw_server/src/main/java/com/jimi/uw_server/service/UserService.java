@@ -44,16 +44,18 @@ public class UserService extends SelectService{
 	}
 
 
-	public boolean add(User user) {
+	public boolean add(String uid, String name, String password, Integer type) {
+		User user = User.dao.findById(uid);
 		if (user.getUid() == null || user.getPassword() == null || user.getName() == null || user.getType() == null) {
 			return false;
 		}
-		user.setEnabled(true);
 		if(User.dao.find(uniqueCheckSql, user.getUid()).size() != 0) {
 			throw new OperationException("用户" + user.getUid() + "已存在！");
 		}
-		user.keep("uid","name","password", "enabled","type");
+		user.setUid(uid);
+		user.setName(name);
 		user.setPassword(MD5Util.MD5(user.getPassword()));
+		user.setEnabled(true);
 		return user.save();
 	}
 
@@ -63,7 +65,6 @@ public class UserService extends SelectService{
 		if (!(user.getPassword() == null)) {
 			user.setPassword(MD5Util.MD5(user.getPassword()));
 		}
-		user.keep("uid","name","password", "enabled","type");
 		return user.update();
 	}
 

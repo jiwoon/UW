@@ -8,9 +8,11 @@ import com.jfinal.core.paragetter.Para;
 import com.jfinal.upload.UploadFile;
 import com.jimi.uw_server.model.PackingListItem;
 import com.jimi.uw_server.model.Task;
+import com.jimi.uw_server.model.User;
 import com.jimi.uw_server.model.Window;
 import com.jimi.uw_server.service.TaskService;
 import com.jimi.uw_server.util.ResultUtil;
+import com.jimi.uw_server.util.TokenBox;
 
 /**
  * 任务控制层
@@ -20,7 +22,10 @@ import com.jimi.uw_server.util.ResultUtil;
 public class TaskController extends Controller {
 
 	private static TaskService taskService = Enhancer.enhance(TaskService.class);
+	
+	public static final String SESSION_KEY_LOGIN_USER = "loginUser";
 
+	
 	public void create(@Para("") Task task, @Para("") PackingListItem packingListItem, UploadFile file, Integer type) throws Exception {
 		// 如果是创建「出入库任务」，入库type为0，出库type为1
 		if (type.equals(0) || type.equals(1)) {
@@ -44,41 +49,65 @@ public class TaskController extends Controller {
 		
 	}
 
-	public void pass(@Para("") Task task, Integer id) {
-		if(taskService.pass(task, id)) {
+	
+	public void pass(Integer id) {
+		if(taskService.pass(id)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed("审核失败！"));
 		}
 	}
 
-	public void start(@Para("") Task task, Integer id, Integer window) {
-		if(taskService.start(task, id, window)) {
+	
+	public void start(Integer id, Integer window) {
+		if(taskService.start(id, window)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
 		}
 	}
 	
-	public void cancel(@Para("") Task task, Integer id) {
-		if(taskService.cancel(task, id)) {
+	
+	public void cancel(Integer id) {
+		if(taskService.cancel(id)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed("作废失败！"));
 		}
 	}
 
-	public void check(Integer id) {
-		renderJson(ResultUtil.succeed(taskService.check(id)));
-//		renderJson(ResultUtil.failed("该功能尚在开发中！"));
+	
+	public void check(Integer id, Integer pageSize, Integer pageNo) {
+		renderJson(ResultUtil.succeed(taskService.check(id, pageSize, pageNo)));
 	}
+	
+	
+	public void getWindows(@Para("") Window window) {
+		renderJson(ResultUtil.succeed(taskService.getWindows(window)));
+	}
+	
 	
 	public void select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
 		renderJson(ResultUtil.succeed(taskService.select(pageNo, pageSize, ascBy, descBy, filter)));
 	}
 	
-	public void getWindows(@Para("") Window window) {
-		renderJson(ResultUtil.succeed(taskService.getWindows(window)));
+	
+	public void getWindowTaskItems(Integer id, Integer pageNo, Integer pageSize) {
+		renderJson(ResultUtil.succeed(taskService.getWindowTaskItems(id, pageNo, pageSize)));
 	}
+	
+	
+	public void io(Integer packListItemId, String materialId, Integer quantity) {
+		// 获取当前使用系统的用户，以便获取操作员uid
+		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
+		User user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
+		if (taskService.io(packListItemId, materialId, quantity, user)) {
+			renderJson(ResultUtil.succeed());
+		} else {
+			renderJson(ResultUtil.failed());
+		}
+		
+	}
+
 	
 }

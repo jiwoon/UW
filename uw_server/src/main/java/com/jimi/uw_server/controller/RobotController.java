@@ -27,9 +27,14 @@ public class RobotController extends Controller {
 	}
 	
 
-	public void pause(boolean pause) {
+	public void pause(Boolean pause) {
 		robotService.pause(pause);
 		renderJson(ResultUtil.succeed());
 	}
 	
+	
+	public void back(Integer id) {
+		robotService.back(id);
+		renderJson(ResultUtil.succeed());
+	}
 }

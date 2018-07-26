@@ -5,18 +5,18 @@ import java.util.List;
 
 import com.jimi.uw_server.model.TaskLog;
 
-/** 
+/**
  * 
  * @author HardyYao
- * @createTime 2018年7月13日 上午8:29:22
+ * @createTime 2018年7月23日 下午4:04:25
  */
-public class IOTaskDetailVO extends TaskLog {
-	
+public class WindowTaskItemsVO extends TaskLog {
+
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -3361161172340670552L;
-
+	private static final long serialVersionUID = -2631121149118866618L;
+	
 	private List<?> details;
 
 	public Integer getActualQuantity(Integer MaterialTypeId) {
@@ -24,12 +24,18 @@ public class IOTaskDetailVO extends TaskLog {
 		return MaterialTypeId;
 	}
 
-	public IOTaskDetailVO(Integer packingListItemId, String materialNo, Integer planQuantity, Integer actualQuantity, Date finishTime) {
+	public WindowTaskItemsVO(Integer packingListItemId, String fileName, String materialNo, Integer planQuantity, Integer actualQuantity, Date finishTime) {
 		this.set("id", packingListItemId);
+		this.set("fileName", fileName);
 		this.set("materialNo", materialNo);
 		this.set("planQuantity", planQuantity);
 		this.set("actualQuantity", actualQuantity);
-		this.set("finishTime", finishTime);
+		if (finishTime == null) {
+			this.set("finishTime", "no");
+		} else {
+			this.set("finishTime", finishTime);
+		}
+		
 	}
 
 	public List<?> getDetails() {
@@ -39,6 +45,5 @@ public class IOTaskDetailVO extends TaskLog {
 	public void setDetails(List<?> details) {
 		this.set("details", details);
 	}
-
 
 }
