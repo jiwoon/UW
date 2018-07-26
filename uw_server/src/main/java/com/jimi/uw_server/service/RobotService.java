@@ -28,6 +28,8 @@ import com.jimi.uw_server.service.entity.PagePaginate;
 public class RobotService extends SelectService {
 
 	private static SelectService selectService = Enhancer.enhance(SelectService.class);
+	
+	private static TaskService taskService = Enhancer.enhance(TaskService.class);
 
 	public static final String getRobotAllId = "SELECT id FROM robot";
 
@@ -138,6 +140,7 @@ public class RobotService extends SelectService {
 		for (AGVIOTaskItem item : TaskItemRedisDAO.getTaskItems()) {
 			if(id.equals(item.getId())) {
 				LSSLHandler.sendSL(item);
+				taskService.finishItem(item.getId());
 			}
 		}
 	}

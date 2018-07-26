@@ -133,9 +133,6 @@ public class LSSLHandler {
 					//更改taskitems里对应item状态为3（已回库完成）***
 					TaskItemRedisDAO.updateTaskItemState(item, 3);
 					
-					//填写套料单条目里面的完成时间***
-					taskService.finishItem(item.getId());
-					
 					/*
 					 * 判断该groupid所在的任务是否全部条目状态为3（已回库完成），如果是，
 					 * 则清除所有该任务id对应的条目，释放内存，并修改数据库任务状态***
