@@ -8,9 +8,11 @@ import com.jfinal.core.paragetter.Para;
 import com.jfinal.upload.UploadFile;
 import com.jimi.uw_server.model.PackingListItem;
 import com.jimi.uw_server.model.Task;
+import com.jimi.uw_server.model.User;
 import com.jimi.uw_server.model.Window;
 import com.jimi.uw_server.service.TaskService;
 import com.jimi.uw_server.util.ResultUtil;
+import com.jimi.uw_server.util.TokenBox;
 
 /**
  * 任务控制层
@@ -20,6 +22,8 @@ import com.jimi.uw_server.util.ResultUtil;
 public class TaskController extends Controller {
 
 	private static TaskService taskService = Enhancer.enhance(TaskService.class);
+	
+	public static final String SESSION_KEY_LOGIN_USER = "loginUser";
 
 	
 	public void create(@Para("") Task task, @Para("") PackingListItem packingListItem, UploadFile file, Integer type) throws Exception {
@@ -91,11 +95,19 @@ public class TaskController extends Controller {
 	public void getWindowTaskItems(Integer id, Integer pageNo, Integer pageSize) {
 		renderJson(ResultUtil.succeed(taskService.getWindowTaskItems(id, pageNo, pageSize)));
 	}
-
 	
-	public void finishItem(Integer id) {
-		taskService.finishItem(id);
-		renderJson(ResultUtil.succeed());
+	
+	public void io(Integer packListItemId, String materialId, Integer quantity) {
+		// 获取当前使用系统的用户，以便获取操作员uid
+		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
+		User user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
+		if (taskService.io(packListItemId, materialId, quantity, user)) {
+			renderJson(ResultUtil.succeed());
+		} else {
+			renderJson(ResultUtil.failed());
+		}
+		
 	}
+
 	
 }

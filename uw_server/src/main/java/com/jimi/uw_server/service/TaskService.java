@@ -16,6 +16,7 @@ import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.model.PackingListItem;
 import com.jimi.uw_server.model.Task;
 import com.jimi.uw_server.model.TaskLog;
+import com.jimi.uw_server.model.User;
 import com.jimi.uw_server.model.Window;
 import com.jimi.uw_server.model.bo.PackingListItemBO;
 import com.jimi.uw_server.model.vo.IOTaskDetailVO;
@@ -383,4 +384,22 @@ public class TaskService {
 	}
 
 
+	public boolean io(Integer packListItemId, String materialId, Integer quantity, User user) {
+		TaskLog taskLog = new TaskLog();
+		
+		// 根据套料单id，获取对应的任务id
+		PackingListItem packingListItem = PackingListItem.dao.findById(packListItemId);
+		taskLog.setTaskId(packingListItem.getTaskId());
+
+		taskLog.setMaterialId(materialId);
+		taskLog.setQuantity(quantity);
+		// 写入当前使用系统用户的Uid
+		taskLog.setOperator(user.getUid());
+		// 区分出入库操作人工还是机器操作,暂时先统一写成机器操作
+		taskLog.setAuto(true);
+		taskLog.setTime(new Date());
+		return taskLog.save();
+	}
+	
+	
 }
