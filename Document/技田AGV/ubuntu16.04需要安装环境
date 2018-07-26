@@ -1,0 +1,90 @@
+
+以后安装系统建议统一使用用户和密码为gaitek，把服务程序放在目录的/home/gaitek/server下面
+配置路由器 网段为192.168.2.1
+配置AP 无线帐号 Gaitek_H3B ,Gaitek_H3C  密码：jitian2104
+配置服务ip 192.168.2.110 帐号 gaitek 密码 gaitek
+
+sudo apt update
+ 
+1.mysql:sudo apt install mysql-client mysql-server
+/etc/mysql/mysql.conf.d/mysqld.cnf  
+添加'#'注释掉其中的"bind-address = 127.0.0.1"，（如果是访问本地数据库，就不需要配置）
+禁止mysql做域名解析，另外一行添加：
+skip-name-resolve
+
+添加远程访问权限 :
+mysql -u root -p 
+输入密码：
+mysql> GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'root'   WITH GRANT OPTION;
+mysql>  FLUSH PRIVILEGES;
+mysql>  exit;
+
+ mysql导入sql脚本
+#进入MySQL命令, 执行后输入密码
+ mysql -u root -p
+ 
+#创建warehouse_robot 数据库
+mysql > create database warehouse_robot;
+ 
+#使用创建的数据库：
+ mysql > use warehouse_robot;
+ #导入文件：
+ mysql > source /home/gaitek/server/warehouse_robot.sql;
+// 开启定时删除日志事件
+mysql > set GLOBAL event_scheduler = 1;
+
+//查看事件是否删除
+mysql >    select * from mysql.event  ;
+
+2.mqtt
+sudo apt-add-repository ppa:mosquitto-dev/mosquitto-ppa
+sudo apt-get update
+sudo apt install mosquitto mosquitto-clients
+
+
+
+3.ssh:sudo apt install ssh
+
+
+
+4. qt (agv需要这个环境)
+sudo apt-get install build-essential
+sudo apt-get install cmake qt5-default 
+
+// 服务不用安装
+5. 下载qt-opensource-linux-x64-5.9.1.run （http://iso.mirrors.ustc.edu.cn/qtproject/archive/qt/5.9/5.9.1/qt-opensource-linux-x64-5.9.1.run），安装，客户端需要依赖 （在展示环境下，服务端和客户端在同一台电脑）
+安装路径在/opt目录下
+客户端访问数据库，要重新编译一个mysql库
+
+6.服务日志定时清除
+命令：
+crontab -e 
+配置每天0点执行删除记录脚本，然后保存
+0 0 * * * ~/server/del_log.sh
+
+
+7.配置网络： （eth0 有线网卡名称）
+sudo  vi /etc/network/interfaces
+auto eth0
+iface eth0 inet static
+address 192.168.2.110   
+netmask 255.255.255.0
+#gateway 192.168.2.1
+#dns-nameserver 8.8.8.8
+
+
+
+  
+9.添加开机自动监控程序
+在server目录有一个monitor程序 ,把它设置开机启动
+sudo vi /etc/rc.local
+在后面添加
+ sudo  /home/gaitek/server/monitor > /home/gaitek/server/monitor.log &
+保存,添加权限
+sudo chmod 755 rc.local
+
+
+
+
+  
+  
