@@ -39,18 +39,18 @@ public class RobotInfoSocket{
 	/**
 	 * 机器实体集合
 	 */
-	private static Map<Integer, AGVRobot> robots;
+	private static Map<Integer, AGVRobot> robotMap;
 	
 	
 	
 	
 	public static void init(String uri) {
 		try {
-			robots = new HashMap<>();
+			robotMap = new HashMap<>();
 			//从数据库获取叉车数据
 			for (Robot robot : Robot.dao.find(GET_ALL_SQL)) {
 				AGVRobot agvRobot = AGVRobot.fromModel(robot);
-				robots.put(agvRobot.getRobotid(), agvRobot);
+				robotMap.put(agvRobot.getRobotid(), agvRobot);
 			}
 			//连接AGV服务器
 			RobotInfoSocket.uri = uri;
@@ -98,10 +98,10 @@ public class RobotInfoSocket{
 			}
 			
 			//更新机器信息（新机器会增加记录，不存在的机器会直接清除）
-			robotService.updateRobotInfo(newRobots, robots);
+			robotService.updateRobotInfo(newRobots, robotMap);
 			
 			//修改引用
-			robots = newRobots;
+			robotMap = newRobots;
 			
 		}catch (Exception e) {
 			ErrorLogWritter.save(e.getClass().getSimpleName() + ":" + e.getMessage());
@@ -117,7 +117,7 @@ public class RobotInfoSocket{
 
 	
 	public static Map<Integer, AGVRobot> getRobots() {
-		return robots;
+		return robotMap;
 	}
 	
 }
