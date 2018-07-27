@@ -49,7 +49,7 @@ public class TaskService {
 	
 	private static final String getTaskInProcessSql = "SELECT id FROM task WHERE state = 2 AND window = ?";
 	
-	private static final String getMaterialTypeSql = "SELECT material.type FROM material, material_type WHERE material_type.no = ?";
+	private static final String getMaterialTypeSql = "SELECT id FROM material_type WHERE no = ?";
 
 
 	public boolean createIOTask(Task task, Integer type, String fileName, String fullFileName) throws Exception {
@@ -331,8 +331,8 @@ public class TaskService {
 		if (type == 0) {	//如果是入库，则新增一条记录
 			material.setId(materialId);
 			// 根据料号获取物料类型
-			Material getType = Material.dao.findFirst(getMaterialTypeSql, no);
-			material.setType(getType.getType());
+			MaterialType getMaterialType = MaterialType.dao.findFirst(getMaterialTypeSql, no);
+			material.setType(getMaterialType.getId());
 			material.setRow(0);
 			material.setCol(0);
 			material.setRemainderQuantity(quantity);
