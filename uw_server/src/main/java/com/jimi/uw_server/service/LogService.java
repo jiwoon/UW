@@ -1,14 +1,11 @@
 package com.jimi.uw_server.service;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import com.jfinal.aop.Enhancer;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
-import com.jimi.uw_server.model.TaskLog;
-import com.jimi.uw_server.model.User;
 import com.jimi.uw_server.model.vo.PositionLogVO;
 import com.jimi.uw_server.model.vo.TaskLogVO;
 import com.jimi.uw_server.service.base.SelectService;

@@ -41,10 +41,10 @@ public class TaskService {
 
 	private static final String getNewTaskIdSql = "SELECT MAX(id) as newId FROM task";
 
-	private static final String getTaskTypeSql = "SELECT type FROM task WHERE id = ?";
-
-	private static final String getQuantitySql = "SELECT SUM(remainder_quantity) AS remainderQuantity FROM material WHERE type = ("
-			+ "SELECT id FROM material_type WHERE no = ?)";
+//	private static final String getTaskTypeSql = "SELECT type FROM task WHERE id = ?";
+//
+//	private static final String getQuantitySql = "SELECT SUM(remainder_quantity) AS remainderQuantity FROM material WHERE type = ("
+//			+ "SELECT id FROM material_type WHERE no = ?)";
 
 	private static final String getNoSql = "SELECT id FROM material_type WHERE no = ?";
 
@@ -277,10 +277,8 @@ public class TaskService {
 		Task newTaskIdSql = Task.dao.findFirst(getNewTaskIdSql);
 		Integer newTaskId = newTaskIdSql.get("newId");
 		// 获取新建任务类型：0入库 1出库 2盘点 3位置优化
-		Task taskTypeSql = Task.dao.findFirst(getTaskTypeSql, newTaskId);
-		Integer taskType = taskTypeSql.getType();
-
-//		Material material = new Material();
+//		Task taskTypeSql = Task.dao.findFirst(getTaskTypeSql, newTaskId);
+//		Integer taskType = taskTypeSql.getType();
 
 		// 读取excel表格的套料单数据，将数据一条条写入到套料单表；如果任务类型为出/入库，还需要修改物料实体表中对应物料的库存数量
 		ExcelHelper fileReader = ExcelHelper.from(file);
@@ -290,10 +288,8 @@ public class TaskService {
 			// 计划出库数量
 			Integer planQuantity = item.getQuantity();
 
-			Integer remainderQuantity = 0;
-
-			// 判断物料类型表中是否存在对应的料号，若不存在，应将对应的任务记录作废掉，并提示操作员检查套料单、新增对应的物料类型
 			MaterialType findNoSql = MaterialType.dao.findFirst(getNoSql, item.getNo());
+			// 判断物料类型表中是否存在对应的料号，若不存在，应将对应的任务记录作废掉，并提示操作员检查套料单、新增对应的物料类型
 			if (findNoSql == null) {
 				Task task = Task.dao.findById(newTaskId);
 				task.setState(4);
@@ -301,56 +297,64 @@ public class TaskService {
 				return false;
 			}
 			
+			// 若物料类型表中存在对应的料号，不论物料实体表中是否有库存，都允许插入套料单；若库存不足，则在「物料出入库」那里进行处理
+			findNoSql = MaterialType.dao.findFirst(getNoSql, item.getNo());
+			Integer materialTypeId = findNoSql.getId();
+			packingListItem.setMaterialTypeId(materialTypeId);
+			// 添加计划出入库数量
+			packingListItem.setQuantity(planQuantity);
+//			// 添加任务id
+			packingListItem.setTaskId(newTaskId);
+//			// 保存该记录到套料单表
+			packingListItem.save();
+			
+			// new一个PackingListItem，否则前面的记录会被覆盖掉
+			packingListItem = new PackingListItem();
+			
 			// 获取将要入库/出库的物料的库存数量
-			MaterialType checkQuantitySql = MaterialType.dao.findFirst(getQuantitySql, item.getNo());
-			if (checkQuantitySql.get("remainderQuantity") == null) {
-				remainderQuantity = 0;
-			} else {
-				remainderQuantity = Integer.parseInt(checkQuantitySql.get("remainderQuantity").toString());
-			}
-
-			if(taskType == 1) {
-				// 逐条判断库存是否足够，若是，则插入套料单数据
-				if (remainderQuantity >= planQuantity) {
-				// 添加物料类型id
-				findNoSql = MaterialType.dao.findFirst(getNoSql, item.getNo());
-				Integer materialTypeId = findNoSql.getId();
-				packingListItem.setMaterialTypeId(materialTypeId);
-				// 添加计划出入库数量
-				packingListItem.setQuantity(planQuantity);
-//				// 添加任务id
-				packingListItem.setTaskId(newTaskId);
-//				// 保存该记录到套料单表
-				packingListItem.save();
-
-				// 更新物料数量
-//				updateMaterialQuantity(material, taskType, remainderQuantity, planQuantity, materialId);
-
-				// new一个PackingListItem，否则前面的记录会被覆盖掉
-				packingListItem = new PackingListItem();
-				} else {	// 否则，提示库存不足
-					packingListItem = new PackingListItem();
-					throw new OperationException("料号为：" + item.getNo() +  "的物料库存不足！");
-				}	
-			} else {
-				// 添加物料类型id
-				findNoSql = MaterialType.dao.findFirst(getNoSql, item.getNo());
-				Integer materialTypeId = findNoSql.getId();
-				packingListItem.setMaterialTypeId(materialTypeId);
-//				// 添加计划出入库数量
-				packingListItem.setQuantity(planQuantity);
-//				// 添加任务id
-				packingListItem.setTaskId(newTaskId);
-//				// 保存该记录到套料单表
-				packingListItem.save();
-
-				// 更新物料数量
-//				updateMaterialQuantity(material, taskType, remainderQuantity, planQuantity, materialId);
-
-				// new一个PackingListItem，否则前面的记录会被覆盖掉
-				packingListItem = new PackingListItem();
+//			MaterialType checkQuantitySql = MaterialType.dao.findFirst(getQuantitySql, item.getNo());
+//			if (checkQuantitySql.get("remainderQuantity") == null) {
+//				remainderQuantity = 0;
+//			} else {
+//				remainderQuantity = Integer.parseInt(checkQuantitySql.get("remainderQuantity").toString());
+//			}
 //
-				}
+//			if(taskType == 1) {
+				// 逐条判断库存是否足够，若是，则插入套料单数据
+//				if (remainderQuantity >= planQuantity) {
+				// 添加物料类型id
+//				findNoSql = MaterialType.dao.findFirst(getNoSql, item.getNo());
+//				Integer materialTypeId = findNoSql.getId();
+//				packingListItem.setMaterialTypeId(materialTypeId);
+				// 添加计划出入库数量
+//				packingListItem.setQuantity(planQuantity);
+//				// 添加任务id
+//				packingListItem.setTaskId(newTaskId);
+//				// 保存该记录到套料单表
+//				packingListItem.save();
+
+				// new一个PackingListItem，否则前面的记录会被覆盖掉
+//				packingListItem = new PackingListItem();
+//				} else {	// 否则，提示库存不足
+//					packingListItem = new PackingListItem();
+//					throw new OperationException("料号为：" + item.getNo() +  "的物料库存不足！");
+//				}	
+//			} else {
+				// 添加物料类型id
+//				findNoSql = MaterialType.dao.findFirst(getNoSql, item.getNo());
+//				Integer materialTypeId = findNoSql.getId();
+//				packingListItem.setMaterialTypeId(materialTypeId);
+//				// 添加计划出入库数量
+//				packingListItem.setQuantity(planQuantity);
+//				// 添加任务id
+//				packingListItem.setTaskId(newTaskId);
+//				// 保存该记录到套料单表
+//				packingListItem.save();
+
+				// new一个PackingListItem，否则前面的记录会被覆盖掉
+//				packingListItem = new PackingListItem();
+//
+//				}
 
 			}
 		if (file.exists()) {
@@ -362,24 +366,6 @@ public class TaskService {
 
 		return true;
 	}
-
-
-	//更新物料实体表中的库存数量
-//	public void updateMaterialQuantity(Material material, Integer taskType, Integer remainderQuantity, Integer planQuantity, Integer materialTypeId) {
-//		if (taskType == 1) {	//如果是出库
-//			remainderQuantity -= planQuantity;
-//			material = material.findFirst(getMaterialIdSql, materialTypeId);
-//			String materialId = material.getId();
-//			material.findById(materialId).set("remainder_quantity", remainderQuantity).update();
-//		} else if (taskType == 0) {		//如果是入库
-//			remainderQuantity += planQuantity;
-//			material = material.findFirst(getMaterialIdSql, materialTypeId);
-//			String materialId = material.getId();
-//			material.findById(materialId).set("remainder_quantity", remainderQuantity).update();
-//		} else {
-//			return ;
-//		}
-//	}
 	
 	
 	public void finish(Integer taskId) {
@@ -388,8 +374,8 @@ public class TaskService {
 		task.setState(3);
 		task.update();
 	}
-	
-	
+
+
 	public void finishItem(Integer packingListItemid) {
 		PackingListItem packingListItem = new PackingListItem();
 		packingListItem.setId(packingListItemid);
@@ -421,11 +407,23 @@ public class TaskService {
 			material.setRemainderQuantity(quantity);
 			material.save();
 		} else if (type == 1) {	// 如果是出库，则删除对应的物料实体表记录
-			Material getMaterial = Material.dao.findById(materialId);
-			if (getMaterial == null) {
-			} else {
-				material.deleteById(materialId);
-			}
+			material.deleteById(materialId);
+//			Material getMaterial = Material.dao.findById(materialId);
+//			if (getMaterial == null) {
+//				// 写入一条出入库任务日志
+//				taskLog.setTaskId(packingListItem.getTaskId());
+//
+//				taskLog.setMaterialId(materialId);
+//				taskLog.setQuantity(quantity);
+//				// 写入当前使用系统用户的Uid
+//				taskLog.setOperator(user.getUid());
+//				// 区分出入库操作人工还是机器操作,暂时先统一写成机器操作
+//				taskLog.setAuto(true);
+//				taskLog.setTime(new Date());
+//				return taskLog.save();
+//			} else {
+//				material.deleteById(materialId);
+//			}
 		}
 		
 		// 写入一条出入库任务日志
