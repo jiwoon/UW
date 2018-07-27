@@ -9,9 +9,6 @@ import com.jimi.uw_server.model.MaterialType;
  */
 public class MaterialTypeVO extends MaterialType{
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 6512994067269010575L;
 
 	private static final String searchCountMaterialSql = "SELECT SUM(remainder_quantity) as quantity FROM material WHERE type = ?";

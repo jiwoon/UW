@@ -5,8 +5,7 @@ import org.apache.log4j.LogManager;
 import com.jimi.uw_server.model.ErrorLog;
 
 public class ErrorLogWritter {
-	
-	
+
 	public static boolean save(String message) {
 		LogManager.getRootLogger().error(message);;
 		ErrorLog errorLog = new ErrorLog();

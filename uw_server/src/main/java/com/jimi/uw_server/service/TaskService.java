@@ -110,7 +110,6 @@ public class TaskService {
 	}
 
 
-	// 查看任务详情
 	public Object check(Integer id, Integer pageSize, Integer pageNo) {
  		Task task = Task.dao.findById(id);
 		Integer type = task.getType();

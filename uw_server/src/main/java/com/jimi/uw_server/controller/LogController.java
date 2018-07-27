@@ -16,7 +16,7 @@ public class LogController extends Controller {
 
 
 	public void select(String table, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
-		if (table.equals("action_log")) {
+		if (table.equals("action_log")) {	// 查询「接口调用日志」
 			renderJson(ResultUtil.succeed(logService.select(table, pageNo, pageSize, ascBy, descBy, filter)));
 		} else if(table.equals("task_log")) {	// 查询「任务日志」
 			renderJson(ResultUtil.succeed(logService.selectTaskLog(table, pageNo, pageSize, ascBy, descBy, filter)));

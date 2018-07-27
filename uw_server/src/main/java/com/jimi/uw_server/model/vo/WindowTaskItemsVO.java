@@ -12,9 +12,6 @@ import com.jimi.uw_server.model.TaskLog;
  */
 public class WindowTaskItemsVO extends TaskLog {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -2631121149118866618L;
 	
 	private List<?> details;

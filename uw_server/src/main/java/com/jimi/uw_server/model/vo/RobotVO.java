@@ -7,10 +7,7 @@ import com.jimi.uw_server.model.Robot;
  * @createTime 2018年7月5日 上午11:24:32 
  */
 public class RobotVO extends Robot{
-	
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = -7771022031487042995L;
 
 	private String enabledString;

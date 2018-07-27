@@ -5,10 +5,7 @@ import java.util.Date;
 import com.jimi.uw_server.model.Task;
 
 public class TaskVO extends Task{
-	
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = -5623582632249846864L;
 
 	private String typeString;
