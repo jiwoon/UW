@@ -86,6 +86,9 @@ if (localStorage.getItem('token')) {
 
 
 router.beforeEach((to, from, next) => {
+  for (let index in window.g.ROBOT_INTERVAL){
+    clearInterval(window.g.ROBOT_INTERVAL[index])
+  }
   if (to.matched.some(r => r.meta.requireAuth)) {
     if (store.state.token) {
       next();

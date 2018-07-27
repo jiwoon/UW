@@ -61,13 +61,13 @@
 
 
           //patch
-          if (1) {
-            alert('暂不支持任务详情查看');
-            this.isPending = false;
-            this.setLoading(false);
-            this.closePanel();
-            return;
-          }
+          // if (1) {
+          //   alert('暂不支持任务详情查看');
+          //   this.isPending = false;
+          //   this.setLoading(false);
+          //   this.closePanel();
+          //   return;
+          // }
 
 
           let options = {
