@@ -10,9 +10,6 @@ import com.jimi.uw_server.model.PositionLog;
  */
 public class PositionLogVO extends PositionLog {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 2088695242093093771L;
 
 	public PositionLogVO(Integer id, Integer taskId, String materialId, String materialNo, Integer oldArea, Integer oldRow, Integer oldCol, 

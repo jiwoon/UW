@@ -21,7 +21,6 @@ public class LogService extends SelectService {
 	private static SelectService selectService = Enhancer.enhance(SelectService.class);
 
 
-	// 查询「任务日志」
 	public Object selectTaskLog(String table, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
 		if (filter != null) {
 			if (filter.contains("taskId")) {
@@ -67,7 +66,6 @@ public class LogService extends SelectService {
 	}
 
 
-	// 查询「物料位置转移日志」
 	public Object selectPositionLog(String table, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
 		if (filter != null) {
 			if (filter.contains("materialNo")) {

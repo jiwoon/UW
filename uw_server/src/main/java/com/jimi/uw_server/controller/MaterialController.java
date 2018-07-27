@@ -3,6 +3,7 @@ package com.jimi.uw_server.controller;
 import com.jfinal.aop.Enhancer;
 import com.jfinal.core.Controller;
 import com.jfinal.core.paragetter.Para;
+import com.jimi.uw_server.annotation.Log;
 import com.jimi.uw_server.exception.OperationException;
 import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.service.MaterialService;
@@ -38,6 +39,7 @@ public class MaterialController extends Controller {
 	}
 
 	// 添加物料类型#
+	@Log("添加了料号为{no}的物料类型")
 	public void add(String no, Integer area, Integer row, Integer col, Integer height) {
 		if(materialService.add(no, area, row, col, height)) {
 			renderJson(ResultUtil.succeed());
@@ -48,6 +50,7 @@ public class MaterialController extends Controller {
 	}
 
     // 更新物料类型#
+	@Log("更新了物料类型{materialType}")
 	public void update(@Para("") MaterialType materialType) {
 		if(materialService.update(materialType)) {
 			renderJson(ResultUtil.succeed());

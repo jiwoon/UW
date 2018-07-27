@@ -12,9 +12,6 @@ import com.jimi.uw_server.model.TaskLog;
  */
 public class IOTaskDetailVO extends TaskLog {
 	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -3361161172340670552L;
 
 	private List<?> details;

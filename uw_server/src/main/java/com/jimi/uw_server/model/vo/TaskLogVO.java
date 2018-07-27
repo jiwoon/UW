@@ -10,9 +10,6 @@ import com.jimi.uw_server.model.TaskLog;
  */
 public class TaskLogVO extends TaskLog {
 	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -3791534812200792529L;
 	
 	private String autoString;
