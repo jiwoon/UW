@@ -39,7 +39,7 @@ public class MaterialController extends Controller {
 	}
 
 	// 添加物料类型#
-	@Log("添加了料号为{no}的物料类型")
+//	@Log("添加了料号为{no}的物料类型")
 	public void add(String no, Integer area, Integer row, Integer col, Integer height) {
 		if(materialService.add(no, area, row, col, height)) {
 			renderJson(ResultUtil.succeed());
@@ -50,7 +50,7 @@ public class MaterialController extends Controller {
 	}
 
     // 更新物料类型#
-	@Log("更新了物料类型{materialType}")
+//	@Log("更新了物料类型{materialType}")
 	public void update(@Para("") MaterialType materialType) {
 		if(materialService.update(materialType)) {
 			renderJson(ResultUtil.succeed());

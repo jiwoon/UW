@@ -31,11 +31,11 @@ public class RobotService extends SelectService {
 	
 	private static TaskService taskService = Enhancer.enhance(TaskService.class);
 
-	public static final String getRobotAllId = "SELECT id FROM robot";
+	public static final String GET_ALL_ROBOT_IDS_SQL = "SELECT id FROM robot";
 
 	
 	public Object select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
-		List<RobotVO> robotVO = new ArrayList<RobotVO>();
+		List<RobotVO> robotVOs = new ArrayList<RobotVO>();
 
 		Page<Record> result = selectService.select("robot", pageNo, pageSize, ascBy, descBy, filter);
 
@@ -43,7 +43,7 @@ public class RobotService extends SelectService {
 		for (Record res : result.getList()) {
 			RobotVO r = new RobotVO(res.get("id"), res.get("status"), res.get("battery"), res.get("x"), res.get("y"), 
 					res.get("enabled"), res.get("error"), res.get("warn"), res.get("pause"), res.get("load_exception"));
-			robotVO.add(r);
+			robotVOs.add(r);
 		}
 
 		PagePaginate pagePaginate = new PagePaginate();
@@ -51,7 +51,7 @@ public class RobotService extends SelectService {
 		pagePaginate.setPageSize(pageSize);
 		pagePaginate.setTotalRow(totallyRow);
 
-		pagePaginate.setList(robotVO);
+		pagePaginate.setList(robotVOs);
 
 		return pagePaginate;
 	}
@@ -125,7 +125,7 @@ public class RobotService extends SelectService {
 	 * 清除全部负载异常
 	 */
 	public void clearLoadException() {
-		List<Robot> robots = Robot.dao.find(getRobotAllId);
+		List<Robot> robots = Robot.dao.find(GET_ALL_ROBOT_IDS_SQL);
 		for (Robot robot : robots) {
 			robot.setLoadException(false);
 			robot.update();

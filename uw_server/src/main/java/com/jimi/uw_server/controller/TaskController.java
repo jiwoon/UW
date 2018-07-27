@@ -28,7 +28,7 @@ public class TaskController extends Controller {
 
 
 	// 创建任务
-	@Log("开始了任务{task}")
+//	@Log("开始了任务{task}")
 	public void create(@Para("") Task task, @Para("") PackingListItem packingListItem, UploadFile file, Integer type) throws Exception {
 		// 如果是创建「出入库任务」，入库type为0，出库type为1
 		if (type.equals(0) || type.equals(1)) {
@@ -54,7 +54,7 @@ public class TaskController extends Controller {
 
 
 	// 令指定任务通过审核
-	@Log("审核通过了任务编号为{id}的任务")
+//	@Log("审核通过了任务编号为{id}的任务")
 	public void pass(Integer id) {
 		if(taskService.pass(id)) {
 			renderJson(ResultUtil.succeed());
@@ -65,7 +65,7 @@ public class TaskController extends Controller {
 
 
 	// 令指定任务开始
-	@Log("开始了任务编号为{id}的任务")
+//	@Log("开始了任务编号为{id}的任务")
 	public void start(Integer id, Integer window) {
 		if(taskService.start(id, window)) {
 			renderJson(ResultUtil.succeed());
@@ -76,7 +76,7 @@ public class TaskController extends Controller {
 	
 
 	// 作废指定任务
-	@Log("作废了任务编号为{id}的任务")
+//	@Log("作废了任务编号为{id}的任务")
 	public void cancel(Integer id) {
 		if(taskService.cancel(id)) {
 			renderJson(ResultUtil.succeed());

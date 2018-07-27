@@ -11,14 +11,14 @@ public class MaterialTypeVO extends MaterialType{
 
 	private static final long serialVersionUID = 6512994067269010575L;
 
-	private static final String searchCountMaterialSql = "SELECT SUM(remainder_quantity) as quantity FROM material WHERE type = ?";
+	private static final String COUNT_MATERIAL_SQL = "SELECT SUM(remainder_quantity) as quantity FROM material WHERE type = ?";
 
 	private String enabledString;
 
 	private Integer quantity;
 
 	public Integer getQuantity(Integer id) {
-		Material material = Material.dao.findFirst(searchCountMaterialSql, id);
+		Material material = Material.dao.findFirst(COUNT_MATERIAL_SQL, id);
 		if (material.get("quantity") == null) {
 			quantity = 0;
 		} else {

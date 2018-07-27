@@ -39,7 +39,7 @@ public class RobotController extends Controller {
 
 
 	// 令叉车回库
-	@Log("将编号为{id}的叉车回库")
+//	@Log("将编号为{id}的叉车回库")
 	public void back(Integer id) {
 		robotService.back(id);
 		renderJson(ResultUtil.succeed());

@@ -23,7 +23,7 @@ public class UserController extends Controller {
 
 
 	// 登录
-	@Log("获取了用户名为{uid}的用户")
+//	@Log("获取了用户名为{uid}的用户")
 	public void login(String uid, String password) {
 		User user = userService.login(uid, password);
 		//判断是否重复登录
@@ -53,7 +53,7 @@ public class UserController extends Controller {
 
 
 	// 添加新用户
-	@Log("添加了用户名为{uid}的用户")
+//	@Log("添加了用户名为{uid}的用户")
 	public void add(String uid, String name, String password, Integer type) {
 		if(userService.add(uid, name, password, type)) {
 			renderJson(ResultUtil.succeed());
@@ -64,7 +64,7 @@ public class UserController extends Controller {
 
 
 	// 更新用户信息
-	@Log("获取了用户{user}")
+//	@Log("获取了用户{user}")
 	public void update(@Para("") User user) {
 		if(userService.update(user)) {
 			renderJson(ResultUtil.succeed());
