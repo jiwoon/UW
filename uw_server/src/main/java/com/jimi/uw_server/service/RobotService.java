@@ -57,7 +57,7 @@ public class RobotService extends SelectService {
 	}
 
 	
-	public void robotSwitch(String id, Integer enabled) {
+	public void robotSwitch(String id, Integer enabled) throws Exception {
 		List<Integer> idList = new ArrayList<>();
 		String[] ids = id.split(",");
 		for (String string : ids) {
@@ -71,7 +71,7 @@ public class RobotService extends SelectService {
 	}
 
 	
-	public void pause(Boolean pause) {
+	public void pause(Boolean pause) throws Exception {
         if (pause) {
             SwitchHandler.sendAllStart();
             clearLoadException();
@@ -136,7 +136,7 @@ public class RobotService extends SelectService {
 	/**
 	 * 叉车回库SL
 	 */
-	public void back(Integer id) {
+	public void back(Integer id) throws Exception {
 		for (AGVIOTaskItem item : TaskItemRedisDAO.getTaskItems()) {
 			if(id.equals(item.getId())) {
 				LSSLHandler.sendSL(item);

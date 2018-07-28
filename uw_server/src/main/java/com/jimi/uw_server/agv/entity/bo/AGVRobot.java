@@ -109,7 +109,7 @@ public class AGVRobot{
 		robot.setX(agvRobot.getPosX());
 		robot.setY(agvRobot.getPosY());
 		robot.setStatus(agvRobot.getStatus());
-		robot.setPause(agvRobot.getSystem_pause());
+		robot.setPause(!agvRobot.getSystem_pause());
 		robot.setId(agvRobot.getRobotid());
 		return robot;
 	}
@@ -124,7 +124,7 @@ public class AGVRobot{
 		agvRobot.setPosX(robot.getX());
 		agvRobot.setPosY(robot.getY());
 		agvRobot.setStatus(robot.getStatus());
-		agvRobot.setSystem_pause(robot.getPause());
+		agvRobot.setSystem_pause(!robot.getPause());
 		agvRobot.setRobotid(robot.getId());
 		return agvRobot;
 	}
