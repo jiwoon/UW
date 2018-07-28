@@ -6,7 +6,6 @@ import com.jfinal.aop.Enhancer;
 import com.jfinal.core.Controller;
 import com.jfinal.core.paragetter.Para;
 import com.jfinal.upload.UploadFile;
-import com.jimi.uw_server.annotation.Log;
 import com.jimi.uw_server.model.PackingListItem;
 import com.jimi.uw_server.model.Task;
 import com.jimi.uw_server.model.User;

@@ -54,7 +54,8 @@ public class TaskService {
 	private static final String UNIQUE_MATERIAL_ID_CHECK_SQL = "SELECT * FROM task_log WHERE material_id = ?";
 
 
-	public boolean createIOTask(Task task, Integer type, String fileName, String fullFileName) throws Exception {
+	// 插入套料单那里使用了「SELECT MAX(id) FROM task....」,因为要将该方法声明为同步方法，不然会有线程安全问题
+	public synchronized boolean createIOTask(Task task, Integer type, String fileName, String fullFileName) throws Exception {
 		// 如果文件格式不对，则返回false，提示检查文件格式及内容格式
 		if (!(fileName.endsWith(".xls") || fileName.endsWith(".xlsx"))) {
 			return false;
@@ -247,7 +248,7 @@ public class TaskService {
 
 
 	//将excel表格的物料相关信息写入套料单数据表
-	public boolean insertPackingList(PackingListItem packingListItem, Integer type, String fullFileName) throws Exception {
+	public static boolean insertPackingList(PackingListItem packingListItem, Integer type, String fullFileName) throws Exception {
 		// 读取excel表格的套料单数据，将数据一条条写入到套料单表；如果任务类型为出/入库，还需要修改物料实体表中对应物料的库存数量
 		File file = new File(fullFileName);
 		ExcelHelper fileReader = ExcelHelper.from(file);
@@ -256,12 +257,12 @@ public class TaskService {
 		items = fileReader.unfill(PackingListItemBO.class, 2);
 		for (PackingListItemBO item : items) {
 			// 获取新任务id
-			Task newTaskIdSql = Task.dao.findFirst(GET_NEW_TASK_ID_SQL);
-			Integer newTaskId = newTaskIdSql.get("newId");
+			Task getNewTaskId = Task.dao.findFirst(GET_NEW_TASK_ID_SQL);
+			Integer newTaskId = getNewTaskId.get("newId");
 			// 根据料号找到对应的物料类型id
-			MaterialType findNoSql = MaterialType.dao.findFirst(GET_NO_SQL, item.getNo());
+			MaterialType getNo = MaterialType.dao.findFirst(GET_NO_SQL, item.getNo());
 			// 判断物料类型表中是否存在对应的料号，若不存在，应将对应的任务记录作废掉，并提示操作员检查套料单、新增对应的物料类型
-			if (findNoSql == null) {
+			if (getNo == null) {
 				Task task = Task.dao.findById(newTaskId);
 				task.setState(4);
 				task.update();
@@ -269,9 +270,8 @@ public class TaskService {
 			}
 
 			// 若物料类型表中存在对应的料号，不论物料实体表中是否有库存，都允许插入套料单；若库存不足，则在「物料出入库」那里进行处理
-			findNoSql = MaterialType.dao.findFirst(GET_NO_SQL, item.getNo());
-			
-			Integer materialTypeId = findNoSql.getId();
+
+			Integer materialTypeId = getNo.getId();
 			packingListItem.setMaterialTypeId(materialTypeId);
 			// 获取计划出库数量
 			Integer planQuantity = item.getQuantity();
