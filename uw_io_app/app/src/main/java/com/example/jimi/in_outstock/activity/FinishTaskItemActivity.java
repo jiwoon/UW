@@ -4,9 +4,11 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.renderscript.ScriptGroup;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
+import android.text.InputType;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -17,8 +19,10 @@ import android.widget.Toast;
 
 import com.example.jimi.in_outstock.adpater.TaskItemViewPagerAdapter;
 import com.example.jimi.in_outstock.application.MyApplication;
+import com.example.jimi.in_outstock.editTextListener.MyTextWatcher;
 import com.example.jimi.in_outstock.entity.MaterialPlateInfo;
 import com.example.jimi.in_outstock.entity.TaskInfo;
+import com.example.jimi.in_outstock.event.GetWindowTaskItemEvent;
 import com.example.jimi.in_outstock.event.RobotBackEvent;
 import com.example.jimi.in_outstock.event.WriteLogEvent;
 import com.example.jimi.in_outstock.fragment.NowTaskFragment;
@@ -55,68 +59,38 @@ public class FinishTaskItemActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         initFragment();
         // 扫料盘
+        edit_plateId.addTextChangedListener(new MyTextWatcher(edit_plateId));
         edit_plateId.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
-                if (i == EditorInfo.IME_ACTION_SEND || (keyEvent != null && keyEvent.getKeyCode() == keyEvent.KEYCODE_ENTER)){
-                    String strValue = String.valueOf(((EditText) textView).getText()).trim();
-                    parePlateInfo(strValue);
-                    edit_plateId.setText(no);
-                    TaskInfo taskInfo = taskInfos.get(MyApplication.getPosition());
-                    strValue = String.valueOf(((EditText) textView).getText()).trim();
-
-                    // 判断扫描的料号信息和任务条目任务信息是否相同
-                    if(!(strValue).equals(taskInfo.getMaterialNo())){
-                        Toast.makeText(FinishTaskItemActivity.this,"料盘扫描错误",Toast.LENGTH_SHORT).show();
-                        edit_plateId.setSelection(edit_plateId.getText().length());
-                        editTextable(edit_plateId,true);
-                    }else{
-                        Toast.makeText(FinishTaskItemActivity.this,"料盘扫描正确",Toast.LENGTH_SHORT).show();
-                        edit_plateId.setSelection(edit_plateId.getText().length());
-                        editTextable(edit_plateId,false);
-                        updateList();
-                    }
-                }
-                return false;
-            }
-        });
-
-
-       /* edit_plateId.addTextChangedListener(new MyTextWatcher(edit_plateId));
-        edit_plateId.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
-                //回车键
                 if (i == EditorInfo.IME_ACTION_SEND || (keyEvent != null && keyEvent.getKeyCode() == keyEvent.KEYCODE_ENTER)) {
                     switch (keyEvent.getAction()) {
                         //按下
                         case KeyEvent.ACTION_DOWN:
                             //扫描内容
                             String strValue = String.valueOf(((EditText) textView).getText());
-                            strValue = strValue.replaceAll("\r", "");
-                            parePlateInfo(strValue);
-                            edit_plateId.setText(no);
-                            Log.i(TAG, "strValue:" + strValue);
+                            edit_plateId.setText(strValue.replace("/r", "").replace("\n", ""));
+                            strValue = strValue.trim();
                             switch (textView.getId()){
                                 case R.id.edit_plateId:
-                                    TaskInfo taskInfo = taskInfos.get(MyApplication.getPosition());
-                                    strValue = String.valueOf(((EditText) textView).getText());
-                                    if (strValue.length() > 0) {
-                                        if(!strValue.equals(taskInfo.getMaterialNo().trim())){
-                                            Toast.makeText(FinishTaskItemActivity.this,"料盘扫描错误",Toast.LENGTH_SHORT).show();
-                                        }else{
-
-                                            }
-                                        }
+                                    parePlateInfo(strValue);
+                                    edit_plateId.setText(no);
+                                    strValue = String.valueOf(((EditText) textView).getText()).trim();
+                                    Log.d("strValue2",strValue);
+                                    // 判断扫描的料号信息和任务条目任务信息是否相同
+                                    if(!(strValue).equals(taskInfo.getMaterialNo())){
+                                        Toast.makeText(FinishTaskItemActivity.this,"料盘扫描错误",Toast.LENGTH_SHORT).show();
+                                    }else{
+                                        Toast.makeText(FinishTaskItemActivity.this,"料盘扫描正确",Toast.LENGTH_SHORT).show();
+                                        new WriteLogEvent().writeLog(taskInfo, materialId, quantity, no, viewPager_task,fragmentManager,fragments );
                                     }
-                                    break;
                             }
                             break;
                     }
                 }
                 return false;
             }
-        });*/
+        });
     }
 
     /**
@@ -168,9 +142,15 @@ public class FinishTaskItemActivity extends BaseActivity {
                 .setPositiveButton("是", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface arg0, int arg1) {
                         Log.d("position",MyApplication.getPosition()+"");
-                        if(MyApplication.getPosition()>=0){
-                            new RobotBackEvent().robotBack(taskInfo.getTaskId());
-                        }else{
+                        if(MyApplication.getPosition()>=0){ // 当前还有未完成任务条目
+                            String str = edit_plateId.getText().toString().trim();
+                            if(!"".equals(str)){  // 当前扫描了料盘
+                                new RobotBackEvent().robotBack(taskInfo.getTaskId());
+                            }else{
+                                Toast.makeText(FinishTaskItemActivity.this,"请先扫描料盘",Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                        else {
                             showIsFinishDialog();
                         }
                     }
@@ -207,39 +187,5 @@ public class FinishTaskItemActivity extends BaseActivity {
         Log.d("no",no);
         Log.d("materialId",materialId);
         Log.d("quantity",quantity+"");
-    }
-
-    //设置EditText可输入和不可输入状态
-    private void editTextable(EditText editText, boolean editable) {
-        if (!editable) {
-            editText.setFocusable(false);
-            editText.setFocusableInTouchMode(false);
-            editText.setClickable(false);
-        } else {
-            editText.setFocusable(true);
-            editText.setFocusableInTouchMode(true);
-            editText.setClickable(true);
-        }
-    }
-
-    //更新扫描后的列表信息
-    private void updateList(){
-        int position = MyApplication.getPosition();
-        if(position != -1) {
-            MaterialPlateInfo materialPlateInfo = new MaterialPlateInfo();
-            materialPlateInfo.setMaterialId(materialId);
-            materialPlateInfo.setQuantity(quantity);
-            NowTaskFragment taskFragment = new NowTaskFragment();
-            // 实际数量添加
-            int aQ = taskInfo.getActualQuantity();
-            aQ = aQ + quantity;
-            taskInfo.setActualQuantity(aQ);
-            // 新的料盘信息添加
-            taskInfo.getMaterialPlateInfos().add(materialPlateInfo);
-            taskFragment.setTaskInfo(taskInfo);
-            fragments.set(MyApplication.getPosition(), taskFragment);
-            taskItemViewPagerAdapter = new TaskItemViewPagerAdapter(fragmentManager, fragments);
-            new WriteLogEvent().writeLog(taskInfo.getTaskId(), materialId, quantity, no, viewPager_task, taskItemViewPagerAdapter);
-        }
     }
 }
