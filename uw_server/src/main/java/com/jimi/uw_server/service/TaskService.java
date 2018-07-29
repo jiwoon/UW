@@ -43,9 +43,8 @@ public class TaskService {
 
 	private static final String GET_NO_SQL = "SELECT id FROM material_type WHERE no = ?";
 	
-	private static final String GET_ITEM_DETAILS_SQL = "SELECT task_log.material_id as materialId, task_log.quantity FROM task_log, packing_list_item, "
-			+ "material_type WHERE task_log.task_id = ? AND packing_list_item.task_id = ? AND "
-			+ "packing_list_item.material_type_id = material_type.id AND material_type.no = ?";
+	private static final String GET_ITEM_DETAILS_SQL = "SELECT material_id as materialId, quantity FROM task_log WHERE task_id = ? AND material_id In"
+			+ "(SELECT id FROM material WHERE type = (SELECT id FROM material_type WHERE no = ?))";
 	
 	private static final String GET_TASK_IN_PROCESS_SQL = "SELECT id FROM task WHERE state = 2 AND window = ?";
 	
@@ -128,8 +127,8 @@ public class TaskService {
 			// 遍历同一个任务id的套料单数据
 			for (Record packingListItem : packingListItems.getList()) {
 				// 查询task_log中的material_id,quantity
-				// 这里在for循环中执行了sql查询，会影响执行效率，暂时还没想到两全其美的解决方案，争取这周(7.23-7.28)想出解决方案
-				List<TaskLog> taskLog = TaskLog.dao.find(GET_ITEM_DETAILS_SQL, id, id, packingListItem.get("MaterialType_No"));
+				// 这里在for循环中执行了sql查询，会影响执行效率，暂时还没想到两全其美的解决方案，争取这周(7.23-7.28)想出解决方案, 
+				List<TaskLog> taskLog = TaskLog.dao.find(GET_ITEM_DETAILS_SQL, id, packingListItem.get("MaterialType_No"));
 				Integer actualQuantity = 0;
 				// 实际出入库数量要根据task_log中的出入库数量记录进行累加得到
 				for (TaskLog tl : taskLog) {
@@ -137,6 +136,7 @@ public class TaskService {
 				}
 				IOTaskDetailVO io = new IOTaskDetailVO(packingListItem.get("PackingListItem_Id"), packingListItem.get("MaterialType_No"), packingListItem.get("PackingListItem_Quantity"), 
 						actualQuantity, packingListItem.get("PackingListItem_FinishTime"));
+				
 				io.setDetails(taskLog);
 				ioTaskDetailVOs.add(io);
 			}
@@ -222,7 +222,7 @@ public class TaskService {
 			for (Record windowTaskItem : windowTaskItems.getList()) {
 				// 查询task_log中的material_id,quantity
 				// 这里在for循环中执行了sql查询，会影响执行效率，暂时还没想到两全其美的解决方案，争取这周(7.23-7.28)想出解决方案
-				List<TaskLog> taskLogs = TaskLog.dao.find(GET_ITEM_DETAILS_SQL, taskId.toString(), taskId.toString(), windowTaskItem.get("MaterialType_No"));
+				List<TaskLog> taskLogs = TaskLog.dao.find(GET_ITEM_DETAILS_SQL, taskId.toString(), taskId.toString(), windowTaskItem.get("MaterialType_Id"), windowTaskItem.get("MaterialType_No"));
 				Integer actualQuantity = 0;
 				// 实际出入库数量要根据task_log中的出入库数量记录进行累加得到
 				for (TaskLog tl : taskLogs) {
@@ -341,8 +341,13 @@ public class TaskService {
 			material.setCol(0);
 			material.setRemainderQuantity(quantity);
 			material.save();
-		} else if (type == 1) {	// 如果是出库，则删除对应的物料实体表记录
-			Material.dao.deleteById(materialId);
+		} else if (type == 1) {	// 如果是出库，则将对应的物料实体表记录置为无效
+//			Material.dao.deleteById(materialId);
+			Material oldMaterial = Material.dao.findById(materialId);
+			oldMaterial.setRow(0);
+			oldMaterial.setCol(0);
+			oldMaterial.setRemainderQuantity(0);
+			oldMaterial.save();
 		}
 
 		TaskLog taskLog = new TaskLog();
