@@ -72,4 +72,13 @@ public abstract class BaseActionLog<M extends BaseActionLog<M>> extends Model<M>
 		return get("time");
 	}
 
+	public M setResultCode(java.lang.Integer resultCode) {
+		set("result_code", resultCode);
+		return (M)this;
+	}
+	
+	public java.lang.Integer getResultCode() {
+		return getInt("result_code");
+	}
+
 }
