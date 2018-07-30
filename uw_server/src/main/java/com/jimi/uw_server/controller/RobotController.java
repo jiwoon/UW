@@ -1,5 +1,6 @@
 package com.jimi.uw_server.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.jfinal.aop.Enhancer;
 import com.jfinal.core.ActionKey;
 import com.jfinal.core.Controller;
@@ -17,8 +18,9 @@ public class RobotController extends Controller {
 
 
 	// 查询叉车
-	public void select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
-		renderJson(ResultUtil.succeed(robotService.select(pageNo, pageSize, ascBy, descBy, filter)));
+	public void select(){
+		String string = JSON.toJSONString(ResultUtil.succeed(robotService.select()));
+		renderText(string);
 	}
 
 
