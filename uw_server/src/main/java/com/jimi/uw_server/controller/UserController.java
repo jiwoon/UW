@@ -4,6 +4,7 @@ import com.jfinal.aop.Enhancer;
 import com.jfinal.core.Controller;
 import com.jfinal.core.paragetter.Para;
 import com.jimi.uw_server.annotation.Log;
+import com.jimi.uw_server.exception.OperationException;
 import com.jimi.uw_server.exception.ParameterException;
 import com.jimi.uw_server.model.User;
 import com.jimi.uw_server.service.UserService;
@@ -47,7 +48,7 @@ public class UserController extends Controller {
 		if(user != null) {
 			renderJson(ResultUtil.succeed(user));
 		}else {
-			renderJson(ResultUtil.succeed("no user signed in"));
+			throw new OperationException("no user signed in");
 		}
 	}
 
@@ -58,7 +59,7 @@ public class UserController extends Controller {
 		if(userService.add(uid, name, password, type)) {
 			renderJson(ResultUtil.succeed());
 		} else {
-			renderJson(ResultUtil.failed("请完善用户信息！"));
+			throw new OperationException("请完善用户信息！");
 		}
 	}
 

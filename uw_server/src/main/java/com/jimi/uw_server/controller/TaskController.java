@@ -1,15 +1,19 @@
 package com.jimi.uw_server.controller;
 
 import java.io.File;
+import java.util.List;
 
 import com.jfinal.aop.Enhancer;
 import com.jfinal.core.Controller;
 import com.jfinal.core.paragetter.Para;
 import com.jfinal.upload.UploadFile;
+import com.jimi.uw_server.exception.OperationException;
 import com.jimi.uw_server.model.PackingListItem;
 import com.jimi.uw_server.model.Task;
 import com.jimi.uw_server.model.User;
 import com.jimi.uw_server.model.Window;
+import com.jimi.uw_server.model.vo.WindowParkingListItemVO;
+import com.jimi.uw_server.model.vo.WindowTaskItemsVO;
 import com.jimi.uw_server.service.TaskService;
 import com.jimi.uw_server.util.ResultUtil;
 import com.jimi.uw_server.util.TokenBox;
@@ -34,18 +38,23 @@ public class TaskController extends Controller {
 			file = getFile();
 			String fileName = file.getFileName();
 			String fullFileName = file.getUploadPath() + File.separator + file.getFileName();
-			if(taskService.createIOTask(task, type, fileName, fullFileName)) {
-				if (taskService.insertPackingList(packingListItem, type, fullFileName)) {
-					renderJson(ResultUtil.succeed());
-				} else {
-					renderJson(ResultUtil.failed("插入套料单失败，该任务已作废，请确保套料单中所有料号都在物料类型表中有对应记录再进行导入！"));
+			String resultString = taskService.createIOTask(task, packingListItem, type, fileName, fullFileName);
+
+			if(resultString.equals("添加成功！")) {
+				renderJson(ResultUtil.succeed());
 				}
-			} else {
-				renderJson(ResultUtil.failed("创建任务失败，请检查套料单的文件格式及内容格式！"));
-			}
-		} else if (type.equals(2) ) {	//如果是创建「盘点任务」
+
+			else {
+				throw new OperationException(resultString);
+				}
+
+		}
+		
+		else if (type.equals(2) ) {	//如果是创建「盘点任务」
 			renderJson(ResultUtil.failed("该功能尚在开发中！"));
-		} else if (type.equals(3)) {	//如果是创建「位置优化任务」
+		}
+		
+		else if (type.equals(3)) {	//如果是创建「位置优化任务」
 			renderJson(ResultUtil.failed("该功能尚在开发中！"));
 		}
 		
@@ -58,7 +67,7 @@ public class TaskController extends Controller {
 		if(taskService.pass(id)) {
 			renderJson(ResultUtil.succeed());
 		} else {
-			renderJson(ResultUtil.failed("审核失败！"));
+			renderJson(ResultUtil.failed());
 		}
 	}
 
@@ -80,7 +89,7 @@ public class TaskController extends Controller {
 		if(taskService.cancel(id)) {
 			renderJson(ResultUtil.succeed());
 		} else {
-			renderJson(ResultUtil.failed("作废失败！"));
+			renderJson(ResultUtil.failed());
 		}
 	}
 
@@ -103,9 +112,14 @@ public class TaskController extends Controller {
 	}
 
 
-	// 获取指定仓口任务条目
-	public void getWindowTaskItems(Integer id, Integer pageNo, Integer pageSize) {
-		renderJson(ResultUtil.succeed(taskService.getWindowTaskItems(id, pageNo, pageSize)));
+	// 获取指定仓口停泊条目
+	public void getWindowParkingItem(Integer id) {
+		List<WindowParkingListItemVO> windowParkingItem = taskService.getWindowParkingItem(id);
+		if (!(windowParkingItem.isEmpty())) {
+			renderJson(ResultUtil.succeed(windowParkingItem));
+		} else {
+			throw new OperationException("暂无已到站任务条目！");
+		}
 	}
 
 
@@ -118,9 +132,14 @@ public class TaskController extends Controller {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
-		}
-		
+		}		
 	}
 
-	
+
+	// 获取指定仓口任务条目
+	public void getWindowTaskItems(Integer id, Integer pageNo, Integer pageSize) {
+		renderJson(ResultUtil.succeed(taskService.getWindowTaskItems(id, pageNo, pageSize)));
+	}
+
+
 }
