@@ -16,27 +16,27 @@ import com.jimi.uw_server.agv.socket.AGVMainSocket;
  */
 public class SwitchHandler {
 
-	public static void sendEnable(List<Integer> robotid) {
+	public static void sendEnable(List<Integer> robotid) throws Exception {
 		sendEnableOrDisable(robotid, true);
 	}
 
 
-	public static void sendDisable(List<Integer> robotid) {
+	public static void sendDisable(List<Integer> robotid) throws Exception {
 		sendEnableOrDisable(robotid, false);
 	}
 	
 	
-	public static void sendAllStart() {
+	public static void sendAllStart() throws Exception {
 		sendStartOrPause(true);
 	}
 
 
-	public static void sendAllPause() {
+	public static void sendAllPause() throws Exception {
 		sendStartOrPause(false);
 	}
 
 
-	private static void sendStartOrPause(boolean start) {
+	private static void sendStartOrPause(boolean start) throws Exception {
 		AGVBaseCmd cmd = new AGVBaseCmd();
 		cmd.setCmdid(TaskItemRedisDAO.getCmdId());
 		if(start) {
@@ -48,7 +48,7 @@ public class SwitchHandler {
 	}
 
 
-	private static void sendEnableOrDisable(List<Integer> robotid, boolean enabled) {
+	private static void sendEnableOrDisable(List<Integer> robotid, boolean enabled) throws Exception {
 		AGVSwitchEnableCmd cmd = new AGVSwitchEnableCmd();
 		cmd.setCmdid(TaskItemRedisDAO.getCmdId());
 		cmd.setRobotids(robotid);

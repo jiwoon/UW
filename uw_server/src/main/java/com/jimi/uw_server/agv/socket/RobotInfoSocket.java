@@ -55,8 +55,9 @@ public class RobotInfoSocket{
 			//连接AGV服务器
 			RobotInfoSocket.uri = uri;
 			connect(uri);
-		} catch (Exception ex) {
-			ex.printStackTrace();
+		} catch (Exception e) {
+			ErrorLogWritter.save(e.getClass().getSimpleName() + ":" + e.getMessage());
+			e.printStackTrace();
 		}
 	}
 
@@ -80,6 +81,7 @@ public class RobotInfoSocket{
 			//重新连接
 			connect(uri);
 		} catch (Exception e) {
+			ErrorLogWritter.save(e.getClass().getSimpleName()+ ":" +e.getMessage());
 			e.printStackTrace();
 		}
 	}
@@ -88,8 +90,6 @@ public class RobotInfoSocket{
 	@OnMessage
 	public void onMessage(String message ,Session session) {
 		try {
-//			System.out.println("["+ new Date().toString() +"]" + "receiver message:" + message);
-			
 			//获取新的机器数据
 			Map<Integer, AGVRobot> newRobots = new HashMap<>();
 			AGVRobotInfoCmd robotInfoCmd = Json.getJson().parse(message, AGVRobotInfoCmd.class);

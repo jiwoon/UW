@@ -28,6 +28,7 @@ import com.jimi.uw_server.interceptor.ActionLogInterceptor;
 import com.jimi.uw_server.interceptor.CORSInterceptor;
 import com.jimi.uw_server.interceptor.ErrorLogInterceptor;
 import com.jimi.uw_server.model.MappingKit;
+import com.jimi.uw_server.util.ErrorLogWritter;
 import com.jimi.uw_server.util.TokenBox;
 
 /**
@@ -95,10 +96,15 @@ public class UwConfig extends JFinalConfig {
 
 	@Override
 	public void afterJFinalStart() {
-		TokenBox.start(PropKit.use("properties.ini").getInt("sessionTimeout"));
-		AGVMainSocket.init(PropKit.use("properties.ini").get("agvServerURI"));
-		RobotInfoSocket.init(PropKit.use("properties.ini").get("robotInfoURI"));
-		System.out.println("Uw Server is Running now...");
+		try {
+			TokenBox.start(PropKit.use("properties.ini").getInt("sessionTimeout"));
+			AGVMainSocket.init(PropKit.use("properties.ini").get("agvServerURI"));
+			RobotInfoSocket.init(PropKit.use("properties.ini").get("robotInfoURI"));
+			System.out.println("Uw Server is Running now...");
+		} catch (Exception e) {
+			ErrorLogWritter.save(e.getClass().getSimpleName() + ":" + e.getMessage());
+			e.printStackTrace();
+		}
 	}
 	
 	

@@ -40,21 +40,7 @@ public class ErrorLogInterceptor implements Interceptor {
 		try {
 			invocation.invoke();
 		}catch (Exception e) {
-			int result;
-			switch (e.getClass().getSimpleName()) {
-			case "AccessException":
-				result = 401;
-				break;
-			case "ParameterException":
-				result = 400;			
-				break;
-			case "OperationException":
-				result = 412;
-				break;
-			default:
-				result = 500;
-				break;
-			}
+			int result = getResultCode(e);
 			e.printStackTrace();
 			ErrorLog errorLog = new ErrorLog();
 			errorLog.setTime(new Date());
@@ -63,6 +49,29 @@ public class ErrorLogInterceptor implements Interceptor {
 			logger.error(e.getClass().getSimpleName() + ":" + e.getMessage());
 			invocation.getController().renderJson(ResultUtil.failed(result, e.getMessage()));
 		}
+	}
+
+	
+	/**
+	 * 根据异常类获取返回码
+	 */
+	public static int getResultCode(Exception e) {
+		int result;
+		switch (e.getClass().getSimpleName()) {
+		case "AccessException":
+			result = 401;
+			break;
+		case "ParameterException":
+			result = 400;			
+			break;
+		case "OperationException":
+			result = 412;
+			break;
+		default:
+			result = 500;
+			break;
+		}
+		return result;
 	}
 
 }
