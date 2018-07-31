@@ -11,6 +11,11 @@ import TasksMain from '../pages/tasks/TaskMain'
 import RobotMain from '../pages/robot/RobotMain'
 import Login from '../pages/user/Login'
 import UserConfig from '../pages/user/UserConfig'
+import IoMain from '../pages/io/IoMain'
+import IoNow from '../pages/io/details/IoNow'
+import IoPreview from '../pages/io/details/IoPreview'
+
+
 
 Vue.use(Router);
 
@@ -68,6 +73,21 @@ const router = new Router({
           path: 'user',
           name: 'UserConfig',
           component: UserConfig
+        },
+        {
+          path: 'io',
+          name: 'IoMain',
+          component: IoMain,
+          children: [
+            {
+              path: 'now',
+              component: IoNow
+            },
+            {
+              path: 'preview',
+              component: IoPreview
+            }
+          ]
         }
       ]
     },

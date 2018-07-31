@@ -24,16 +24,18 @@
 
       <!--当warn/error时改变边框及内部字体，vue模板数组语法-->
       <div class="card col-12 col-sm-5 col-lg-3 col-xl-2
-        card-board justify-content-between"
+        card-board justify-content-between no-select"
            :class="[item.warn === 255 ? '' : 'border-warning text-warning shadow-warning',
            item.error === 255 ? '' : 'border-danger text-danger shadow-danger']"
-           v-for="item in robotData">
+           v-for="item in robotData"
+           @click="toggleSelected(item.id)" >
 
-        <label :for="item.id + '-checkbox'" class="no-select">
+
           <div class="position-absolute mt-3 ml-2">
             <icon :name="checkedData.indexOf(item.id) === -1  ? 'check-empty' : 'check' " scale="3.4"></icon>
+            <label :for="item.id + '-checkbox'" @click.stop></label>
             <input type="checkbox" class="checkbox d-none" :value="item.id" :id="item.id + '-checkbox'"
-                   v-model="checkedData">
+                   v-model="checkedData" >
           </div>
           <div class="message-tips card-body mt-5 row">
             <div class="danger-tips row align-items-center pl-3 pr-3" v-if="item.error !== 255">
@@ -78,10 +80,10 @@
           <div class="dropdown-divider"></div>
           <div class="card-body form-row justify-content-around">
             <a class="btn col mr-1 text-white" :class="item.enabled === 2 ? 'btn-secondary' : 'btn-primary'"
-               @click.prevent="setEnable(item.id, item.enabled)">{{item.enabled === 2 ? '点击禁用' : '点击启用'}}</a>
+               @click.stop="setEnable(item.id, item.enabled)">{{item.enabled === 2 ? '点击禁用' : '点击启用'}}</a>
           </div>
 
-        </label>
+
       </div>
 
     </div>
@@ -103,6 +105,7 @@
       return {
         robotData: [
           {
+            id:'123',
             pause: false
           }
         ],
@@ -111,14 +114,13 @@
       }
     },
     watch: {
+      /*监听路由是否来自于过滤搜索栏的请求，其请求会带filter的query字段，进行叉车数据查询*/
       $route: function (route) {
         this.setLoading(true);
         if (route.query.filter) {
           let options = {
             url: robotSelectUrl,
             data: {
-              pageNo: 1,
-              pageSize: 99999,
               filter: route.query.filter
             }
           };
@@ -126,10 +128,6 @@
         } else {
           let options = {
             url: robotSelectUrl,
-            data: {
-              pageNo: 1,
-              pageSize: 99999
-            }
           };
           this.fetchData(options)
         }
@@ -140,10 +138,6 @@
     created() {
       let options = {
         url: robotSelectUrl,
-        data: {
-          pageNo: 1,
-          pageSize: 99999
-        }
       };
       this.fetchData(options);
 
@@ -154,6 +148,8 @@
     },
     methods: {
       ...mapActions(['setLoading']),
+
+      /*获取叉车数据*/
       fetchData: function (options) {
         if (!this.isPending) {
           this.isPending = true;
@@ -161,7 +157,7 @@
             this.setLoading(false);
             this.isPending = false;
             if (response.data.result === 200) {
-              this.robotData = response.data.data.list;
+              this.robotData = response.data.data;
             } else {
               errHandler(response.data.result)
             }
@@ -185,6 +181,8 @@
             return "充电";
         }
       },
+
+      /*设置启停， 1停止 2启用  根据当前缓存叉车状态取反*/
       setEnable: function (id, enabled) {
         let thisEnabled = enabled === 2 ? 1 : 2;
 
@@ -213,6 +211,8 @@
           })
         }
       },
+
+      /*全选、取消全选  vue checkbox数组 v-model绑定数组，根据数组内容选中*/
       selectAll: function () {
         if (this.checkedData.length === 0) {
           this.checkedData = this.robotData.map((item) => {
@@ -248,6 +248,15 @@
             alert('请求超时，请刷新重试')
           })
         }
+      },
+      /*toggleSelected(id) 切换checkbox状态*/
+      toggleSelected: function (id) {
+        let index = this.checkedData.indexOf(id);
+        if (index > -1) {
+         this.checkedData.splice(index,1)
+        } else {
+          this.checkedData.push(id)
+        }
       }
     }
   }
@@ -274,8 +283,8 @@
     margin: 20px;
   }
 
-  .card-board:hover {
-    box-shadow: 0 0 4px #007bff;
+  .card-board:hover, .card-board:active{
+    box-shadow: 0 0 4px #007bff !important;
   }
 
   #vertical-divider {

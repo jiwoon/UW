@@ -83,23 +83,23 @@ const ACTION_QUERY = [
 
 const TASK_QUERY = [
   {
-    id: 'taskId',
+    id: 'task_id',
     name: '任务ID',
     model: '',
     type: 'text'
   },
-  {
-    id: 'taskType',
-    name: '任务类型',
-    model: '',
-    type: 'text'
-  },
-  {
-    id: 'materialNo',
-    name: '料号',
-    model: '',
-    type: 'text'
-  },
+  // {
+  //   id: 'taskType',
+  //   name: '任务类型',
+  //   model: '',
+  //   type: 'text'
+  // },
+  // {
+  //   id: 'materialNo',
+  //   name: '料号',
+  //   model: '',
+  //   type: 'text'
+  // },
   {
     id: 'operator',
     name: '操作员ID',
@@ -116,12 +116,12 @@ const TASK_QUERY = [
 ];
 
 const POSITION_QUERY = [
-  {
-    id: 'materialNo',
-    name: '料号',
-    model: '',
-    type: 'text'
-  },
+  // {
+  //   id: 'materialNo',
+  //   name: '料号',
+  //   model: '',
+  //   type: 'text'
+  // },
   {
     id: 'time',
     name: '时间',
