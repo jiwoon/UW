@@ -32,18 +32,6 @@ public class MaterialService extends SelectService{
 	public Object count(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
 		List<MaterialTypeVO> materialTypeVOs = new ArrayList<MaterialTypeVO>();
 
-		if (filter != null) {
-			filter = filter + "&material_type.enabled=1";
-			if (filter.contains("col")) {
-				filter = filter.replace("col", "material_type.col");
-			}
-			if (filter.contains("row")) {
-				filter = filter.replace("row", "material_type.row");
-			}
-		} else {
-			filter = "material_type.enabled=1";
-		}
-
 		Page<Record> result = selectService.select(new String[] {"material_type"}, null,
 				pageNo, pageSize, ascBy, descBy, filter);
 

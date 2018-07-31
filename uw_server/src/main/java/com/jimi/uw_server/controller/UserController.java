@@ -2,7 +2,6 @@ package com.jimi.uw_server.controller;
 
 import com.jfinal.aop.Enhancer;
 import com.jfinal.core.Controller;
-import com.jfinal.core.paragetter.Para;
 import com.jimi.uw_server.annotation.Log;
 import com.jimi.uw_server.exception.OperationException;
 import com.jimi.uw_server.exception.ParameterException;
@@ -24,7 +23,7 @@ public class UserController extends Controller {
 
 
 	// 登录
-//	@Log("获取了用户名为{uid}的用户")
+	@Log("用户名为{uid}的用户请求登录")
 	public void login(String uid, String password) {
 		User user = userService.login(uid, password);
 		//判断是否重复登录
@@ -54,7 +53,7 @@ public class UserController extends Controller {
 
 
 	// 添加新用户
-//	@Log("添加了用户名为{uid}的用户")
+	@Log("添加了用户名为{uid}的用户,用户姓名为{name},用户类型为{type}")
 	public void add(String uid, String name, String password, Integer type) {
 		if(userService.add(uid, name, password, type)) {
 			renderJson(ResultUtil.succeed());
@@ -65,15 +64,20 @@ public class UserController extends Controller {
 
 
 	// 更新用户信息
-//	@Log("获取了用户{user}")
-	public void update(@Para("") User user) {
-		if(userService.update(user)) {
+	@Log("更新了用户{uid}的信息,更新后的用户姓名为{name},用户类型为{type}")
+	public void update(String uid, String name, String password, Boolean enabled, Integer type) {
+		if(userService.update(uid, name, password, enabled, type)) {
 			renderJson(ResultUtil.succeed());
+			User user = User.dao.findById(uid);
+			// 如果禁用了某个用户
 			if (!user.getEnabled()) {
 				String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 				User user1 = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
+				// 如果禁用的是用户自身
 				if (user.getUid().equals(user1.getUid())) {
-					logout();
+					TokenBox.remove(tokenId);
+				} else {
+					
 				}
 			}
 		} else {
@@ -100,7 +104,7 @@ public class UserController extends Controller {
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		User user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
 		if(user == null) {
-			throw new ParameterException("do not need to logout when not login");
+			throw new ParameterException("没有用户登录，不需要退出登录！");
 		}
 		TokenBox.remove(tokenId);
 		renderJson(ResultUtil.succeed());

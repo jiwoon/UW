@@ -5,15 +5,11 @@ import java.util.List;
 
 import com.jfinal.aop.Enhancer;
 import com.jfinal.core.Controller;
-import com.jfinal.core.paragetter.Para;
 import com.jfinal.upload.UploadFile;
+import com.jimi.uw_server.annotation.Log;
 import com.jimi.uw_server.exception.OperationException;
-import com.jimi.uw_server.model.PackingListItem;
-import com.jimi.uw_server.model.Task;
 import com.jimi.uw_server.model.User;
-import com.jimi.uw_server.model.Window;
 import com.jimi.uw_server.model.vo.WindowParkingListItemVO;
-import com.jimi.uw_server.model.vo.WindowTaskItemsVO;
 import com.jimi.uw_server.service.TaskService;
 import com.jimi.uw_server.util.ResultUtil;
 import com.jimi.uw_server.util.TokenBox;
@@ -31,19 +27,18 @@ public class TaskController extends Controller {
 
 
 	// 创建任务
-//	@Log("开始了任务{task}")
-	public void create(@Para("") Task task, @Para("") PackingListItem packingListItem, UploadFile file, Integer type) throws Exception {
+	@Log("创建任务类型为{type}的任务")
+	public void create(UploadFile file, Integer type) throws Exception {
 		// 如果是创建「出入库任务」，入库type为0，出库type为1
 		if (type.equals(0) || type.equals(1)) {
 			file = getFile();
 			String fileName = file.getFileName();
 			String fullFileName = file.getUploadPath() + File.separator + file.getFileName();
-			String resultString = taskService.createIOTask(task, packingListItem, type, fileName, fullFileName);
+			String resultString = taskService.createIOTask(type, fileName, fullFileName);
 
 			if(resultString.equals("添加成功！")) {
 				renderJson(ResultUtil.succeed());
-				}
-
+				} 
 			else {
 				throw new OperationException(resultString);
 				}
@@ -62,7 +57,7 @@ public class TaskController extends Controller {
 
 
 	// 令指定任务通过审核
-//	@Log("审核通过了任务编号为{id}的任务")
+	@Log("审核通过了任务编号为{id}的任务")
 	public void pass(Integer id) {
 		if(taskService.pass(id)) {
 			renderJson(ResultUtil.succeed());
@@ -73,7 +68,7 @@ public class TaskController extends Controller {
 
 
 	// 令指定任务开始
-//	@Log("开始了任务编号为{id}的任务")
+	@Log("开始了任务编号为{id}的任务")
 	public void start(Integer id, Integer window) {
 		if(taskService.start(id, window)) {
 			renderJson(ResultUtil.succeed());
@@ -84,7 +79,7 @@ public class TaskController extends Controller {
 	
 
 	// 作废指定任务
-//	@Log("作废了任务编号为{id}的任务")
+	@Log("作废了任务编号为{id}的任务")
 	public void cancel(Integer id) {
 		if(taskService.cancel(id)) {
 			renderJson(ResultUtil.succeed());
@@ -101,8 +96,8 @@ public class TaskController extends Controller {
 	
 
 	// 查询所有仓口
-	public void getWindows(@Para("") Window window) {
-		renderJson(ResultUtil.succeed(taskService.getWindows(window)));
+	public void getWindows() {
+		renderJson(ResultUtil.succeed(taskService.getWindows()));
 	}
 
 

@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.jfinal.aop.Enhancer;
 import com.jfinal.core.ActionKey;
 import com.jfinal.core.Controller;
+import com.jimi.uw_server.annotation.Log;
 import com.jimi.uw_server.service.RobotService;
 import com.jimi.uw_server.util.ResultUtil;
 
@@ -40,7 +41,7 @@ public class RobotController extends Controller {
 
 
 	// 令叉车回库
-//	@Log("将编号为{id}的叉车回库")
+	@Log("将编号为{id}的叉车回库")
 	public void back(Integer id) throws Exception {
 		robotService.back(id);
 		renderJson(ResultUtil.succeed());
