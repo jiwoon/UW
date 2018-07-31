@@ -64,18 +64,20 @@ public class UserController extends Controller {
 
 
 	// 更新用户信息
-	@Log("更新了用户{uid}的信息,更新后的用户姓名为{name},用户类型为type{}")
+	@Log("更新了用户{uid}的信息,更新后的用户姓名为{name},用户类型为{type}")
 	public void update(String uid, String name, String password, Boolean enabled, Integer type) {
 		if(userService.update(uid, name, password, enabled, type)) {
 			renderJson(ResultUtil.succeed());
 			User user = User.dao.findById(uid);
+			// 如果禁用了某个用户
 			if (!user.getEnabled()) {
 				String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 				User user1 = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
+				// 如果禁用的是用户自身
 				if (user.getUid().equals(user1.getUid())) {
-					logout();
-				} else {
 					TokenBox.remove(tokenId);
+				} else {
+					
 				}
 			}
 		} else {

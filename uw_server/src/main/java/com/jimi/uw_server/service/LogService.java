@@ -22,27 +22,6 @@ public class LogService extends SelectService {
 
 
 	public Object selectTaskLog(String table, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
-		if (filter != null) {
-			if (filter.contains("taskId")) {
-				filter = filter.replace("taskId", "task_id");
-			}
-			if (filter.contains("taskType")) {
-				filter = filter.replace("taskType", "task.type");
-				if (filter.contains("入库")) {
-					filter = filter.replace("入库", "0");
-				} else if (filter.contains("出库")) {
-					filter = filter.replace("出库", "1");
-				} else if (filter.contains("盘点")) {
-					filter = filter.replace("盘点", "2");
-				} else if (filter.contains("位置优化")) {
-					filter = filter.replace("位置优化", "3");
-				}
-			}
-			if (filter.contains("materialNo")) {
-				filter = filter.replace("materialNo", "no");
-			}
-		}
-
 		List<TaskLogVO> taskLogVOs = new ArrayList<TaskLogVO>();
 		Page<Record> result = selectService.select(new String[] {"task_log", "task", "material_type", "material", "user"},
 				new String[] {"task_log.task_id = task.id", "task_log.material_id = material.id", "material_type.id = material.type", 
@@ -67,11 +46,11 @@ public class LogService extends SelectService {
 
 
 	public Object selectPositionLog(String table, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
-		if (filter != null) {
-			if (filter.contains("materialNo")) {
-				filter = filter.replace("materialNo", "no");
-			}
-		}
+//		if (filter != null) {
+//			if (filter.contains("materialNo")) {
+//				filter = filter.replace("materialNo", "no");
+//			}
+//		}
 
 		List<PositionLogVO> positionLogVOs = new ArrayList<PositionLogVO>();
 		Page<Record> result = selectService.select(new String[] {"position_log", "material_type", "material"},

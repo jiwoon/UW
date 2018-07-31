@@ -235,15 +235,6 @@ public class TaskService {
 
 
 	public Object select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
-		if (filter != null) {
-			if (filter.contains("createTimeString")) {
-				filter = filter.replace("createTimeString", "create_time");
-			}
-			if (filter.contains("fileName")) {
-				filter = filter.replace("fileName", "file_name");
-			}
-		}
-
 		Page<Record> result = selectService.select("task", pageNo, pageSize, ascBy, descBy, filter);
 
 		List<TaskVO> taskVOs = new ArrayList<TaskVO>();

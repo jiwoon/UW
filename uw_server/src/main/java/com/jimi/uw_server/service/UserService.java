@@ -80,12 +80,6 @@ public class UserService extends SelectService{
 
 
 	public Object select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
-		if (filter != null) {
-			if (filter.contains("enabled")) {
-				filter = filter.replace("true", "1");
-			}
-		}
-		
 		List<UserVO> userVOs = new ArrayList<UserVO>();
 		Page<Record> result = selectService.select("user", pageNo, pageSize, ascBy, descBy, filter);
 
