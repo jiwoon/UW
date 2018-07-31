@@ -44,25 +44,36 @@ public class UserService extends SelectService{
 
 
 	public boolean add(String uid, String name, String password, Integer type) {
-		User user = User.dao.findById(uid);
-		if (user.getUid() == null || user.getPassword() == null || user.getName() == null || user.getType() == null) {
+		if (uid == null || name == null || password == null || type == null) {
 			return false;
 		}
-		if(User.dao.find(UNIQUE_USER_CHECK_SQL, user.getUid()).size() != 0) {
-			throw new OperationException("用户" + user.getUid() + "已存在！");
+		if(User.dao.find(UNIQUE_USER_CHECK_SQL, uid).size() != 0) {
+			throw new OperationException("用户" + uid + "已存在！");
 		}
+		User user = new User();
 		user.setUid(uid);
 		user.setName(name);
-		user.setPassword(MD5Util.MD5(user.getPassword()));
+		user.setPassword(MD5Util.MD5(password));
 		user.setEnabled(true);
+		user.setType(type);
 		return user.save();
 	}
 
 
-	public boolean update(User user) {
-		// 更新用户信息时，如果修改了密码，需要对密码进行加密
-		if (!(user.getPassword() == null)) {
-			user.setPassword(MD5Util.MD5(user.getPassword()));
+	public boolean update(String uid, String name, String password, Boolean enabled, Integer type) {
+		User user = User.dao.findById(uid);
+		user.setUid(uid);
+		if (!(name == null)) {
+			user.setName(name);
+		}
+		if (!(password == null)) {
+			user.setPassword(MD5Util.MD5(password));
+		}
+		if (!(enabled == null)) {
+			user.setEnabled(enabled);
+		}
+		if (!(type == null)) {
+			user.setType(type);
 		}
 		return user.update();
 	}
