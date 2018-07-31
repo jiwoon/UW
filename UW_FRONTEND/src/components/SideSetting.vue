@@ -26,6 +26,12 @@
         </div>
         <span>叉车</span>
       </div>
+      <div class="icon-container" :class="activeItem === 'io' ? 'icon-active' : ''" @click="initData('io')">
+        <div class="setting-icon">
+          <icon name="transfer" scale="1.6" style="color: #fff;"></icon>
+        </div>
+        <span>出入库</span>
+      </div>
       <!--<div class="icon-container">-->
       <!--<div class="setting-icon"></div>-->
       <!--</div>-->

@@ -4,7 +4,7 @@
 
 <script>
   export default {
-    name: "IoModule"
+    name: "IoNow"
   }
 </script>
 
