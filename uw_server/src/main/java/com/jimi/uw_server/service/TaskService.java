@@ -61,7 +61,7 @@ public class TaskService {
 	private static final String UNIQUE_MATERIAL_ID_CHECK_SQL = "SELECT * FROM task_log WHERE material_id = ? AND task_id = ?";
 
 
-	public String createIOTask(Task task, PackingListItem packingListItem, Integer type, String fileName, String fullFileName) throws Exception {
+	public String createIOTask(Integer type, String fileName, String fullFileName) throws Exception {
 		String resultString = "添加成功！";
 		
 		// 如果文件格式不对，则返回false，提示检查文件格式及内容格式
@@ -81,13 +81,13 @@ public class TaskService {
 			// 插入套料单那里使用了「SELECT MAX(id) FROM task....」,因此这里要加同步锁，不然会有线程安全问题
 			synchronized(LOCK) {
 				// 如果套料单格式正确，则创建一条新的任务记录
+				Task task = new Task();
 				task.setType(type);
 				task.setFileName(fileName);
 				task.setState(0);
 				task.setCreateTime(new Date());
 				task.save();
 
-				items = fileReader.unfill(PackingListItemBO.class, 2);
 				// 读取excel表格的套料单数据，将数据一条条写入到套料单表；如果任务类型为出/入库，还需要修改物料实体表中对应物料的库存数量
 				for (PackingListItemBO item : items) {
 					// 获取新任务id
@@ -108,8 +108,11 @@ public class TaskService {
 						return resultString;
 					}
 
+					PackingListItem packingListItem = new PackingListItem();
+
 					// 若物料类型表中存在对应的料号，且该物料未被禁用，不论物料实体表中是否有库存，都允许插入套料单；若库存不足，则在「物料出入库」那里进行处理
 					Integer materialTypeId = getNo.getId();
+					// 添加物料类型id
 					packingListItem.setMaterialTypeId(materialTypeId);
 					// 获取计划出库数量
 					Integer planQuantity = item.getQuantity();
@@ -119,8 +122,6 @@ public class TaskService {
 					packingListItem.setTaskId(newTaskId);
 					// 保存该记录到套料单表
 					packingListItem.save();
-					// new一个PackingListItem，否则前面的记录会被覆盖掉
-					packingListItem = new PackingListItem();
 				}
 		
 				if (file.exists()) {
@@ -226,7 +227,7 @@ public class TaskService {
 	}
 
 
-	public List<Window> getWindows(Window window) {
+	public List<Window> getWindows() {
 		List<Window> windowIds;
 		windowIds = Window.dao.find(GET_WINDOWS_SQL);
 		return windowIds;
@@ -234,15 +235,6 @@ public class TaskService {
 
 
 	public Object select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
-		if (filter != null) {
-			if (filter.contains("createTimeString")) {
-				filter = filter.replace("createTimeString", "create_time");
-			}
-			if (filter.contains("fileName")) {
-				filter = filter.replace("fileName", "file_name");
-			}
-		}
-
 		Page<Record> result = selectService.select("task", pageNo, pageSize, ascBy, descBy, filter);
 
 		List<TaskVO> taskVOs = new ArrayList<TaskVO>();

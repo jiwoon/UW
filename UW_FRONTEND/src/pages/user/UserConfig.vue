@@ -87,11 +87,11 @@
             type: 'select',
             list: [
               {
-                value: false,
+                value: 0,
                 string: '禁用状态'
               },
               {
-                value: true,
+                value: 1,
                 string: '启用状态'
               }
             ]

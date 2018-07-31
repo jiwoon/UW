@@ -38,11 +38,19 @@
       }
     },
     mounted: function () {
-
+      switch (this.$route.path) {
+        case '/io/now':
+          this.toggleState('now');
+          break;
+        case '/io/preview':
+          this.toggleState('preview');
+          break;
+      }
+    },
+    watch: {
     },
     computed: {
       ...mapGetters([
-        'tableRouterApi',
         'isLoading'
       ]),
     },
