@@ -24,8 +24,9 @@ public class ACKHandler {
 
 	/**
 	 * 处理非ACK指令
+	 * @throws Exception 
 	 */
-	public static boolean handleNOTACK(String message) {
+	public static boolean handleNOTACK(String message) throws Exception {
 		AGVBaseCmd baseCmd = Json.getJson().parse(message, AGVBaseCmd.class);
 		//判断是否已经ack过
 		for (Integer cmdid : AGVMainSocket.getReceiveNotAckCmdidSet()) {

@@ -1,6 +1,6 @@
 package com.jimi.uw_server.agv.entity.bo;
 
-import com.jimi.uw_server.model.Robot;
+import com.jimi.uw_server.model.bo.RobotBO;
 
 /**
  * 机器信息组
@@ -100,8 +100,8 @@ public class AGVRobot{
 		this.system_pause = system_pause;
 	}
 	
-	public static Robot toModel(AGVRobot agvRobot) {
-		Robot robot = new Robot();
+	public static RobotBO toBO(AGVRobot agvRobot) {
+		RobotBO robot = new RobotBO();
 		robot.setBattery(agvRobot.getBatteryPower());
 		robot.setEnabled(agvRobot.getEnable());
 		robot.setError(agvRobot.getErrorcode());
@@ -109,13 +109,13 @@ public class AGVRobot{
 		robot.setX(agvRobot.getPosX());
 		robot.setY(agvRobot.getPosY());
 		robot.setStatus(agvRobot.getStatus());
-		robot.setPause(agvRobot.getSystem_pause());
+		robot.setPause(!agvRobot.getSystem_pause());//取反
 		robot.setId(agvRobot.getRobotid());
 		return robot;
 	}
 	
 	
-	public static AGVRobot fromModel(Robot robot) {
+	public static AGVRobot fromBO(RobotBO robot) {
 		AGVRobot agvRobot = new AGVRobot();
 		agvRobot.setBatteryPower(robot.getBattery());
 		agvRobot.setEnable(robot.getEnabled());
@@ -124,7 +124,7 @@ public class AGVRobot{
 		agvRobot.setPosX(robot.getX());
 		agvRobot.setPosY(robot.getY());
 		agvRobot.setStatus(robot.getStatus());
-		agvRobot.setSystem_pause(robot.getPause());
+		agvRobot.setSystem_pause(!robot.getPause());//取反
 		agvRobot.setRobotid(robot.getId());
 		return agvRobot;
 	}

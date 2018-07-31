@@ -19,12 +19,7 @@ public class MaterialController extends Controller {
 
 	// 统计物料类型信息
 	public void count(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
-		Object countResult = materialService.count(pageNo, pageSize, ascBy, descBy, filter);
-		if (countResult == null) {
-			renderJson(ResultUtil.failed("不存在该物料类型！"));
-		} else {
-			renderJson(ResultUtil.succeed(countResult));
-		}
+		renderJson(ResultUtil.succeed(materialService.count(pageNo, pageSize, ascBy, descBy, filter)));
 	}
 
 	// 获取物料实体
@@ -33,21 +28,22 @@ public class MaterialController extends Controller {
 		if (entities != null) {
 			renderJson(ResultUtil.succeed(entities));
 		} else {
-			renderJson(ResultUtil.failed("该物料类型暂无库存！"));
+			throw new OperationException("该物料类型暂无库存！");
 		}
 	}
 
 	// 添加物料类型#
+//	@Log("添加了料号为{no}的物料类型")
 	public void add(String no, Integer area, Integer row, Integer col, Integer height) {
 		if(materialService.add(no, area, row, col, height)) {
 			renderJson(ResultUtil.succeed());
 		}else {
-			renderJson(ResultUtil.failed(412));
 			throw new OperationException("该物料已存在，请不要添加重复的物料类型号！");
 		}
 	}
 
     // 更新物料类型#
+//	@Log("更新了物料类型{materialType}")
 	public void update(@Para("") MaterialType materialType) {
 		if(materialService.update(materialType)) {
 			renderJson(ResultUtil.succeed());

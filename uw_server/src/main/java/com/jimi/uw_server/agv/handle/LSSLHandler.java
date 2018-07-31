@@ -34,7 +34,7 @@ public class LSSLHandler {
 	private static MaterialService materialService = Enhancer.enhance(MaterialService.class);
 	
 
-	public static void sendSL(AGVIOTaskItem item) {
+	public static void sendSL(AGVIOTaskItem item) throws Exception {
 		//查询对应物料类型
 		MaterialType materialType = MaterialType.dao.findById(item.getMaterialTypeId());
 		
@@ -48,7 +48,7 @@ public class LSSLHandler {
 	}
 
 
-	public static void sendLS(AGVIOTaskItem item) {
+	public static void sendLS(AGVIOTaskItem item) throws Exception {
 		//查询对应物料类型
 		MaterialType materialType = MaterialType.dao.findById(item.getMaterialTypeId());
 		
@@ -72,7 +72,7 @@ public class LSSLHandler {
 	/**
 	 * 处理Status指令
 	 */
-	public static void handleStatus(String message) {
+	public static void handleStatus(String message) throws Exception {
 		//转换成实体类
 		AGVStatusCmd statusCmd = Json.getJson().parse(message, AGVStatusCmd.class);
 		
@@ -105,7 +105,7 @@ public class LSSLHandler {
 	}
 
 
-	private static void handleStatus2(AGVStatusCmd statusCmd) {
+	private static void handleStatus2(AGVStatusCmd statusCmd) throws Exception {
 		//获取groupid
 		String groupid = statusCmd.getMissiongroupid();
 		

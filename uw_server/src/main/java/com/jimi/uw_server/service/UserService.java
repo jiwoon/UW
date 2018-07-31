@@ -24,16 +24,15 @@ public class UserService extends SelectService{
 
 	private static SelectService selectService = Enhancer.enhance(SelectService.class);
 
-	private static final String loginSql = "SELECT * "
-			+ "FROM user WHERE uid = ? AND password = ?";
+	private static final String LOGIN_SQL = "SELECT * FROM user WHERE uid = ? AND password = ?";
 
-	private static final String uniqueCheckSql = "SELECT * FROM user WHERE uid = ?";
+	private static final String UNIQUE_USER_CHECK_SQL = "SELECT * FROM user WHERE uid = ?";
 
-	private static final String getUserTypeSql = "SELECT id,name FROM user_type";
+	private static final String GET_USER_TYPE_SQL = "SELECT id,name FROM user_type";
 
 
 	public User login(String uid, String password) {
-		User user = User.dao.findFirst(loginSql, uid, MD5Util.MD5(password));
+		User user = User.dao.findFirst(LOGIN_SQL, uid, MD5Util.MD5(password));
 		if(user == null) {
 			throw new OperationException("用户名或密码不正确！");
 		} 
@@ -49,7 +48,7 @@ public class UserService extends SelectService{
 		if (user.getUid() == null || user.getPassword() == null || user.getName() == null || user.getType() == null) {
 			return false;
 		}
-		if(User.dao.find(uniqueCheckSql, user.getUid()).size() != 0) {
+		if(User.dao.find(UNIQUE_USER_CHECK_SQL, user.getUid()).size() != 0) {
 			throw new OperationException("用户" + user.getUid() + "已存在！");
 		}
 		user.setUid(uid);
@@ -76,13 +75,13 @@ public class UserService extends SelectService{
 			}
 		}
 		
-		List<UserVO> userVO = new ArrayList<UserVO>();
+		List<UserVO> userVOs = new ArrayList<UserVO>();
 		Page<Record> result = selectService.select("user", pageNo, pageSize, ascBy, descBy, filter);
 
 		int totallyRow =  result.getTotalRow();
 		for (Record res : result.getList()) {
 			UserVO u = new UserVO(res.get("uid"), res.get("password"), res.get("name"), res.get("type"), res.get("enabled"));
-			userVO.add(u);
+			userVOs.add(u);
 		}
 
 		PagePaginate pagePaginate = new PagePaginate();
@@ -90,7 +89,7 @@ public class UserService extends SelectService{
 		pagePaginate.setPageNumber(pageNo);
 		pagePaginate.setTotalRow(totallyRow);
 
-		pagePaginate.setList(userVO);
+		pagePaginate.setList(userVOs);
 
 		return pagePaginate;
 	}
@@ -98,7 +97,7 @@ public class UserService extends SelectService{
 
 	public List<UserType> getTypes() {
 		List<UserType> userTypes = new ArrayList<UserType>();
-		userTypes = UserType.dao.find(getUserTypeSql);
+		userTypes = UserType.dao.find(GET_USER_TYPE_SQL);
 		return userTypes;
 	}
 

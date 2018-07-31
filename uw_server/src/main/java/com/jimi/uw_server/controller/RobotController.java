@@ -1,5 +1,6 @@
 package com.jimi.uw_server.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.jfinal.aop.Enhancer;
 import com.jfinal.core.ActionKey;
 import com.jfinal.core.Controller;
@@ -15,25 +16,32 @@ public class RobotController extends Controller {
 
 	private static RobotService robotService = Enhancer.enhance(RobotService.class);
 
-	public void select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter){
-		renderJson(ResultUtil.succeed(robotService.select(pageNo, pageSize, ascBy, descBy, filter)));
+
+	// 查询叉车
+	public void select(){
+		String string = JSON.toJSONString(ResultUtil.succeed(robotService.select()));
+		renderText(string);
 	}
 
 
+	// 启用/禁用叉车
 	@ActionKey("/manage/robot/switch")
-	public void robotSwitch(String id, Integer enabled) {
+	public void robotSwitch(String id, Integer enabled) throws Exception {
 		robotService.robotSwitch(id, enabled);
 		renderJson(ResultUtil.succeed());
 	}
 	
 
-	public void pause(Boolean pause) {
+	// 启动/暂停叉车
+	public void pause(Boolean pause) throws Exception {
 		robotService.pause(pause);
 		renderJson(ResultUtil.succeed());
 	}
-	
-	
-	public void back(Integer id) {
+
+
+	// 令叉车回库
+//	@Log("将编号为{id}的叉车回库")
+	public void back(Integer id) throws Exception {
 		robotService.back(id);
 		renderJson(ResultUtil.succeed());
 	}

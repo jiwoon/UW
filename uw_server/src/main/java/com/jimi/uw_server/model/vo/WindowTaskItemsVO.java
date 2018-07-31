@@ -12,21 +12,29 @@ import com.jimi.uw_server.model.TaskLog;
  */
 public class WindowTaskItemsVO extends TaskLog {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -2631121149118866618L;
 	
 	private List<?> details;
 
-	public Integer getActualQuantity(Integer MaterialTypeId) {
-		
-		return MaterialTypeId;
+
+	public String getType(Integer type) {
+		String typeString = "入库";
+		if (type == 0) {
+			typeString = "入库";
+		} else if (type == 1) {
+			typeString = "出库";
+		} else if (type == 2) {
+			typeString = "盘点";
+		}  else if (type == 3) {
+			typeString = "位置优化";
+		}
+		return typeString;
 	}
 
-	public WindowTaskItemsVO(Integer packingListItemId, String fileName, String materialNo, Integer planQuantity, Integer actualQuantity, Date finishTime) {
+	public WindowTaskItemsVO(Integer packingListItemId, String fileName, Integer type, String materialNo, Integer planQuantity, Integer actualQuantity, Date finishTime) {
 		this.set("id", packingListItemId);
 		this.set("fileName", fileName);
+		this.set("type", getType(type));
 		this.set("materialNo", materialNo);
 		this.set("planQuantity", planQuantity);
 		this.set("actualQuantity", actualQuantity);

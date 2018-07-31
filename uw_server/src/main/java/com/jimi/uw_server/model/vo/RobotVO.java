@@ -1,17 +1,14 @@
 package com.jimi.uw_server.model.vo;
 
-import com.jimi.uw_server.model.Robot;
+import com.jimi.uw_server.model.bo.RobotBO;
+
+import cc.darhao.dautils.api.FieldUtil;
 
 /**
  * @author HardyYao
- * @createTime 2018年7月5日 上午11:24:32 
+ * @createTime 2018年7月5日 上午11:24:32
  */
-public class RobotVO extends Robot{
-	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -7771022031487042995L;
+public class RobotVO extends RobotBO {
 
 	private String enabledString;
 
@@ -20,15 +17,11 @@ public class RobotVO extends Robot{
 	private String warnString;
 
 	private String pauseString;
-	
+
 	private String loadExceptionString;
 
-	public void setEnabledString(String enabledString) {
-		this.enabledString = enabledString;
-	}
-
-	public String getEnabledString(Integer enabled) {
-		switch(enabled) {
+	public String fillEnabledString(Integer enabled) {
+		switch (enabled) {
 		case 0:
 			enabledString = "已禁用";
 			break;
@@ -42,8 +35,8 @@ public class RobotVO extends Robot{
 		return enabledString;
 	}
 
-	public String getErrorString(Integer error) {
-		switch(error) {
+	public String fillErrorString(Integer error) {
+		switch (error) {
 		case 0:
 			errorString = "直行出线";
 			break;
@@ -129,8 +122,8 @@ public class RobotVO extends Robot{
 		return errorString;
 	}
 
-	public String getWarnString(Integer warn) {
-		switch(warn) {
+	public String fillWarnString(Integer warn) {
+		switch (warn) {
 		case 0:
 			warnString = "前摄像头异常";
 			break;
@@ -153,20 +146,20 @@ public class RobotVO extends Robot{
 			warnString = "";
 			break;
 		}
-	
+
 		return warnString;
 	}
 
-	public String getPauseString(boolean pause) {
+	public String fillPauseString(Boolean pause) {
 		if (pause) {
 			pauseString = "已暂停";
- 		} else {
- 			pauseString = "已启动";
- 		}
+		} else {
+			pauseString = "已启动";
+		}
 		return pauseString;
 	}
-	
-	public String getLoadExceptionString(boolean loadException) {
+
+	public String fillLoadExceptionString(Boolean loadException) {
 		if (loadException) {
 			loadExceptionString = "取空异常";
 		} else {
@@ -175,24 +168,53 @@ public class RobotVO extends Robot{
 		return loadExceptionString;
 	}
 
-	public RobotVO(Integer id, Integer status, Integer battery, int x, int y, Integer enabled, Integer error, Integer warn, boolean pause, 
-			boolean loadException) {
-		this.setId(id);
-		this.setStatus(status);
-		this.setBattery(battery);
-		this.setX(x);
-		this.setY(y);
-		this.setEnabled(enabled);
-		this.set("enabledString", getEnabledString(enabled));
-		this.set("error", error);
-		this.set("errorString", getErrorString(error));
-		this.set("warn", warn);
-		this.set("warnString", getWarnString(warn));
-		this.setPause(pause);
-		this.set("pauseString", getPauseString(pause));
-		this.set("loadException", loadException);
-		this.set("loadExceptionString", getLoadExceptionString(loadException));
+	public String getEnabledString() {
+		return enabledString;
+	}
+
+	public void setEnabledString(String enabledString) {
+		this.enabledString = enabledString;
+	}
+
+	public String getErrorString() {
+		return errorString;
+	}
+
+	public void setErrorString(String errorString) {
+		this.errorString = errorString;
+	}
+
+	public String getWarnString() {
+		return warnString;
+	}
+
+	public void setWarnString(String warnString) {
+		this.warnString = warnString;
+	}
+
+	public String getPauseString() {
+		return pauseString;
+	}
+
+	public void setPauseString(String pauseString) {
+		this.pauseString = pauseString;
+	}
+
+	public String getLoadExceptionString() {
+		return loadExceptionString;
+	}
+
+	public void setLoadExceptionString(String loadExceptionString) {
+		this.loadExceptionString = loadExceptionString;
+	}
+
+	public RobotVO(RobotBO bo) {
+		FieldUtil.copy(bo, this);
+		this.enabledString = fillEnabledString(bo.getEnabled());
+		this.errorString = fillErrorString(bo.getError());
+		this.warnString = fillWarnString(bo.getWarn());
+		this.pauseString = fillPauseString(bo.getPause());
+		this.loadExceptionString = fillLoadExceptionString(bo.getLoadException());
 	}
 
 }
- 

@@ -7,10 +7,7 @@ import com.jimi.uw_server.model.User;
  * @createTime 2018年7月5日 上午11:19:22 
  */
 public class UserVO extends User {
-	
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = -5555776377159603804L;
 
 	private String enabledString;

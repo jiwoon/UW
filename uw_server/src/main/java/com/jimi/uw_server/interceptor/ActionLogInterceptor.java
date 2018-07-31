@@ -13,6 +13,7 @@ import com.jfinal.json.Json;
 import com.jimi.uw_server.annotation.Log;
 import com.jimi.uw_server.controller.UserController;
 import com.jimi.uw_server.model.ActionLog;
+import com.jimi.uw_server.model.User;
 import com.jimi.uw_server.util.TokenBox;
 
 
@@ -29,12 +30,14 @@ import com.jimi.uw_server.util.TokenBox;
  */
 public class ActionLogInterceptor implements Interceptor {
 
-	private static final String REGEX = "{[a-zA-Z0-9]+}";
+	private static final String REGEX = "\\{[a-zA-Z0-9]+\\}";
 	
 	@Override
 	public void intercept(Invocation invocation) {
 		Log log = invocation.getMethod().getAnnotation(Log.class);
 		Controller controller = invocation.getController();
+		ActionLog actionLog = new ActionLog();
+		
 		//如果存在@Log注解，则进行日志记录
 		if(log != null) {
 			//匹配参数并替换值
@@ -47,20 +50,34 @@ public class ActionLogInterceptor implements Interceptor {
 				matcher.appendReplacement(sb, value);
 			}
 			matcher.appendTail(sb);
-			//日志插入
+			//日志生成
 			HttpServletRequest request = controller.getRequest();
 			String url = request.getRequestURL().toString();
 			String ip = request.getRemoteAddr();
 			String parameters = Json.getJson().toJson(request.getParameterMap());
-			ActionLog actionLog = new ActionLog();
 			actionLog.setIp(ip);
 			actionLog.setParameters(parameters);
 			actionLog.setTime(new Date());
 			actionLog.setUrl(url);
 			actionLog.setAction(sb.toString());
-			actionLog.setUid(TokenBox.get(controller.getPara("#TOKEN#"), UserController.SESSION_KEY_LOGIN_USER));
-			actionLog.save();
+			User loginedUser = TokenBox.get(controller.getPara("#TOKEN#"), UserController.SESSION_KEY_LOGIN_USER);
+			if(loginedUser != null) {
+				actionLog.setUid(loginedUser.getUid());
+			}
+			//执行
+			try {
+				invocation.invoke();
+				actionLog.setResultCode(200);
+				//插入
+				actionLog.save();
+			} catch (Exception e) {
+				actionLog.setResultCode(ErrorLogInterceptor.getResultCode(e));
+				//插入
+				actionLog.save();
+				throw e;
+			}
+		}else {
+			invocation.invoke();
 		}
-		invocation.invoke();
 	}
 }

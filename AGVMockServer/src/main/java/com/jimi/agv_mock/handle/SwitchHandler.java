@@ -45,11 +45,11 @@ public class SwitchHandler {
 		Map<Integer, AGVRobot> robots = MockRobotInfoSocket.getRobots();
 		if(pause) {
 			for (AGVRobot robot : robots.values()) {
-				robot.setSystem_pause(true);
+				robot.setSystem_pause(false);
 			}
 		}else {
 			for (AGVRobot robot : robots.values()) {
-				robot.setSystem_pause(false);
+				robot.setSystem_pause(true);
 				//普通异常码归255
 				robot.setErrorcode(255);
 			}

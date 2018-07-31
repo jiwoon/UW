@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 手指触摸时的button -->
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <solid android:color="#f3f3f3" />
+            <stroke
+                android:width="1px"
+                android:color="#ccc" />
+            <corners android:radius="5dip" />
+        </shape>
+    </item>
+    <!-- 默认的（触摸之前）button -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#fff" />
+            <stroke
+                android:width="1px"
+                android:color="#ccc" />
+            <corners android:radius="5dip" />
+        </shape>
+    </item>
+</selector>

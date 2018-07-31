@@ -12,9 +12,6 @@ import com.jimi.uw_server.model.TaskLog;
  */
 public class IOTaskDetailVO extends TaskLog {
 	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -3361161172340670552L;
 
 	private List<?> details;
@@ -29,7 +26,11 @@ public class IOTaskDetailVO extends TaskLog {
 		this.set("materialNo", materialNo);
 		this.set("planQuantity", planQuantity);
 		this.set("actualQuantity", actualQuantity);
-		this.set("finishTime", finishTime);
+		if (finishTime == null) {
+			this.set("finishTime", "no");
+		} else {
+			this.set("finishTime", finishTime);
+		}
 	}
 
 	public List<?> getDetails() {

@@ -2,12 +2,12 @@ package com.jimi.uw_server.agv.handle;
 
 import com.jfinal.aop.Enhancer;
 import com.jfinal.json.Json;
+import com.jimi.uw_server.agv.dao.RobotInfoRedisDAO;
 import com.jimi.uw_server.agv.dao.TaskItemRedisDAO;
 import com.jimi.uw_server.agv.entity.bo.AGVIOTaskItem;
 import com.jimi.uw_server.agv.entity.cmd.AGVLoadExceptionCmd;
 import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.service.MaterialService;
-import com.jimi.uw_server.service.RobotService;
 
 /**
  * 异常处理器
@@ -18,8 +18,6 @@ import com.jimi.uw_server.service.RobotService;
 public class ExceptionHandler {
 
 	private static MaterialService materialService = Enhancer.enhance(MaterialService.class);
-	
-	private static RobotService robotService = Enhancer.enhance(RobotService.class);
 	
 	
 	public static void handleLoadException(String message) {
@@ -37,7 +35,7 @@ public class ExceptionHandler {
 				TaskItemRedisDAO.updateTaskItemState(item, 0);
 				
 				//把指定叉车的取空异常置为真
-				 robotService.setloadException(item.getRobotId());
+				 RobotInfoRedisDAO.setloadException(item.getRobotId());
 				
 				break;
 			}

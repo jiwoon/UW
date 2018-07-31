@@ -3,11 +3,13 @@ package com.jimi.uw_server.agv.thread;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.jfinal.kit.PropKit;
+import com.jimi.uw_server.agv.dao.RobotInfoRedisDAO;
 import com.jimi.uw_server.agv.dao.TaskItemRedisDAO;
 import com.jimi.uw_server.agv.entity.bo.AGVIOTaskItem;
-import com.jimi.uw_server.agv.entity.bo.AGVRobot;
 import com.jimi.uw_server.agv.handle.LSSLHandler;
-import com.jimi.uw_server.agv.socket.RobotInfoSocket;
+import com.jimi.uw_server.model.bo.RobotBO;
+import com.jimi.uw_server.util.ErrorLogWritter;
 
 /**
  * 任务池，负责分配任务
@@ -17,14 +19,14 @@ import com.jimi.uw_server.agv.socket.RobotInfoSocket;
  */
 public class TaskPool extends Thread{
 
-	private static final long TASK_POOL_CYCLE= 3000;
 	
 	@Override
 	public void run() {
+		int taskPoolCycle = PropKit.use("properties.ini").getInt("taskPoolCycle");
 		System.out.println("TaskPool is running NOW...");
 		while(true) {
 			try {
-				sleep(TASK_POOL_CYCLE);
+				sleep(taskPoolCycle);
 				//判断是否存在停止分配标志位
 				if(TaskItemRedisDAO.isPauseAssign() == 1){
 					continue;
@@ -43,6 +45,7 @@ public class TaskPool extends Thread{
 				if(e instanceof InterruptedException) {
 					break;
 				}else {
+					ErrorLogWritter.save(e.getClass().getSimpleName()+ ":" +e.getMessage());
 					e.printStackTrace();
 				}
 			}
@@ -50,7 +53,7 @@ public class TaskPool extends Thread{
 	}
 	
 	
-	public static void sendLSs(int cn, List<AGVIOTaskItem> taskItems) {
+	public static void sendLSs(int cn, List<AGVIOTaskItem> taskItems) throws Exception {
 		//获取第a个元素
 		int a = 0;
 		do{
@@ -67,10 +70,10 @@ public class TaskPool extends Thread{
 	
 	
 	private static int countFreeRobot() {
-		List<AGVRobot> freeRobots = new ArrayList<>();
-		for (AGVRobot robot : RobotInfoSocket.getRobots().values()) {
+		List<RobotBO> freeRobots = new ArrayList<>();
+		for (RobotBO robot : RobotInfoRedisDAO.check()) {
 			//筛选空闲或充电状态的处于启用中的叉车
-			if((robot.getStatus() == 0 || robot.getStatus() == 4) && robot.getEnable() == 2) {
+			if((robot.getStatus() == 0 || robot.getStatus() == 4) && robot.getEnabled() == 2) {
 				freeRobots.add(robot);
 			}
 		}
