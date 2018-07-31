@@ -1,11 +1,11 @@
 <template>
-    $END$
+
 </template>
 
 <script>
-    export default {
-        name: "IoPreview"
-    }
+  export default {
+    name: "IoPreview"
+  }
 </script>
 
 <style scoped>

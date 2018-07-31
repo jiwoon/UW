@@ -3,14 +3,13 @@
 <template>
   <div class="options-area">
     <div class="form-row">
-      <div v-for="item in queryOptions" class="row no-gutters pl-3 pr-3">
-        <component :opt="item" :is="item.type + '-comp'" :callback="thisFetch"></component>
-      </div>
-      <div class="form-group row align-items-end">
-        <div class="btn btn-secondary ml-3 mr-4" @click="initForm">清空条件</div>
-      </div>
-      <div class="form-group row align-items-end">
-        <div class="btn btn-primary ml-3 mr-4" @click="thisFetch">查询</div>
+      <div class="row no-gutters pl-3 pr-3">
+        <div class="form-group col pr-3">
+          <label for="window-list">选择窗口</label>
+          <select v-model="thisWindow" id="window-list" v-for="item in windowsList" @change="setWindow">
+            <option :value="item">{{item}}</option>
+          </select>
+        </div>
       </div>
     </div>
   </div>
@@ -18,59 +17,43 @@
 
 <script>
   import {mapGetters, mapActions} from 'vuex';
-  import {logsUrl} from "../../../../config/globalUrl";
+  import {taskWindowsUrl} from "../../../../config/globalUrl";
   import {axiosPost} from "../../../../utils/fetchData";
   import {getLogsQuery} from "../../../../config/logsApiConfig";
-  import {Settings} from 'luxon'
-  import {Datetime} from 'vue-datetime'
-  import 'vue-datetime/dist/vue-datetime.css'
   import _ from 'lodash'
 
   export default {
     name: "Options",
-    components: {
-      'text-comp': {
-        props: ['opt', 'callback'],
-        template: '<div class="form-group col pr-3"">\n' +
-        '           <label :for="opt.id">{{opt.name}}：</label>\n' +
-        '           <input type="text" class="form-control" :id="opt.id" v-model="opt.model" @keyup.enter="callback">\n' +
-        '          </div>'
-      },
-      'date-comp': {
-        props: ['opt'],
-        components: {
-          Datetime
-        },
-        template: '<div class="row">\n' +
-        '    <div class="form-group col pr-3">\n' +
-        '      <label>时间  从：</label>\n' +
-        '      <datetime v-model="opt.modelFrom" type="datetime" zone="Asia/Shanghai" value-zone="Asia/Shanghai" />\n' +
-        '    </div>\n' +
-        '    <div class="form-group col pr-3">\n' +
-        '      <label>至：</label>\n' +
-        '      <datetime v-model="opt.modelTo" type="datetime" zone="Asia/Shanghai" value-zone="Asia/Shanghai" />\n' +
-        '    </div>\n' +
-        '  </div>'
-
-      }
-    },
+    components: {},
     data() {
       return {
-        // pageSize: 2000,
-        queryOptions: [],
-        copyQueryOptions: [],
-        queryString: ""
+        windowsList: [],
+        thisWindow: ''
+      }
+    },
+    created() {
+      /*组件创建时加载仓口数据*/
+      axiosPost({url: taskWindowsUrl}).then(response => {
+        if (response.data.result === 200) {
+          this.windowsList = response.data.data
+        }
+      });
+
+      /*如果有缓存仓口id的话给select标签赋值*/
+      if (this.currentWindowId !== "") {
+        this.thisWindow = this.currentWindowId
+      } else {
+        this.setCurrentWindow(this.windowsList[0]);
+        this.thisWindow = this.currentWindowId
       }
     },
     mounted: function () {
-      Settings.defaultLocale = 'zh-CN';
-      if (this.$store.state.logsRouterApi !== 'default') {
-        this.initForm()
-      }
+
+      /**/
     },
     computed: {
       ...mapGetters([
-        'logsRouterApi'
+        'currentWindowId'
       ]),
     },
     watch: {
@@ -79,79 +62,15 @@
       }
     },
     methods: {
-      ...mapActions(['setLoading']),
-      initForm: function () {
-        let queryOptions = getLogsQuery(this.logsRouterApi);
-        this.queryOptions = JSON.parse(JSON.stringify(queryOptions));
-      },
-      createQueryString: function () {
-        this.queryString = "";
-        this.copyQueryOptions = this.queryOptions.filter((item) => {
-          if (!(item.model === "" || item.modelFrom === "" || item.modelTo === "")) {
-            return true;
-          }
-        });
+      ...mapActions(['setLoading', 'setCurrentWindow']),
 
-        this.copyQueryOptions.map((item, index) => {
-          if (item.type === 'text') {
-            if (_.trim(item.model) !== "") {
-              if (index === 0) {
-                this.queryString += (item.id + "=" + _.trim(item.model))
-              } else {
-                this.queryString += ("&" + item.id + "=" + _.trim(item.model))
-              }
 
-            } else {
-              this.setLoading(false)
-            }
-          } else if (item.type === 'date') {
-            if (item.modelFrom !== '' && item.modelTo !== '') {
-              let tempFrom = item.modelFrom.replace('T', ' ').replace('Z', '');
-              let tempTo = item.modelTo.replace('T', ' ').replace('Z', '');
-              if (this.compareDate(tempFrom, tempTo) >= 0) {
-                if (index === 0) {
-                  this.queryString += (item.id + '>=' + tempFrom + '&' + item.id + '<=' + tempTo)
-                } else {
-                  this.queryString += ('&' + item.id + '>=' + tempFrom + '&' + item.id + '<=' + tempTo)
-                }
-              } else {
-                alert('日期格式错误');
-                this.setLoading(false)
-              }
-            }
-          }
-
-        })
-      },
-      fetchData: function () {
-        let options = {
-          url: logsUrl,
-          data: {
-            table: this.$store.state.logsRouterApi,
-            pageNo: 1,
-            pageSize: 20
-          }
-        };
-        if (this.queryString !== "") {
-          options.data.filter = this.queryString
-        }
+      /*设置仓口*/
+      setWindow: function () {
+        this.setCurrentWindow(this.thisWindow);
+        let path = this.$route.path;
         this.$router.replace('_empty');
-        this.$router.push({
-          path: '/logs/' + this.$store.state.logsRouterApi,
-          query: options
-        }, () => {
-          this.setLoading(true);
-        })
-
-      },
-      thisFetch: function () {
-        this.createQueryString();
-        this.fetchData()
-      },
-      compareDate: function (dateFrom, dateTo) {
-        let compFrom = new Date(dateFrom);
-        let compTo = new Date(dateTo);
-        return (compTo - compFrom);
+        this.$router.push(path)
       }
     }
   }

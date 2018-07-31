@@ -6,20 +6,16 @@
       <div class="sidebar-items">
         <!--透传数据-->
         <div class="sidebar-title">
-          <a class="subtitle" draggable="false">日志详情</a>
+          <a class="subtitle" draggable="false">出入库操作</a>
         </div>
         <div>
-          <div @click="toggleState('task_log')">
-            <div class="sidebar-link" @click="linkTo('task_log')"
-               :class="activeItem === 'task_log' ? 'active' : ''">任务日志</div>
+          <div @click="toggleState('preview')">
+            <div class="sidebar-link" @click="linkTo('preview')"
+               :class="activeItem === 'preview' ? 'active' : ''">仓口任务预览</div>
           </div>
-          <div @click="toggleState('action_log')">
-            <div class="sidebar-link" @click="linkTo('action_log')"
-               :class="activeItem === 'action_log' ? 'active' : ''">接口调用日志</div>
-          </div>
-          <div @click="toggleState('position_log')">
-            <div class="sidebar-link"  @click="linkTo('position_log')"
-               :class="activeItem === 'position_log' ? 'active' : ''">物料位置转移日志</div>
+          <div @click="toggleState('now')">
+            <div class="sidebar-link" @click="linkTo('now')"
+               :class="activeItem === 'now' ? 'active' : ''">即时仓口任务操作</div>
           </div>
         </div>
       </div>
@@ -60,10 +56,7 @@
         //this.setLoading(true);
         this.$router.replace('/_empty');
         this.$router.push({
-          path: '/logs/' + obj,
-          query: {
-            page: obj
-          }
+          path: '/io/' + obj,
         })
       }
     }
