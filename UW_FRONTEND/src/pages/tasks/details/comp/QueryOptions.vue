@@ -129,13 +129,13 @@
             ]
           },
           {
-            id: 'fileName',
+            id: 'filename',
             name: '文件名',
             model: '',
             type: 'text'
           },
           {
-            id: 'createTimeString',
+            id: 'create_time',
             name: '创建时间',
             modelFrom: '',
             modelTo: '',
