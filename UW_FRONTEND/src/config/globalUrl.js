@@ -33,7 +33,13 @@ export const taskCreateUrl = url + '/task/create';
 export const taskCheckUrl = url + '/task/check';
 export const taskWindowsUrl = url + '/task/getWindows';
 
+export const taskWindowTaskItems = url + '/task/getWindowTaskItems';
+export const taskWindowParkingItems = url + '/task/getWindowParkingItem';
+
+
+
 //robot
 export const robotSelectUrl = url + '/manage/robot/select';
 export const robotSwitchUrl = url + '/manage/robot/switch';
 export const robotPauseUrl = url + '/manage/robot/pause';
+export const robotBackUrl = url + '/manage/robot/back';

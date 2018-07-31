@@ -25,8 +25,6 @@
 
 <style scoped>
   @media (min-width: 640px) {
-
-
     .router-style {
       min-width: 340px;
     }

@@ -1,4 +1,3 @@
-import {userTypeList} from "./getters";
 
 export const setLoginToken = (state, token) => {
   state.token = token;
@@ -38,4 +37,8 @@ export const setTaskData = (state, taskDetails) => {
 
 export const setUserTypeList = (state, userTypeList) => {
   state.userTypeList = userTypeList
+};
+
+export const setCurrentWindow = (state, currentWindowId) => {
+  state.currentWindowId = currentWindowId
 };

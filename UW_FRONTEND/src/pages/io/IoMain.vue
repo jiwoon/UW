@@ -1,6 +1,5 @@
 <template>
   <div>
-    <!--<Header/>-->
     <loading v-if="$store.state.isLoading"/>
     <div class="" style="margin-left: 60px;">
       <div class="row main-style" :style="sideBarStyle">
@@ -14,22 +13,17 @@
         </div>
       </div>
     </div>
-
   </div>
 </template>
 
 <script>
+  import Loading from '../../components/Loading'
   import SideBar from './details/comp/SideBar'
-  import Loading from '@/components/Loading'
-  import store from "../../store";
-  import {setLoading} from "../../store/mutations";
+  import store from '../../store'
 
   export default {
-    name: "LogsMain",
-    components: {
-      SideBar,
-      Loading
-    },
+    name: "IoMain",
+    components: {Loading, SideBar},
     data() {
       return {
         sideBarStyle: {
@@ -45,11 +39,11 @@
       store.commit('setLoading', false)
 
     },
-    methods: {}
   }
 </script>
 
 <style scoped>
+
   @media (min-width: 640px) {
     .side-bar {
       width: 250px;

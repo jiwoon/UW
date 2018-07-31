@@ -93,7 +93,7 @@
                 let tempUrl = this.$route.path;
                 this.$router.replace('_empty');
                 this.$router.replace(tempUrl);
-              } else if (res.data.result === 501) {
+              } else if (res.data.result === 412) {
                 this.isPending = false;
                 alert(res.data.data);
               }

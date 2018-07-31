@@ -38,3 +38,7 @@ export const taskDetails = (state) => {
 export const userTypeList = (state) => {
   return state.userTypeList
 };
+
+export const currentWindowId = (state) => {
+  return state.currentWindowId
+};
