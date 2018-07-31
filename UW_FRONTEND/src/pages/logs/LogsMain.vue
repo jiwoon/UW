@@ -43,11 +43,6 @@
         this.sideBarStyle.height = document.body.scrollHeight + 'px';
       });
       store.commit('setLoading', false)
-      // window.addEventListener('scroll',
-      //   debounce(() => {
-      //     this.sideBarStyle.height = document.body.scrollHeight + 'px';
-      //   }, 400)
-      // )
 
     },
     methods: {}
