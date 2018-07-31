@@ -17,7 +17,7 @@ import javax.websocket.server.ServerEndpoint;
 
 import com.alibaba.fastjson.JSON;
 import com.jimi.agv_mock.constant.Constant;
-import com.jimi.agv_mock.dao.WindowDAO;
+import com.jimi.agv_mock.dao.TaskDAO;
 import com.jimi.agv_mock.entity.cmd.base.AGVBaseCmd;
 import com.jimi.agv_mock.handle.ACKHandler;
 import com.jimi.agv_mock.handle.LSSLHandler;
@@ -60,7 +60,7 @@ public class MockMainSocket implements UncaughtExceptionHandler{
 		sendCmdidAckMap = new HashMap<>();
     	receiveNotAckCmdidSet = new HashSet<>();
     	windows = new HashMap<>();
-    	WindowDAO.init();
+    	TaskDAO.init();
     	taskPool = new TaskPool();
     	taskPool.start();
 	}

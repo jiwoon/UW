@@ -3,7 +3,7 @@ package com.jimi.agv_mock.disturber;
 import java.util.Random;
 
 import com.jimi.agv_mock.constant.Constant;
-import com.jimi.agv_mock.dao.WindowDAO;
+import com.jimi.agv_mock.dao.TaskDAO;
 import com.jimi.agv_mock.handle.ExceptionHandler;
 import com.jimi.agv_mock.socket.MockMainSocket;
 import com.jimi.agv_mock.thread.TaskExcutor;
@@ -27,14 +27,26 @@ public class TaskDisturber {
 	public void disturbStart() throws InterruptedException {
 		long delay = (long) (Constant.START_CMD_DELAY * (1 + ((new Random().nextInt() % (Constant.TASK_FLOATING_PERCENTAGE + 1)) / 100.0)));
 		delay(delay);
+		
+		//判断指令类型：SL一开始执行时便离开站点，所以释放
+		if(excutor.getMoveCmd().getCmdcode().equals("SL")){
+			//获取站点坐标
+			int windowId = getWindowId();
+			//释放站点
+			releaseStation(windowId);
+		}
 	}
 
 
 	public void disturbFirstAction() throws InterruptedException {
 		long delay = (long) (Constant.FIRST_ACTION_DELAY * (1 + ((new Random().nextInt() % (Constant.TASK_FLOATING_PERCENTAGE + 1)) / 100.0)));
 		delay(delay);
-		//一定概率出负载异常
-		randomLoadException();
+		
+		//判断指令类型：LS执行完第一阶段才有可能抛取空异常
+		if(excutor.getMoveCmd().getCmdcode().equals("LS")) {
+			//一定概率出负载异常
+			randomLoadException();
+		}
 	}
 	
 	
@@ -42,18 +54,21 @@ public class TaskDisturber {
 		long delay = (long) (Constant.SECOND_ACTION_DELAY * (1 + ((new Random().nextInt() % (Constant.TASK_FLOATING_PERCENTAGE + 1)) / 100.0)));
 		delay(delay);
 		
-		//获取站点坐标
-		String missionGroupId = excutor.getMoveCmd().getMissiongroups().get(0).getMissiongroupid();
-		int taskId = Integer.parseInt(missionGroupId.split(":")[1]);
-		int windowId = WindowDAO.getWindowId(taskId);
-		//判断指令类型
+		//判断指令类型：LS第二阶段才需要抢占站点
 		if(excutor.getMoveCmd().getCmdcode().equals("LS")) {
+			//获取站点坐标
+			int windowId = getWindowId();
 			//抢占站点
 			occupyStation(windowId);
-		}else if(excutor.getMoveCmd().getCmdcode().equals("SL")){
-			//释放站点
-			releaseStation(windowId);
 		}
+	}
+
+
+	private int getWindowId() {
+		String missionGroupId = excutor.getMoveCmd().getMissiongroups().get(0).getMissiongroupid();
+		int taskId = Integer.parseInt(missionGroupId.split(":")[1]);
+		int windowId = TaskDAO.getWindowId(taskId);
+		return windowId;
 	}
 
 
@@ -89,7 +104,7 @@ public class TaskDisturber {
 			randomException();
 			
 			//暂停判断
-			while(excutor.getRobot().getSystem_pause()) {
+			while(!excutor.getRobot().getSystem_pause()) {
 				Thread.sleep(1000);
 			}
 		}

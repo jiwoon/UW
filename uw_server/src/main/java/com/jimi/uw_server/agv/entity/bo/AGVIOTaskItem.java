@@ -21,7 +21,7 @@ public class AGVIOTaskItem {
 	private Integer robotId;
 
 	/**
-	 * 0：未分配 1：已分配 2：已拣料到站 3：已回库完成
+	 * 0：未分配 1：已分配拣料 2：已拣料到站 3：已分配回库 4：已回库完成
 	 */
 	private Integer state;
 
