@@ -19,7 +19,7 @@ public class TokenBox {
 	//超时检查线程遍历周期，单位：毫秒
 	private static final long CHECK_CYCLE = 60 * 1000;
 	//同步锁
-	private static final Object lock = new Object();
+	private static final Object LCOK = new Object();
 	//会话合集
 	private static Map<String, Map<String, Object>> sessions;
 	//超时检查线程
@@ -36,7 +36,7 @@ public class TokenBox {
 				try {
 					while(true) {
 						Thread.sleep(CHECK_CYCLE);
-						synchronized (lock) {
+						synchronized (LCOK) {
 							long now = new Date().getTime();
 							//创建遍历副本
 							Map<String, Map<String, Object>> sessionsCopy = new HashMap<>();
@@ -105,7 +105,7 @@ public class TokenBox {
 	 * 移除一个session
 	 */
 	public static void remove(String tokenId) {
-		synchronized (lock) {
+		synchronized (LCOK) {
 			sessions.remove(tokenId);
 		}
 	}
