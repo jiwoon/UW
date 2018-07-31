@@ -35,8 +35,13 @@ public class RobotInfoReporter extends Thread{
 		try {
 			while(true) {
 				sleep(Constant.ROBOT_INFO_CYCLE);
-				updateRobotInfo();
-				sendRobotsInfo();
+				for (AGVRobot agvRobot : MockRobotInfoSocket.getRobots().values()) {
+					if(agvRobot.getSystem_pause()) {
+						updateRobotInfo();
+						sendRobotsInfo();
+					}
+					break;
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

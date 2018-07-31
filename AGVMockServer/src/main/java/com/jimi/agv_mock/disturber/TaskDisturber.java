@@ -3,7 +3,9 @@ package com.jimi.agv_mock.disturber;
 import java.util.Random;
 
 import com.jimi.agv_mock.constant.Constant;
+import com.jimi.agv_mock.dao.WindowDAO;
 import com.jimi.agv_mock.handle.ExceptionHandler;
+import com.jimi.agv_mock.socket.MockMainSocket;
 import com.jimi.agv_mock.thread.TaskExcutor;
 
 /**
@@ -39,6 +41,42 @@ public class TaskDisturber {
 	public void disturbSecondAction() throws InterruptedException {
 		long delay = (long) (Constant.SECOND_ACTION_DELAY * (1 + ((new Random().nextInt() % (Constant.TASK_FLOATING_PERCENTAGE + 1)) / 100.0)));
 		delay(delay);
+		
+		//获取站点坐标
+		String missionGroupId = excutor.getMoveCmd().getMissiongroups().get(0).getMissiongroupid();
+		int taskId = Integer.parseInt(missionGroupId.split(":")[1]);
+		int windowId = WindowDAO.getWindowId(taskId);
+		//判断指令类型
+		if(excutor.getMoveCmd().getCmdcode().equals("LS")) {
+			//抢占站点
+			occupyStation(windowId);
+		}else if(excutor.getMoveCmd().getCmdcode().equals("SL")){
+			//释放站点
+			releaseStation(windowId);
+		}
+	}
+
+
+	private void releaseStation(int windowId) {
+		synchronized (MockMainSocket.getWindows()) {
+			MockMainSocket.getWindows().put(windowId, false);
+		}
+	}
+
+
+	private void occupyStation(int windowId) throws InterruptedException {
+		while(true) {
+			synchronized (MockMainSocket.getWindows()) {
+				//获取停泊情况
+				Boolean parking = MockMainSocket.getWindows().get(windowId);
+				if (parking == null || parking == false) {
+					//停泊并更新
+					MockMainSocket.getWindows().put(windowId, true);
+					break;
+				}
+			}
+			Thread.sleep(1000);
+		}
 	}
 	
 	

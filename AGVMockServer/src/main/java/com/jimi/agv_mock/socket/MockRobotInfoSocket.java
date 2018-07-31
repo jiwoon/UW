@@ -40,7 +40,7 @@ public class MockRobotInfoSocket {
 			AGVRobot robot = new AGVRobot();
 			robot.setRobotid(id);
 			robot.setEnable(2);
-			robot.setSystem_pause(true);
+			robot.setSystem_pause(false);
 			robot.setErrorcode(255);
 			robot.setWarncode(255);
 			robot.setStatus(0);
@@ -80,7 +80,7 @@ public class MockRobotInfoSocket {
 			AGVRobot robot = new AGVRobot();
 			robot.setRobotid(id);
 			robot.setEnable(2);
-			robot.setSystem_pause(true);
+			robot.setSystem_pause(false);
 			robot.setErrorcode(255);
 			robot.setWarncode(255);
 			robot.setStatus(0);
