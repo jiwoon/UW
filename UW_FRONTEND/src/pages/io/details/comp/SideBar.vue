@@ -9,10 +9,10 @@
           <a class="subtitle" draggable="false">出入库操作</a>
         </div>
         <div>
-          <div @click="toggleState('preview')">
-            <div class="sidebar-link" @click="linkTo('preview')"
-               :class="activeItem === 'preview' ? 'active' : ''">仓口任务预览</div>
-          </div>
+          <!--<div @click="toggleState('preview')">-->
+            <!--<div class="sidebar-link" @click="linkTo('preview')"-->
+               <!--:class="activeItem === 'preview' ? 'active' : ''">仓口任务预览</div>-->
+          <!--</div>-->
           <div @click="toggleState('now')">
             <div class="sidebar-link" @click="linkTo('now')"
                :class="activeItem === 'now' ? 'active' : ''">即时仓口任务操作</div>

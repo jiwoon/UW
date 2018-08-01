@@ -129,7 +129,7 @@
             ]
           },
           {
-            id: 'filename',
+            id: 'file_name',
             name: '文件名',
             model: '',
             type: 'text'

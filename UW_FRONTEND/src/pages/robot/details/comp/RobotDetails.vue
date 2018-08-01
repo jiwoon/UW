@@ -131,6 +131,7 @@
           };
           this.fetchData(options)
         }
+
       }
     },
     mounted() {
@@ -199,9 +200,9 @@
             if (response.data.result === 200) {
               this.isPending = false;
               alert((thisEnabled === 1 ? "停用" : "启用") + "成功");
-              let path = this.$route.path;
-              this.$router.replace('_empty');
-              this.$router.push(path);
+              // let path = this.$route.path;
+              // this.$router.replace('_empty');
+              // this.$router.push(path);
             }
 
           }).catch(err => {
@@ -237,9 +238,9 @@
             if (response.data.result === 200) {
               this.isPending = false;
               alert((thisPause === 0 ? "暂停" : "启用") + "成功");
-              let path = this.$route.path;
-              this.$router.replace('_empty');
-              this.$router.push(path);
+              //let path = this.$route.path;
+              // this.$router.replace('_empty');
+              // this.$router.push(path);
             }
 
           }).catch(err => {

@@ -36,6 +36,7 @@ export const taskWindowsUrl = url + '/task/getWindows';
 export const taskWindowTaskItems = url + '/task/getWindowTaskItems';
 export const taskWindowParkingItems = url + '/task/getWindowParkingItem';
 
+export const taskIOUrl = url + '/task/io';
 
 
 //robot

@@ -75,7 +75,13 @@
     },
     mounted() {
       if (this.$route.path !== '/') {
-        this.activeItem = this.$route.path.slice(1)
+        let tempPath = this.$route.path.slice(1);
+        let index = tempPath.indexOf('/');
+        if (index > -1) {
+          this.activeItem = tempPath.slice(0, tempPath.indexOf('/'))
+        } else {
+          this.activeItem = tempPath
+        }
       }
     },
     computed: {

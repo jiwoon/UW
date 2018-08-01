@@ -109,6 +109,9 @@ router.beforeEach((to, from, next) => {
   for (let index in window.g.ROBOT_INTERVAL){
     clearInterval(window.g.ROBOT_INTERVAL[index])
   }
+  for (let index in window.g.PARKING_ITEMS_INTERVAL){
+    clearInterval(window.g.PARKING_ITEMS_INTERVAL[index])
+  }
   if (to.matched.some(r => r.meta.requireAuth)) {
     if (store.state.token) {
       next();
