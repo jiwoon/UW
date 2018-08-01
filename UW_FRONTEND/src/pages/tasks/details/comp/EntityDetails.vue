@@ -1,6 +1,6 @@
 <template>
   <div class="details-panel">
-    <div class="form-row justify-content-end">
+    <div class="form-row justify-content-center">
       <div class="details-panel-container">
         <div class="form-row">
           <div class="form-group mb-0">
@@ -22,9 +22,14 @@
   import {axiosPost} from "../../../../utils/fetchData";
   import {taskCheckUrl} from "../../../../config/globalUrl";
   import {errHandler} from "../../../../utils/errorHandler";
+  import {getTaskDetailsConfig} from "../../../../config/taskDetailsConfig";
+  import SubsOperation from './subscomp/SubsOperationOption'
 
   export default {
     name: "EntityDetails",
+    components: {
+      SubsOperation
+    },
     data() {
       return {
         fixHeaderAndSetBodyMaxHeight: 550,
@@ -35,12 +40,7 @@
         HeaderSettings: false,
         pageSizeOptions: [20, 40, 80],
         data: [],
-        columns: [
-          {title: '料号', field: 'materialNo', colStyle: {width: '100px'}},
-          {title: '套料单条目', field: 'requestQuantity', colStyle: {width: '120px'}},
-          {title: '实际变动数目', field: 'actualQuantity', colStyle: {width: '120px'}},
-          {title: '操作时间', field: 'finishTime', colStyle: {width: '120px'}}
-        ],
+        columns: [],
         total: 0,
         query: {"limit": 20, "offset": 0},
         isPending: false
@@ -48,6 +48,15 @@
     },
     mounted() {
       this.fetchData(store.state.taskDetails)
+    },
+    watch: {
+      query: {
+        handler(query) {
+          this.setLoading(true);
+          this.dataFilter(query);
+        },
+        deep: true
+      }
     },
     methods: {
       ...mapActions(['setTaskActiveState','setTaskData', 'setLoading']),
@@ -61,18 +70,24 @@
 
 
           //patch
-          if (1) {
-            alert('暂不支持任务详情查看');
-            this.isPending = false;
-            this.setLoading(false);
-            this.closePanel();
-            return;
-          }
+          // if (1) {
+          //   alert('暂不支持任务详情查看');
+          //   this.isPending = false;
+          //   this.setLoading(false);
+          //   this.closePanel();
+          //   return;
+          // }
 
+
+          if (val.type === 0 || val.type === 1) {
+            this.columns = getTaskDetailsConfig('io')
+          }
 
           let options = {
             url: taskCheckUrl,
             data: {
+              pageNo: 1,
+              pageSize: 20,
               id: val.id,
               type: val.type
             }
@@ -80,8 +95,8 @@
           axiosPost(options).then(response => {
             this.isPending = false;
             if (response.data.result === 200) {
-              this.data = response.data.data;
-              this.total = response.data.data.length;
+              this.data = response.data.data.list;
+              this.total = response.data.data.totalRow;
             } else {
               errHandler(response.data.result)
             }
@@ -100,6 +115,19 @@
       closePanel: function () {
         this.setTaskActiveState(false);
         this.setTaskData('')
+      },
+      dataFilter: function () {
+        let val = store.state.taskDetails;
+        let options = {
+          url: taskCheckUrl,
+          data: {
+            id: val.id,
+            type: val.type
+          }
+        };
+        options.data.pageNo = this.query.offset / this.query.limit + 1;
+        options.data.pageSize = this.query.limit;
+        this.fetchData(options);
       }
 
     }
@@ -123,8 +151,8 @@
 
   .details-panel-container {
     background: #ffffff;
-    min-height: 220px;
-    max-width: 800px;
+    min-height: 300px;
+    max-width: 90%;
     z-index: 102;
     border-radius: 10px;
     box-shadow: 3px 3px 20px 1px #bbb;
