@@ -9,6 +9,7 @@ import com.jimi.uw_server.agv.dao.TaskItemRedisDAO;
 import com.jimi.uw_server.agv.entity.bo.AGVIOTaskItem;
 import com.jimi.uw_server.agv.handle.LSSLHandler;
 import com.jimi.uw_server.agv.handle.SwitchHandler;
+import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.model.bo.RobotBO;
 import com.jimi.uw_server.model.vo.RobotVO;
 import com.jimi.uw_server.service.base.SelectService;
@@ -67,7 +68,9 @@ public class RobotService extends SelectService {
 	public void back(Integer id) throws Exception {
 		for (AGVIOTaskItem item : TaskItemRedisDAO.getTaskItems()) {
 			if(id.equals(item.getId())) {
-				LSSLHandler.sendSL(item);
+				//查询对应物料类型
+				MaterialType materialType = MaterialType.dao.findById(item.getMaterialTypeId());
+				LSSLHandler.sendSL(item, materialType);
 				taskService.finishItem(item.getId());
 			}
 		}

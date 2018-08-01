@@ -40,12 +40,8 @@ public class TaskExcutor extends Thread{
 			
 			AGVStatusCmd statusCmd = new AGVStatusCmd();
 			
-			//判断SL or LS
-			if(moveCmd.getCmdcode().equals("SL")){
-				statusCmd.setRobotid(moveCmd.getMissiongroups().get(0).getRobotid());
-			}else {
-				statusCmd.setRobotid(robot.getRobotid());
-			}
+			//设置robotid
+			statusCmd.setRobotid(robot.getRobotid());
 			
 			//设置参数
 			statusCmd.setCmdcode("status");
@@ -54,29 +50,47 @@ public class TaskExcutor extends Thread{
 			//创建干扰者
 			TaskDisturber disturber = new TaskDisturber(this);
 			
-			//延迟并发送已开始任务状态指令
-			disturber.disturbStart();
-			statusCmd.setCmdid(MockMainSocket.getCmdId());
-			statusCmd.setStatus(0);
-			MockMainSocket.sendMessage((JSON.toJSONString(statusCmd)));
+			//LS
+			exe(statusCmd, disturber);
 			
-			//延迟并发送已完成第一动作状态指令
-			disturber.disturbFirstAction();
-			statusCmd.setCmdid(MockMainSocket.getCmdId());
-			statusCmd.setStatus(1);
-			MockMainSocket.sendMessage(JSON.toJSONString(statusCmd));
+			//请求SL命令，等待命令到达
+			while(!MockMainSocket.getTaskPool().requestSLTask(this)) {
+				sleep(1000);
+			}
 			
-			//延迟并发送已完成第二动作状态指令
-			disturber.disturbSecondAction();
-			statusCmd.setCmdid(MockMainSocket.getCmdId());
-			statusCmd.setStatus(2);
-			MockMainSocket.sendMessage(JSON.toJSONString(statusCmd));
+			//转换命令类型
+			moveCmd.setCmdcode("SL");
+			
+			//SL
+			exe(statusCmd, disturber);
 			
 			//设置叉车空闲
 			robot.setStatus(0);
+			
 		} catch (InterruptedException e) {
-			System.out.println(" A task has been interrupted");
+			System.out.println("A task has been interrupted");
 		}
+	}
+
+
+	private void exe(AGVStatusCmd statusCmd, TaskDisturber disturber) throws InterruptedException {
+		//延迟并发送已开始任务状态指令
+		disturber.disturbStart();
+		statusCmd.setCmdid(MockMainSocket.getCmdId());
+		statusCmd.setStatus(0);
+		MockMainSocket.sendMessage((JSON.toJSONString(statusCmd)));
+		
+		//延迟并发送已完成第一动作状态指令
+		disturber.disturbFirstAction();
+		statusCmd.setCmdid(MockMainSocket.getCmdId());
+		statusCmd.setStatus(1);
+		MockMainSocket.sendMessage(JSON.toJSONString(statusCmd));
+		
+		//延迟并发送已完成第二动作状态指令
+		disturber.disturbSecondAction();
+		statusCmd.setCmdid(MockMainSocket.getCmdId());
+		statusCmd.setStatus(2);
+		MockMainSocket.sendMessage(JSON.toJSONString(statusCmd));
 	}
 
 
