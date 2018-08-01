@@ -25,15 +25,10 @@ import com.jimi.uw_server.service.TaskService;
  */
 public class LSSLHandler {
 
-	private static final String SPECIFIED_POSITION_MATERIAL_TYEP_SQL = "SELECT * FROM material_type WHERE row = ? AND col = ? AND height = ?";
-	
-	//APP应用模式：当使用APP测试时，该值为true，该逻辑仅用于开发周期过渡，完全使用APP后去除该逻辑
-	private static final boolean APP_APPLY_FLAG = true;
-	
 	private static TaskService taskService = Enhancer.enhance(TaskService.class);
 	private static MaterialService materialService = Enhancer.enhance(MaterialService.class);
-	
 
+	
 	public static void sendSL(AGVIOTaskItem item) throws Exception {
 		//查询对应物料类型
 		MaterialType materialType = MaterialType.dao.findById(item.getMaterialTypeId());
@@ -58,12 +53,10 @@ public class LSSLHandler {
 			AGVMainSocket.sendMessage(Json.getJson().toJson(cmd));
 			
 			//在数据库标记所有处于该坐标的物料为不在架***
-			setNotInShelf(materialType);
+			setMaterialTypeIsOnShelf(materialType, false);
 			
 			//更新任务条目状态为已分配***
 			TaskItemRedisDAO.updateTaskItemState(item, 1);
-		}else {
-//			System.out.println(materialType.getNo() + "暂时不在架");
 		}
 	}
 
@@ -84,8 +77,6 @@ public class LSSLHandler {
 		if(statusCmd.getStatus() == 2) {
 			handleStatus2(statusCmd);
 		}
-		
-		
 	}
 	
 	
@@ -113,44 +104,40 @@ public class LSSLHandler {
 			if(groupid.equals(item.getGroupId())) {
 				
 				//判断是LS指令还是SL指令第二动作完成，状态是1说明是LS，状态2是SL
-				if(item.getState() == 1) {//LS执行完成时：（这部分逻辑下一个版本放到APP中）
-					if(!APP_APPLY_FLAG) {
-						sendSL(item);
-					}
+				if(item.getState() == 1) {//LS执行完成时
 					//更改taskitems里对应item状态为2（已拣料到站）***
 					TaskItemRedisDAO.updateTaskItemState(item, 2);
+					
 				}else if(item.getState() == 3) {//SL执行完成时：
-					//查询对应物料类型
-					MaterialType materialType = MaterialType.dao.findById(item.getMaterialTypeId());
-					
-					//在数据库标记所有处于该坐标的物料为在架***
-					List<MaterialType> specifiedPositionMaterialTypes = MaterialType.dao.find(SPECIFIED_POSITION_MATERIAL_TYEP_SQL,
-							materialType.getRow(), materialType.getCol(), materialType.getHeight());
-					for (MaterialType mt: specifiedPositionMaterialTypes) {
-						mt.setIsOnShelf(true);
-						materialService.update(mt);
-					}
-					
 					//更改taskitems里对应item状态为4（已回库完成）***
 					TaskItemRedisDAO.updateTaskItemState(item, 4);
 					
-					/*
-					 * 判断该groupid所在的任务是否全部条目状态为4（已回库完成），如果是，
-					 * 则清除所有该任务id对应的条目，释放内存，并修改数据库任务状态***
-					*/
-					boolean isAllFinish = true;
-					for (AGVIOTaskItem item1 : TaskItemRedisDAO.getTaskItems()) {
-						if(groupid.split(":")[1].equals(item1.getGroupId().split(":")[1]) && item1.getState() != 4) {
-							isAllFinish = false;
-						}
-					}
-					if(isAllFinish) {
-						int taskId = Integer.valueOf(groupid.split(":")[1]);
-						TaskItemRedisDAO.removeTaskItemByTaskId(taskId);
-						taskService.finish(taskId);
-					}
+					//设置物料在架
+					MaterialType materialType = MaterialType.dao.findById(item.getMaterialTypeId());
+					setMaterialTypeIsOnShelf(materialType, true);
+					
+					clearTil(groupid);
 				}
 			}
+		}
+	}
+
+	
+	/**
+	 * 判断该groupid所在的任务是否全部条目状态为4（已回库完成），如果是，
+	 * 则清除所有该任务id对应的条目，释放内存，并修改数据库任务状态***
+	*/
+	private static void clearTil(String groupid) {
+		boolean isAllFinish = true;
+		for (AGVIOTaskItem item1 : TaskItemRedisDAO.getTaskItems()) {
+			if(groupid.split(":")[1].equals(item1.getGroupId().split(":")[1]) && item1.getState() != 4) {
+				isAllFinish = false;
+			}
+		}
+		if(isAllFinish) {
+			int taskId = Integer.valueOf(groupid.split(":")[1]);
+			TaskItemRedisDAO.removeTaskItemByTaskId(taskId);
+			taskService.finish(taskId);
 		}
 	}
 
@@ -197,11 +184,10 @@ public class LSSLHandler {
 	}
 
 
-	private static void setNotInShelf(MaterialType materialType) {
-		List<MaterialType> specifiedPositionMaterialTypes = MaterialType.dao.find(SPECIFIED_POSITION_MATERIAL_TYEP_SQL,
-				materialType.getRow(), materialType.getCol(), materialType.getHeight());
+	private static void setMaterialTypeIsOnShelf(MaterialType materialType, boolean isOnShelf) {
+		List<MaterialType> specifiedPositionMaterialTypes = materialService.listByXYZ(materialType.getRow(), materialType.getCol(), materialType.getHeight());
 		for (MaterialType mt: specifiedPositionMaterialTypes) {
-			mt.setIsOnShelf(false);
+			mt.setIsOnShelf(isOnShelf);
 			materialService.update(mt);
 		}
 	}

@@ -19,16 +19,24 @@ import com.jimi.agv_mock.socket.MockRobotInfoSocket;
  */
 public class TaskPool extends Thread{
 
-	private Queue<AGVMoveCmd> tasks;
+	private Queue<AGVMoveCmd> LSTasks;
+	
+	private List<AGVMoveCmd> SLTasks;
 	
 	
 	public TaskPool() {
-		tasks = new LinkedBlockingQueue<>();
+		LSTasks = new LinkedBlockingQueue<>();
+		SLTasks = new ArrayList<>();
 	}
 	
 	
-	public synchronized void addTask(AGVMoveCmd cmd) {
-		tasks.offer(cmd);
+	public synchronized void addLSTask(AGVMoveCmd cmd) {
+		LSTasks.offer(cmd);
+	}
+	
+	
+	public synchronized void addSLTask(AGVMoveCmd cmd) {
+		SLTasks.add(cmd);
 	}
 	
 	
@@ -38,16 +46,38 @@ public class TaskPool extends Thread{
 		while(true) {
 			try {
 				sleep(Constant.TASK_POOL_CYCLE);
-				assignOneTask();
+				assignLSTask();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
 	}
+
+
+	/**
+	 * 任务执行者请求SL任务（在LS执行完毕后）
+	 */
+	public synchronized boolean requestSLTask(TaskExcutor excutor) {
+		//获取missionGroupId
+		AGVMoveCmd cmd = excutor.getMoveCmd();
+		String missionGroupId = cmd.getMissiongroups().get(0).getMissiongroupid();
+		//遍历寻找匹配
+		for (int i = 0; i< SLTasks.size(); i++) {
+			String missionGroupId2 = SLTasks.get(i).getMissiongroups().get(0).getMissiongroupid();
+			if(missionGroupId.equals(missionGroupId2)) {
+				SLTasks.remove(i);
+				return true;
+			}
+		}
+		return false;
+	}
 	
 	
-	private synchronized void assignOneTask() {
-		AGVMoveCmd task = tasks.peek();
+	/**
+	 * 创建一个任务执行者并分配给它一个LS任务
+	 */
+	private synchronized void assignLSTask() {
+		AGVMoveCmd task = LSTasks.peek();
 		if(task == null) {
 			return; 
 		}
@@ -61,7 +91,7 @@ public class TaskPool extends Thread{
 		}
 		//如果取得Robot则出列
 		if(robot != null) {
-			tasks.poll();
+			LSTasks.poll();
 			TaskExcutor excutor = new TaskExcutor(getAFreeRobot(), task);
 			excutor.start();
 		}
@@ -100,5 +130,4 @@ public class TaskPool extends Thread{
 			return null;
 		}
 	}
-	
 }
