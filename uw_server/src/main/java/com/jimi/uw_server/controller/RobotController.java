@@ -41,7 +41,7 @@ public class RobotController extends Controller {
 
 
 	// 令叉车回库
-	@Log("将编号为{id}的叉车回库")
+	@Log("令叉车回库，该叉车目前绑定的任务条目为{id}")
 	public void back(Integer id) throws Exception {
 		robotService.back(id);
 		renderJson(ResultUtil.succeed());
