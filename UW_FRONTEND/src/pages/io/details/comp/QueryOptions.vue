@@ -6,9 +6,12 @@
       <div class="row no-gutters pl-3 pr-3">
         <div class="form-group col pr-3 pl-1">
           <label for="window-list">选择仓口:</label>
-          <select v-model="thisWindow" id="window-list" class="custom-select" v-for="item in windowsList" @change="setWindow">
-            <option :value="item.id">{{item.id}}</option>
+          <select v-model="thisWindow" id="window-list" class="custom-select" @change="setWindow">
+            <option  v-for="item in windowsList" :value="item.id">{{item.id}}</option>
           </select>
+        </div>
+        <div class="form-group row align-items-end" v-if="$route.path === '/io/preview'">
+          <div class="btn btn-primary ml-3 mr-4" @click="routerReload">刷新数据</div>
         </div>
       </div>
     </div>
@@ -71,6 +74,11 @@
         let path = this.$route.path;
         this.$router.replace('_empty');
         this.$router.push(path)
+      },
+      routerReload: function () {
+        let tempPath = this.$route.path;
+        this.$router.push('_empty');
+        this.$router.push(tempPath)
       }
     }
   }

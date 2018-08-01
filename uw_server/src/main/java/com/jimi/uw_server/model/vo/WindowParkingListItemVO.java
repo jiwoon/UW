@@ -28,6 +28,10 @@ public class WindowParkingListItemVO extends TaskLog {
 		}
 		return typeString;
 	}
+	
+	public String getMaterialNo(String materialNo) {
+		return materialNo;
+	}
 
 	public WindowParkingListItemVO(Integer packingListItemId, String fileName, Integer type, String materialNo, Integer planQuantity, Integer actualQuantity) {
 		this.set("id", packingListItemId);

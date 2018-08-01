@@ -28,7 +28,7 @@ public class UserService extends SelectService{
 
 	private static final String UNIQUE_USER_CHECK_SQL = "SELECT * FROM user WHERE uid = ?";
 
-	private static final String GET_USER_TYPE_SQL = "SELECT id,name FROM user_type";
+	private static final String GET_USER_TYPE_SQL = "SELECT id,name FROM user_type WHERE id > 0";
 
 
 	public User login(String uid, String password) {

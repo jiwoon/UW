@@ -59,6 +59,8 @@ public class TaskService {
 	private static final String GET_MATERIAL_TYPE_SQL = "SELECT id FROM material_type WHERE no = ?";
 	
 	private static final String UNIQUE_MATERIAL_ID_CHECK_SQL = "SELECT * FROM task_log WHERE material_id = ? AND task_id = ?";
+	
+	private static final String GET_MATERIAL_NO_SQL = "SELECT no FROM material_type WHERE id IN(SELECT material_type_id FROM packing_list_item WHERE id = ?)";
 
 
 	public String createIOTask(Integer type, String fileName, String fullFileName) throws Exception {
@@ -271,8 +273,7 @@ public class TaskService {
 	}
 
 	
-	public List<WindowParkingListItemVO> getWindowParkingItem(Integer id) {
-		List<WindowParkingListItemVO> windowParkingListItemVOs = new ArrayList<WindowParkingListItemVO>();
+	public Object getWindowParkingItem(Integer id) {
 		List<Task> tasks = Task.dao.find(GET_TASK_IN_PROCESS_SQL, id);
 		for (Task t : tasks) {
 			Integer taskId = t.getId();
@@ -285,45 +286,40 @@ public class TaskService {
 				}
 			}
 
-			// 先进行多表查询，查询出仓口id绑定的正在执行中的任务的套料单表的id,套料单文件名，物料类型表的料号no,套料单表的计划出入库数量quantity,套料单表对应任务的实际完成时间finish_time
+			// 先进行多表查询，查询出仓口id绑定的正在执行中的任务的套料单表的id,套料单文件名，物料类型表的料号no,套料单表的计划出入库数量quantity
 			Page<Record> windowParkingListItems = selectService.select(new String[] {"packing_list_item", "material_type", }, 
 					new String[] {"packing_list_item.id = " + packingListItemId, "material_type.id = packing_list_item.material_type_id", },
 					null, null, null, null, null);
 
-			// 遍历同一个任务id的套料单数据
-			for (Record windowPackingListItem : windowParkingListItems.getList()) {
+			for (Record windowParkingListItem : windowParkingListItems.getList()) {
 				// 查询task_log中的material_id,quantity
 				// 这里在for循环中执行了sql查询，会影响执行效率，暂时还没想到两全其美的解决方案，争取这周(7.23-7.28)想出解决方案
-				List<TaskLog> taskLogs = TaskLog.dao.find(GET_ITEM_DETAILS_SQL, taskId.toString(), windowPackingListItem.get("MaterialType_No"));
+				List<TaskLog> taskLogs = TaskLog.dao.find(GET_ITEM_DETAILS_SQL, taskId.toString(), windowParkingListItem.get("MaterialType_No"));
 				Integer actualQuantity = 0;
 				// 实际出入库数量要根据task_log中的出入库数量记录进行累加得到
 				for (TaskLog tl : taskLogs) {
 					actualQuantity += tl.getQuantity();
 				}
-				if (!(windowPackingListItem.get("PackingListItem_FinishTime") == null)) {
-					WindowParkingListItemVO wp = new WindowParkingListItemVO(windowPackingListItem.get("PackingListItem_Id"), t.getFileName(), 
-							t.getType(), windowPackingListItem.get("MaterialType_No"), windowPackingListItem.get("PackingListItem_Quantity"), 
-							actualQuantity);
-					wp.setDetails(taskLogs);
-					windowParkingListItemVOs.add(wp);
-					return windowParkingListItemVOs;
-				}
+				WindowParkingListItemVO wp = new WindowParkingListItemVO(windowParkingListItem.get("PackingListItem_Id"), t.getFileName(), 
+						t.getType(), windowParkingListItem.get("MaterialType_No"), windowParkingListItem.get("PackingListItem_Quantity"), 
+						actualQuantity);
+				wp.setDetails(taskLogs);
+				return wp;
 			}
 		}
 
-		return windowParkingListItemVOs;
+		return null;
 	}
 
-	public boolean io(Integer packListItemId, String materialId, Integer quantity, String no, User user) {
+	public boolean io(Integer packListItemId, String materialId, Integer quantity, User user) {
 		// 根据套料单id，获取对应的任务记录
 		PackingListItem packingListItem = PackingListItem.dao.findById(packListItemId);
 		Task task = Task.dao.findById(packingListItem.getTaskId());
-
+		MaterialType getMaterialNo = MaterialType.dao.findFirst(GET_MATERIAL_NO_SQL, packListItemId);
 		// 若在同一个出入库任务中重复扫同一个料盘时间戳，则抛出OperationException，错误代码为412
 		if (Material.dao.find(UNIQUE_MATERIAL_ID_CHECK_SQL, materialId, task.getId()).size() != 0) {
 			throw new OperationException("时间戳为" + materialId + "的料盘已在同一个任务中被扫描过，请勿在同一个出入库任务中重复扫描同一个料盘！");
 		}
-
 		/*
 		 *  新增或减少物料表记录
 		 */
@@ -332,7 +328,7 @@ public class TaskService {
 			Material material = new Material();
 			material.setId(materialId);
 			// 根据料号获取物料类型
-			MaterialType getMaterialType = MaterialType.dao.findFirst(GET_MATERIAL_TYPE_SQL, no);
+			MaterialType getMaterialType = MaterialType.dao.findFirst(GET_MATERIAL_TYPE_SQL, getMaterialNo.getNo());
 			material.setType(getMaterialType.getId());
 			material.setRow(0);
 			material.setCol(0);

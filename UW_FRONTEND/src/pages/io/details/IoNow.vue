@@ -4,10 +4,17 @@
 
 <template>
   <div>
+    <global-tips :message="tipsComponentMsg" v-if="isTipsShow"/>
     <options/>
-    <div class="io-now mt-1 mb-3">
-      <div class="row ml-3 mr-3 mt-3">
-        <div class="card bg-light col-4">
+    <input type="text" title="scanner" id="material-check" v-model="scanText"
+           @blur="setFocus" autofocus="autofocus" autocomplete="off" @keyup.enter="scannerHandler" >
+
+    <div class="io-now mt-1 mb-3" v-if="tipsMessage !==''">
+      <p class="d-block text-center mt-5">{{tipsMessage}}</p>
+    </div>
+    <div class="io-now mt-1 mb-3" v-else>
+      <div class="row m-3 align-content-start">
+        <div class="card bg-light col-12 col-lg-6 col-xl-4 m-2">
           <div class="card-body row">
             <span class="col-form-label">任务: </span>
             <p class="card-text form-control">{{taskNowItems.fileName}}</p>
@@ -27,16 +34,34 @@
             </div>
           </div>
         </div>
-        <div class="card bg-light col-3 ml-4">
-          <div class="border-light row justify-content-center ">
-            <img src="/static/img/finishedQRCode.png" alt="finished" class="img-fluid mt-3 mb-3">
+        <div class="card bg-light col-12 col-lg-5 col-xl-3 m-2">
+          <div class="border-light row ml-auto mr-auto mt-4">
+            <img src="/static/img/finishedQRCode.png" alt="finished" class="img-style">
           </div>
-          <span class="card-text text-center">* 扫描此二维码或点击按钮以完成操作</span>
-          <button class="btn btn-primary">操作完毕</button>
+          <span class="card-text text-center mt-auto">* 扫描此二维码或点击按钮以完成操作</span>
+          <button class="btn btn-primary mb-4 mt-auto" @click="setBack">操作完毕</button>
         </div>
       </div>
-      <div class="row">
-
+      <div class="row m-3">
+        <div class="card bg-light col-12 col-xl-9 ml-2">
+          <div class="row card-body mb-0 pb-1">
+            <div class="col">
+              <span class="text-center col-form-label">料盘: </span>
+            </div>
+            <div class="col">
+              <span class="card-text text-center">数量: </span>
+            </div>
+          </div>
+          <div class="dropdown-divider"></div>
+          <div class="row card-body" v-for="item in taskNowItems.details">
+            <div class="col pl-4">
+              <p class="card-text">{{item.materialId}}</p>
+            </div>
+            <div class="col pl-4">
+              <p class="card-text">{{item.quantity}}</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -44,14 +69,17 @@
 
 <script>
   import Options from './comp/QueryOptions'
+  import GlobalTips from './comp/GlobalTips'
   import {axiosPost} from "../../../utils/fetchData";
   import {mapGetters} from 'vuex'
-  import {robotBackUrl, taskWindowParkingItems} from "../../../config/globalUrl";
+  import {robotBackUrl, taskWindowParkingItems, taskIOUrl} from "../../../config/globalUrl";
+  import {currentWindowId} from "../../../store/getters";
 
   export default {
     name: "IoNow",
     components: {
-      Options
+      Options,
+      GlobalTips
     },
     data() {
 
@@ -65,12 +93,12 @@
           "planQuantity": 10000,
           "actualQuantity": 10100,
           "details": [
-            {
-              "materialId": "29301282",
-              "quantity": 2000
-            }
-          ]
-        }
+                  {
+                    "materialId": "29301282",
+                    "quantity": 2000
+                  }
+               ]
+           }
            --sample ends-- */
         taskNowItems: {
           id: '',
@@ -81,16 +109,27 @@
           actualQuantity: '123',
           details: [
             {
-              materialId: '',
-              quantity: ''
+              materialId: '123',
+              quantity: 'asd'
             }
           ]
-        }
+        },
+
+        scanText: '',
+        tipsMessage: '',
+        tipsComponentMsg: '',
+        isTipsShow: false
       }
     },
     mounted() {
+      this.setFocus();
+      this.fetchData(this.currentWindowId);
 
+      window.g.PARKING_ITEMS_INTERVAL.push(setInterval(() => {
+        this.fetchData(this.currentWindowId)
+      }, 1000))
     },
+    watch: {},
     computed: {
       ...mapGetters([
         'currentWindowId'
@@ -107,9 +146,76 @@
         axiosPost(options).then(response => {
           if (response.data.result === 200) {
             this.taskNowItems = response.data.data;
+            this.tipsMessage = ""
+          } else if (response.data.result === 412) {
+            this.tipsMessage = response.data.data
           }
         })
 
+      },
+      /*设置输入框焦点*/
+      setFocus: function () {
+        if (this.$route.path === '/io/now') {
+          document.getElementById('material-check').focus();
+        }
+      },
+
+      /*扫码集中处理*/
+      scannerHandler: function () {
+        if (this.scanText === "###finished###") {
+          this.setBack()
+        } else {
+          let tempArray = this.scanText.split("@");
+          let options = {
+            url: taskIOUrl,
+            data: {
+              packListItemId: this.taskNowItems.id,
+              no: this.taskNowItems.materialNo,
+              materialId: tempArray[2],
+              quantity: tempArray[1]
+            }
+          };
+          axiosPost(options).then(response => {
+            if (response.data.result === 200) {
+              this.isTipsShow = true;
+              this.tipsComponentMsg = true;
+              setTimeout(() => {
+                this.isTipsShow = false;
+              }, 3000)
+            } else {
+              this.isTipsShow = true;
+              this.tipsComponentMsg = false;
+              setTimeout(() => {
+                this.isTipsShow = false;
+              }, 3000)
+            }
+          })
+        }
+        this.scanText = "";
+      },
+
+      setBack: function () {
+        let options = {
+          url: robotBackUrl,
+          data: {
+            id: this.taskNowItems.id
+          }
+        };
+        axiosPost(options).then(response => {
+          if (response.data.result === 200) {
+            this.isTipsShow = true;
+            this.tipsComponentMsg = true;
+            setTimeout(() => {
+              this.isTipsShow = false;
+            }, 3000)
+          } else {
+            this.isTipsShow = true;
+            this.tipsComponentMsg = false;
+            setTimeout(() => {
+              this.isTipsShow = false;
+            }, 3000)
+          }
+        })
       }
     }
   }
@@ -122,5 +228,18 @@
     border-radius: 8px;
     padding: 10px;
     min-height: 500px;
+  }
+
+  .img-style {
+    width: 100%;
+    height: 100%;
+  }
+
+  #material-check {
+    opacity: 0;
+    height: 0;
+    line-height: 0;
+    border: none;
+    padding: 0;
   }
 </style>

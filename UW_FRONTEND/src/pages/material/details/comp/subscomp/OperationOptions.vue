@@ -122,10 +122,6 @@
   #edit-window {
     z-index: 100;
   }
-
-  #edit-window {
-    z-index: 100;
-  }
   .delete-panel {
     position: fixed;
     display: flex;
