@@ -155,7 +155,9 @@
       },
       /*设置输入框焦点*/
       setFocus: function () {
-        document.getElementById('material-check').focus();
+        if (this.$route.path === '/io/now') {
+          document.getElementById('material-check').focus();
+        }
       },
 
       /*扫码集中处理*/
