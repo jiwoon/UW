@@ -10,6 +10,8 @@ import cc.darhao.dautils.api.FieldUtil;
  */
 public class RobotVO extends RobotBO {
 
+	private String statusString;
+	
 	private String enabledString;
 
 	private String errorString;
@@ -19,6 +21,24 @@ public class RobotVO extends RobotBO {
 	private String pauseString;
 
 	private String loadExceptionString;
+	
+	public String fillStatusString(Integer status) {
+		switch (status) {
+		case 0:
+			statusString = "闲置";
+			break;
+		case 1:
+			statusString = "忙碌";
+			break;
+		case 3:
+			this.statusString = "错误";
+			break;
+		case 4:
+			this.statusString = "充电";
+			break;
+		}
+		return statusString;
+	}
 
 	public String fillEnabledString(Integer enabled) {
 		switch (enabled) {
@@ -167,6 +187,14 @@ public class RobotVO extends RobotBO {
 		}
 		return loadExceptionString;
 	}
+	
+	public String getStatusString() {
+		return statusString;
+	}
+	
+	public void setStatusString(String statusString) {
+		this.statusString = statusString;
+	}
 
 	public String getEnabledString() {
 		return enabledString;
@@ -210,6 +238,7 @@ public class RobotVO extends RobotBO {
 
 	public RobotVO(RobotBO bo) {
 		FieldUtil.copy(bo, this);
+		this.statusString = fillStatusString(bo.getStatus());
 		this.enabledString = fillEnabledString(bo.getEnabled());
 		this.errorString = fillErrorString(bo.getError());
 		this.warnString = fillWarnString(bo.getWarn());
