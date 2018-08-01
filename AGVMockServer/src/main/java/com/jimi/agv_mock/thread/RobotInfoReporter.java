@@ -35,7 +35,12 @@ public class RobotInfoReporter extends Thread{
 		try {
 			while(true) {
 				sleep(Constant.ROBOT_INFO_CYCLE);
-				updateRobotInfo();
+				for (AGVRobot agvRobot : MockRobotInfoSocket.getRobots().values()) {
+					if(agvRobot.getSystem_pause()) {
+						updateXYPowerInfo();
+					}
+					break;
+				}
 				sendRobotsInfo();
 			}
 		} catch (Exception e) {
@@ -57,7 +62,7 @@ public class RobotInfoReporter extends Thread{
 	}
 	
 
-	private void updateRobotInfo() {
+	private void updateXYPowerInfo() {
 		for (AGVRobot robot : robots.values()) {
 			robot.setBatteryPower(Math.abs(new Random().nextInt() % 100));
 			robot.setPosX(Math.abs(new Random().nextInt() % 40));

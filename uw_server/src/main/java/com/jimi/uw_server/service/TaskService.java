@@ -300,7 +300,7 @@ public class TaskService {
 				for (TaskLog tl : taskLogs) {
 					actualQuantity += tl.getQuantity();
 				}
-				if (windowPackingListItem.get("PackingListItem_FinishTime") == null) {
+				if (!(windowPackingListItem.get("PackingListItem_FinishTime") == null)) {
 					WindowParkingListItemVO wp = new WindowParkingListItemVO(windowPackingListItem.get("PackingListItem_Id"), t.getFileName(), 
 							t.getType(), windowPackingListItem.get("MaterialType_No"), windowPackingListItem.get("PackingListItem_Quantity"), 
 							actualQuantity);

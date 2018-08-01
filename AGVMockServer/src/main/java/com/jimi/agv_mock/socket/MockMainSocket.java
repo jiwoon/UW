@@ -17,6 +17,7 @@ import javax.websocket.server.ServerEndpoint;
 
 import com.alibaba.fastjson.JSON;
 import com.jimi.agv_mock.constant.Constant;
+import com.jimi.agv_mock.dao.TaskDAO;
 import com.jimi.agv_mock.entity.cmd.base.AGVBaseCmd;
 import com.jimi.agv_mock.handle.ACKHandler;
 import com.jimi.agv_mock.handle.LSSLHandler;
@@ -38,6 +39,11 @@ public class MockMainSocket implements UncaughtExceptionHandler{
 	private static int cmdid;
 	
 	private static TaskPool taskPool;
+	
+	/**
+	 * 站点情况
+	 */
+	private static Map<Integer, Boolean> windows;
 
 	/**
 	 * 发送的CMDID与是否被ACK的关系映射
@@ -53,6 +59,8 @@ public class MockMainSocket implements UncaughtExceptionHandler{
 	static{
 		sendCmdidAckMap = new HashMap<>();
     	receiveNotAckCmdidSet = new HashSet<>();
+    	windows = new HashMap<>();
+    	TaskDAO.init();
     	taskPool = new TaskPool();
     	taskPool.start();
 	}
@@ -179,5 +187,11 @@ public class MockMainSocket implements UncaughtExceptionHandler{
 	public static TaskPool getTaskPool() {
 		return taskPool;
 	}
+
+
+	public static Map<Integer, Boolean> getWindows() {
+		return windows;
+	}
+
 
 }

@@ -35,12 +35,15 @@ public class MaterialService extends SelectService{
 		Page<Record> result = selectService.select(new String[] {"material_type"}, null,
 				pageNo, pageSize, ascBy, descBy, filter);
 
-		int totallyRow =  result.getTotalRow();
+		int totallyRow =  0;
 		for (Record res : result.getList()) {
 			// 在VO中，为获取quantity的值，进行了sql查询，相当于在for循环中执行了sql查询，会影响执行效率，暂时还没想到两全其美的解决方案，争取这周(7.23-7.28)想出解决方案
 			MaterialTypeVO m = new MaterialTypeVO(res.get("id"), res.get("no"), res.get("area"),
 					res.get("row"), res.get("col"), res.get("height"), res.get("enabled"));
-			materialTypeVOs.add(m);
+			if (res.get("enabled").equals(true)) {
+				materialTypeVOs.add(m);
+				totallyRow += 1;
+			}
 		}
 
 		PagePaginate pagePaginate = new PagePaginate();

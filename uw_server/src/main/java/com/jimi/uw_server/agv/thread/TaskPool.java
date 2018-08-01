@@ -58,7 +58,7 @@ public class TaskPool extends Thread{
 		int a = 0;
 		do{
 			AGVIOTaskItem item = taskItems.get(a);
-			//判断是否在架并且状态是否为0（未分配）
+			//判断状态是否为0（未分配）
 			if (item.getState() == 0) {
 				//发送LS
 				LSSLHandler.sendLS(item);

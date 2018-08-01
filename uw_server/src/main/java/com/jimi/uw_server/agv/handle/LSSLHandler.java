@@ -42,9 +42,8 @@ public class LSSLHandler {
 		AGVMoveCmd moveCmd = createSLCmd(materialType, item);
 		//发送SL>>>
 		AGVMainSocket.sendMessage(Json.getJson().toJson(moveCmd));
-		
-		//更改taskitems里对应item状态为2（已拣料到站）***
-		TaskItemRedisDAO.updateTaskItemState(item, 2);
+		//更新任务条目状态为已分配回库***
+		TaskItemRedisDAO.updateTaskItemState(item, 3);
 	}
 
 
@@ -64,7 +63,7 @@ public class LSSLHandler {
 			//更新任务条目状态为已分配***
 			TaskItemRedisDAO.updateTaskItemState(item, 1);
 		}else {
-			System.out.println(materialType.getNo() + "暂时不在架");
+//			System.out.println(materialType.getNo() + "暂时不在架");
 		}
 	}
 
@@ -118,7 +117,9 @@ public class LSSLHandler {
 					if(!APP_APPLY_FLAG) {
 						sendSL(item);
 					}
-				}else if(item.getState() == 2) {//SL执行完成时：
+					//更改taskitems里对应item状态为2（已拣料到站）***
+					TaskItemRedisDAO.updateTaskItemState(item, 2);
+				}else if(item.getState() == 3) {//SL执行完成时：
 					//查询对应物料类型
 					MaterialType materialType = MaterialType.dao.findById(item.getMaterialTypeId());
 					
@@ -130,16 +131,16 @@ public class LSSLHandler {
 						materialService.update(mt);
 					}
 					
-					//更改taskitems里对应item状态为3（已回库完成）***
-					TaskItemRedisDAO.updateTaskItemState(item, 3);
+					//更改taskitems里对应item状态为4（已回库完成）***
+					TaskItemRedisDAO.updateTaskItemState(item, 4);
 					
 					/*
-					 * 判断该groupid所在的任务是否全部条目状态为3（已回库完成），如果是，
+					 * 判断该groupid所在的任务是否全部条目状态为4（已回库完成），如果是，
 					 * 则清除所有该任务id对应的条目，释放内存，并修改数据库任务状态***
 					*/
 					boolean isAllFinish = true;
 					for (AGVIOTaskItem item1 : TaskItemRedisDAO.getTaskItems()) {
-						if(groupid.split(":")[1].equals(item1.getGroupId().split(":")[1]) && item1.getState() != 3) {
+						if(groupid.split(":")[1].equals(item1.getGroupId().split(":")[1]) && item1.getState() != 4) {
 							isAllFinish = false;
 						}
 					}
