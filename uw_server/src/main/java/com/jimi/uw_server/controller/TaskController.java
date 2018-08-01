@@ -1,15 +1,12 @@
 package com.jimi.uw_server.controller;
 
 import java.io.File;
-import java.util.List;
-
 import com.jfinal.aop.Enhancer;
 import com.jfinal.core.Controller;
 import com.jfinal.upload.UploadFile;
 import com.jimi.uw_server.annotation.Log;
 import com.jimi.uw_server.exception.OperationException;
 import com.jimi.uw_server.model.User;
-import com.jimi.uw_server.model.vo.WindowParkingListItemVO;
 import com.jimi.uw_server.service.TaskService;
 import com.jimi.uw_server.util.ResultUtil;
 import com.jimi.uw_server.util.TokenBox;
@@ -24,6 +21,8 @@ public class TaskController extends Controller {
 	private static TaskService taskService = Enhancer.enhance(TaskService.class);
 
 	public static final String SESSION_KEY_LOGIN_USER = "loginUser";
+	
+	public static final String SESSION_KEY_MATERIAL_NO = "materialNo";
 
 
 	// 创建任务
@@ -109,8 +108,8 @@ public class TaskController extends Controller {
 
 	// 获取指定仓口停泊条目
 	public void getWindowParkingItem(Integer id) {
-		List<WindowParkingListItemVO> windowParkingItem = taskService.getWindowParkingItem(id);
-		if (!(windowParkingItem.isEmpty())) {
+		Object windowParkingItem = taskService.getWindowParkingItem(id);
+		if (windowParkingItem != null) {
 			renderJson(ResultUtil.succeed(windowParkingItem));
 		} else {
 			throw new OperationException("暂无已到站任务条目！");
@@ -119,11 +118,11 @@ public class TaskController extends Controller {
 
 
 	// 物料出入库
-	public void io(Integer packListItemId, String materialId, Integer quantity, String no) {
+	public void io(Integer packListItemId, String materialId, Integer quantity) {
 		// 获取当前使用系统的用户，以便获取操作员uid
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);
 		User user = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
-		if (taskService.io(packListItemId, materialId, quantity, no, user)) {
+		if (taskService.io(packListItemId, materialId, quantity, user)) {
 			renderJson(ResultUtil.succeed());
 		} else {
 			renderJson(ResultUtil.failed());
