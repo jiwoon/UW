@@ -64,8 +64,11 @@ public class TaskExcutor extends Thread{
 			//SL
 			exe(statusCmd, disturber);
 			
+			//设置叉车空闲
+			robot.setStatus(0);
+			
 		} catch (InterruptedException e) {
-			System.out.println(" A task has been interrupted");
+			System.out.println("A task has been interrupted");
 		}
 	}
 

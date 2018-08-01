@@ -39,6 +39,9 @@ public class MockRobotInfoSocket {
 		for (Integer id : Constant.ROBOT_IDS) {
 			AGVRobot robot = new AGVRobot();
 			robot.setRobotid(id);
+			robot.setBatteryPower(100);
+			robot.setPosX(1);
+			robot.setPosY(1);
 			robot.setEnable(2);
 			robot.setSystem_pause(false);
 			robot.setErrorcode(255);
@@ -74,21 +77,6 @@ public class MockRobotInfoSocket {
     }
 	
 	
-	public static void init(Map<Integer, AGVRobot> robots) {
-		robots = new HashMap<>();
-		for (Integer id : Constant.ROBOT_IDS) {
-			AGVRobot robot = new AGVRobot();
-			robot.setRobotid(id);
-			robot.setEnable(2);
-			robot.setSystem_pause(false);
-			robot.setErrorcode(255);
-			robot.setWarncode(255);
-			robot.setStatus(0);
-			robots.put(id, robot);
-		}
-	}
-
-
 	public static Map<Integer, AGVRobot> getRobots() {
 		return robots;
 	}

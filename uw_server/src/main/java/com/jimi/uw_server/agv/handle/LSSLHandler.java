@@ -29,10 +29,7 @@ public class LSSLHandler {
 	private static MaterialService materialService = Enhancer.enhance(MaterialService.class);
 
 	
-	public static void sendSL(AGVIOTaskItem item) throws Exception {
-		//查询对应物料类型
-		MaterialType materialType = MaterialType.dao.findById(item.getMaterialTypeId());
-		
+	public static void sendSL(AGVIOTaskItem item, MaterialType materialType) throws Exception {
 		//构建SL指令，令指定robot把料送回原仓位
 		AGVMoveCmd moveCmd = createSLCmd(materialType, item);
 		//发送SL>>>
@@ -42,22 +39,16 @@ public class LSSLHandler {
 	}
 
 
-	public static void sendLS(AGVIOTaskItem item) throws Exception {
-		//查询对应物料类型
-		MaterialType materialType = MaterialType.dao.findById(item.getMaterialTypeId());
+	public static void sendLS(AGVIOTaskItem item, MaterialType materialType) throws Exception {
+		//发送LS>>>
+		AGVMoveCmd cmd = createLSCmd(materialType, item);
+		AGVMainSocket.sendMessage(Json.getJson().toJson(cmd));
 		
-		//判断是否在架
-		if(materialType.getIsOnShelf()) {
-			//发送LS>>>
-			AGVMoveCmd cmd = createLSCmd(materialType, item);
-			AGVMainSocket.sendMessage(Json.getJson().toJson(cmd));
-			
-			//在数据库标记所有处于该坐标的物料为不在架***
-			setMaterialTypeIsOnShelf(materialType, false);
-			
-			//更新任务条目状态为已分配***
-			TaskItemRedisDAO.updateTaskItemState(item, 1);
-		}
+		//在数据库标记所有处于该坐标的物料为不在架***
+		setMaterialTypeIsOnShelf(materialType, false);
+		
+		//更新任务条目状态为已分配***
+		TaskItemRedisDAO.updateTaskItemState(item, 1);
 	}
 
 
