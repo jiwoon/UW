@@ -25,12 +25,7 @@ public class MaterialController extends Controller {
 
 	// 获取物料实体
 	public void getEntities(Integer type) {
-		Object entities = materialService.getEntities(type);
-		if (entities != null) {
-			renderJson(ResultUtil.succeed(entities));
-		} else {
-			throw new OperationException("该物料类型暂无库存！");
-		}
+		renderJson(ResultUtil.succeed(materialService.getEntities(type)));
 	}
 
 	// 添加物料类型#

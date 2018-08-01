@@ -31,7 +31,7 @@ public class UserController extends Controller {
 		if(tokenId != null) {
 			User user2 = TokenBox.get(tokenId, SESSION_KEY_LOGIN_USER);
 			if(user2 != null && user.getUid().equals(user2.getUid())) {
-				throw new ParameterException("do not login again");
+				throw new ParameterException("请勿重复登录！");
 			}
 		}
 		tokenId = TokenBox.createTokenId();
@@ -76,8 +76,6 @@ public class UserController extends Controller {
 				// 如果禁用的是用户自身
 				if (user.getUid().equals(user1.getUid())) {
 					TokenBox.remove(tokenId);
-				} else {
-					
 				}
 			}
 		} else {
