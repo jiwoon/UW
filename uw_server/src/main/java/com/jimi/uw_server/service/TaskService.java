@@ -55,7 +55,9 @@ public class TaskService {
 	private static final String GET_ITEM_DETAILS_SQL = "SELECT material_id as materialId, quantity FROM task_log WHERE task_id = ? AND material_id In"
 			+ "(SELECT id FROM material WHERE type = (SELECT id FROM material_type WHERE no = ?))";
 	
-	private static final String GET_TASK_IN_PROCESS_SQL = "SELECT * FROM task WHERE state = 2 AND window = ?";
+	private static final String GET_TASK_IN_REDIS_SQL = "SELECT * FROM task WHERE id = ?";
+	
+	private static final String GET_TASK_IN_PROCESS_SQL = "SELECT * FROM task WHERE state=2 AND window = ?";
 	
 	private static final String GET_MATERIAL_TYPE_SQL = "SELECT id FROM material_type WHERE no = ?";
 	
@@ -279,37 +281,35 @@ public class TaskService {
 
 	
 	public Object getWindowParkingItem(Integer id) {
-		List<Task> tasks = Task.dao.find(GET_TASK_IN_PROCESS_SQL, id);
-		for (Task t : tasks) {
-			Integer taskId = t.getId();
-			Integer packingListItemId = 0;
-			for (int i = 0; i < cache.llen("til"); i++) {
-				byte[] item = cache.lindex("til", i);
-				AGVIOTaskItem agvioTaskItem = Json.getJson().parse(new String(item), AGVIOTaskItem.class);
-				if(agvioTaskItem.getTaskId().intValue() == taskId && agvioTaskItem.getState().intValue() == 2){
-					packingListItemId = agvioTaskItem.getId().intValue();
-				}
-			}
+		for (int i = 0; i < cache.llen("til"); i++) {
+			byte[] item = cache.lindex("til", i);
+			AGVIOTaskItem agvioTaskItem = Json.getJson().parse(new String(item), AGVIOTaskItem.class);
+			if(agvioTaskItem.getState().intValue() == 2) {
+				Task task = Task.dao.findFirst(GET_TASK_IN_REDIS_SQL, agvioTaskItem.getTaskId().intValue());
+				if (task.getWindow() == id) {
+					Integer packingListItemId = agvioTaskItem.getId().intValue();
+					
+					// 先进行多表查询，查询出仓口id绑定的正在执行中的任务的套料单表的id,套料单文件名，物料类型表的料号no,套料单表的计划出入库数量quantity
+					Page<Record> windowParkingListItems = selectService.select(new String[] {"packing_list_item", "material_type", }, 
+							new String[] {"packing_list_item.id = " + packingListItemId, "material_type.id = packing_list_item.material_type_id", },
+							null, null, null, null, null);
 
-			// 先进行多表查询，查询出仓口id绑定的正在执行中的任务的套料单表的id,套料单文件名，物料类型表的料号no,套料单表的计划出入库数量quantity
-			Page<Record> windowParkingListItems = selectService.select(new String[] {"packing_list_item", "material_type", }, 
-					new String[] {"packing_list_item.id = " + packingListItemId, "material_type.id = packing_list_item.material_type_id", },
-					null, null, null, null, null);
-
-			for (Record windowParkingListItem : windowParkingListItems.getList()) {
-				// 查询task_log中的material_id,quantity
-				// 这里在for循环中执行了sql查询，会影响执行效率，暂时还没想到两全其美的解决方案，争取这周(7.23-7.28)想出解决方案
-				List<TaskLog> taskLogs = TaskLog.dao.find(GET_ITEM_DETAILS_SQL, taskId.toString(), windowParkingListItem.get("MaterialType_No"));
-				Integer actualQuantity = 0;
-				// 实际出入库数量要根据task_log中的出入库数量记录进行累加得到
-				for (TaskLog tl : taskLogs) {
-					actualQuantity += tl.getQuantity();
+					for (Record windowParkingListItem : windowParkingListItems.getList()) {
+						// 查询task_log中的material_id,quantity
+						// 这里在for循环中执行了sql查询，会影响执行效率，暂时还没想到两全其美的解决方案，争取这周(7.23-7.28)想出解决方案
+						List<TaskLog> taskLogs = TaskLog.dao.find(GET_ITEM_DETAILS_SQL, task.getId(), windowParkingListItem.get("MaterialType_No"));
+						Integer actualQuantity = 0;
+						// 实际出入库数量要根据task_log中的出入库数量记录进行累加得到
+						for (TaskLog tl : taskLogs) {
+							actualQuantity += tl.getQuantity();
+						}
+						WindowParkingListItemVO wp = new WindowParkingListItemVO(windowParkingListItem.get("PackingListItem_Id"), task.getFileName(), 
+								task.getType(), windowParkingListItem.get("MaterialType_No"), windowParkingListItem.get("PackingListItem_Quantity"), 
+								actualQuantity);
+						wp.setDetails(taskLogs);
+						return wp;
+					}
 				}
-				WindowParkingListItemVO wp = new WindowParkingListItemVO(windowParkingListItem.get("PackingListItem_Id"), t.getFileName(), 
-						t.getType(), windowParkingListItem.get("MaterialType_No"), windowParkingListItem.get("PackingListItem_Quantity"), 
-						actualQuantity);
-				wp.setDetails(taskLogs);
-				return wp;
 			}
 		}
 
