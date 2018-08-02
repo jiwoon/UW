@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.jfinal.aop.Enhancer;
 import com.jfinal.json.Json;
+import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
 import com.jfinal.plugin.redis.Cache;
@@ -62,6 +63,7 @@ public class TaskService {
 	
 	private static final String GET_MATERIAL_NO_SQL = "SELECT no FROM material_type WHERE id IN(SELECT material_type_id FROM packing_list_item WHERE id = ?)";
 
+	private static final String DELETE_PACKING_LIST_ITEM_SQL = "DELETE FROM packing_list_item WHERE task_id = ?";
 
 	public String createIOTask(Integer type, String fileName, String fullFileName) throws Exception {
 		String resultString = "添加成功！";
@@ -90,6 +92,7 @@ public class TaskService {
 				task.setCreateTime(new Date());
 				task.save();
 
+				
 				// 读取excel表格的套料单数据，将数据一条条写入到套料单表；如果任务类型为出/入库，还需要修改物料实体表中对应物料的库存数量
 				for (PackingListItemBO item : items) {
 					// 获取新任务id
@@ -99,14 +102,16 @@ public class TaskService {
 					MaterialType getNo = MaterialType.dao.findFirst(GET_NO_SQL, item.getNo());
 					// 判断物料类型表中是否存在对应的料号，若不存在，则将对应的任务记录删除掉，并提示操作员检查套料单、新增对应的物料类型
 					if (getNo == null) {
+						Db.update(DELETE_PACKING_LIST_ITEM_SQL, newTaskId);
 						Task.dao.deleteById(newTaskId);
-						resultString = "插入套料单失败，该任务已作废，料号为" + item.getNo() + "的物料没有记录在物料类型表中！";
+						resultString = "插入套料单失败，料号为" + item.getNo() + "的物料没有记录在物料类型表中！";
 						return resultString;
 					}
 					// 判断物料是否已被禁用，若已被禁用，则将对应的任务记录删除掉，并提示操作员检查套料单
 					if (!getNo.getEnabled()) {
+						Db.update(DELETE_PACKING_LIST_ITEM_SQL, newTaskId);
 						Task.dao.deleteById(newTaskId);
-						resultString = "插入套料单失败，该任务已作废，料号为" + item.getNo() + "的物料已被禁用！";
+						resultString = "插入套料单失败，料号为" + item.getNo() + "的物料已被禁用！";
 						return resultString;
 					}
 
@@ -125,7 +130,7 @@ public class TaskService {
 					// 保存该记录到套料单表
 					packingListItem.save();
 				}
-		
+
 				if (file.exists()) {
 		
 					if (!file.delete()) {
