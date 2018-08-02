@@ -20,6 +20,8 @@ import com.jimi.uw_server.service.entity.PagePaginate;
 public class MaterialService extends SelectService{
 
 	private static SelectService selectService = Enhancer.enhance(SelectService.class);
+	
+	private static final String GET_SPECIFIED_POSITION_MATERIAL_TYEP_SQL = "SELECT * FROM material_type WHERE row = ? AND col = ? AND height = ?";
 
 	private	static final String GET_ENTITIES_SQL = "SELECT material.id, material.type, material.row, material.col, "
 			+ "material.remainder_quantity as remainderQuantity FROM material, material_type WHERE type=? "
@@ -95,6 +97,13 @@ public class MaterialService extends SelectService{
 
 	public boolean update(MaterialType materialType) {
 		return materialType.update();
+	}
+	
+	/**
+	 * 列出同一个坐标盒子的所有物料类型
+	 */
+	public List<MaterialType> listByXYZ(int x, int y, int z) {
+		return MaterialType.dao.find(GET_SPECIFIED_POSITION_MATERIAL_TYEP_SQL, x, y, z);
 	}
 
 }

@@ -8,6 +8,7 @@ import com.jimi.uw_server.agv.dao.RobotInfoRedisDAO;
 import com.jimi.uw_server.agv.dao.TaskItemRedisDAO;
 import com.jimi.uw_server.agv.entity.bo.AGVIOTaskItem;
 import com.jimi.uw_server.agv.handle.LSSLHandler;
+import com.jimi.uw_server.model.MaterialType;
 import com.jimi.uw_server.model.bo.RobotBO;
 import com.jimi.uw_server.util.ErrorLogWritter;
 
@@ -57,11 +58,14 @@ public class TaskPool extends Thread{
 		//获取第a个元素
 		int a = 0;
 		do{
+			//获取对应item
 			AGVIOTaskItem item = taskItems.get(a);
-			//判断状态是否为0（未分配）
-			if (item.getState() == 0) {
+			//查询对应物料类型
+			MaterialType materialType = MaterialType.dao.findById(item.getMaterialTypeId());
+			//判断状态是否为0并且物料类型是否在架（未分配）
+			if (item.getState() == 0 && materialType.getIsOnShelf()) {
 				//发送LS
-				LSSLHandler.sendLS(item);
+				LSSLHandler.sendLS(item, materialType);
 				cn--;
 			}
 			a++;

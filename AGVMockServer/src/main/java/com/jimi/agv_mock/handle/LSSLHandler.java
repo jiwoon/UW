@@ -16,8 +16,24 @@ public class LSSLHandler {
 	public static void handleLSSL(String message) {
 		//转换成实体类
 		AGVMoveCmd moveCmd = JSON.parseObject(message, AGVMoveCmd.class);
+		//判断类型
+		if(moveCmd.getCmdcode().equals("LS")) {
+			handleLS(moveCmd);
+		}else {
+			handleSL(moveCmd);
+		}
+		
+	}
+	
+	
+	private static void handleLS(AGVMoveCmd cmd) {
 		//放入任务池
-		MockMainSocket.getTaskPool().addTask(moveCmd);
+		MockMainSocket.getTaskPool().addLSTask(cmd);
 	}
 
+	
+	private static void handleSL(AGVMoveCmd cmd) {
+		//放入任务池
+		MockMainSocket.getTaskPool().addSLTask(cmd);
+	}
 }

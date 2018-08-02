@@ -21,8 +21,6 @@ public class TaskController extends Controller {
 	private static TaskService taskService = Enhancer.enhance(TaskService.class);
 
 	public static final String SESSION_KEY_LOGIN_USER = "loginUser";
-	
-	public static final String SESSION_KEY_MATERIAL_NO = "materialNo";
 
 
 	// 创建任务
@@ -108,12 +106,7 @@ public class TaskController extends Controller {
 
 	// 获取指定仓口停泊条目
 	public void getWindowParkingItem(Integer id) {
-		Object windowParkingItem = taskService.getWindowParkingItem(id);
-		if (windowParkingItem != null) {
-			renderJson(ResultUtil.succeed(windowParkingItem));
-		} else {
-			throw new OperationException("暂无已到站任务条目！");
-		}
+		renderJson(ResultUtil.succeed(taskService.getWindowParkingItem(id)));
 	}
 
 
