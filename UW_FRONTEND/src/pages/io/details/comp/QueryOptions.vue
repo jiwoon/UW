@@ -71,9 +71,6 @@
       /*设置仓口*/
       setWindow: function () {
         this.setCurrentWindow(this.thisWindow);
-        let path = this.$route.path;
-        this.$router.replace('_empty');
-        this.$router.push(path)
       },
       routerReload: function () {
         let tempPath = this.$route.path;

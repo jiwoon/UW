@@ -12,7 +12,7 @@
         </div>
         <div id="vertical-divider" class="ml-3 mr-3"></div>
 
-        <div class="col-auto">
+        <div class="col-auto" v-if="robotData.length > 0">
           <div class="btn btn-primary btn-sm" @click="setPause">{{robotData[0].pause === true ? '运行所有叉车' : '暂停所有叉车'}}
           </div>
         </div>
@@ -20,7 +20,10 @@
 
     </div>
     <div class="dropdown-divider"></div>
-    <div class="row" v-if="robotData.length > 0">
+    <div class="row" v-if="robotData.length === 0">
+      <p class="text-center mt-5 w-100">无结果</p>
+    </div>
+    <div class="row" v-else>
 
       <!--当warn/error时改变边框及内部字体，vue模板数组语法-->
       <div class="card col-12 col-sm-5 col-lg-3 col-xl-2
@@ -28,68 +31,67 @@
            :class="[item.warn === 255 ? '' : 'border-warning text-warning shadow-warning',
            item.error === 255 ? '' : 'border-danger text-danger shadow-danger']"
            v-for="item in robotData"
-           @click="toggleSelected(item.id)" >
+           @click="toggleSelected(item.id)">
 
 
-          <div class="position-absolute mt-3 ml-2">
-            <icon :name="checkedData.indexOf(item.id) === -1  ? 'check-empty' : 'check' " scale="3.4"></icon>
-            <label :for="item.id + '-checkbox'" @click.stop></label>
-            <input type="checkbox" class="checkbox d-none" :value="item.id" :id="item.id + '-checkbox'"
-                   v-model="checkedData" >
-          </div>
-          <div class="message-tips card-body mt-5 row">
-            <div class="danger-tips row align-items-center pl-3 pr-3" v-if="item.error !== 255">
-              <icon name="danger" scale="2.6"></icon>
-              <div class="tips-msg ml-3">
-                <p class="m-0">{{item.errorString}}</p>
-              </div>
-            </div>
-            <div class="warning-tips row align-items-center pl-3 pr-3" v-if="item.warn !== 255">
-              <icon name="warning" scale="2.6"></icon>
-              <div class="tips-msg ml-3">
-                <p class="m-0">{{item.warnString}}</p>
-              </div>
+        <div class="position-absolute mt-3 ml-2">
+          <icon :name="checkedData.indexOf(item.id) === -1  ? 'check-empty' : 'check' " scale="3.4"></icon>
+          <label :for="item.id + '-checkbox'" @click.stop></label>
+          <input type="checkbox" class="checkbox d-none" :value="item.id" :id="item.id + '-checkbox'"
+                 v-model="checkedData">
+        </div>
+        <div class="message-tips card-body mt-5 row">
+          <div class="danger-tips row align-items-center pl-3 pr-3" v-if="item.error !== 255">
+            <icon name="danger" scale="2.6"></icon>
+            <div class="tips-msg ml-3">
+              <p class="m-0">{{item.errorString}}</p>
             </div>
           </div>
-          <img class="card-img-top" src="/static/img/robot.jpg">
-          <div class="card-body row pb-0 pt-1">
-            <p class="card-text col">ID: {{item.id}}</p>
-          </div>
-          <!--<div class="card-body row pb-0 pt-1">-->
-          <!--<p class="card-text col">警告状态: {{item.warnString}}</p>-->
-          <!--<p class="card-text col">错误状态: {{item.errorString}}</p>-->
-          <!--</div>-->
-          <!--<div class="card-body row pb-3 pt-0">-->
-          <!--<p class="card-text col">运行状态: {{item.pauseString}}</p>-->
-          <!--<p class="card-text col">启停状态: {{item.enabledString}}</p>-->
-          <!--</div>-->
-          <div class="card-body row pb-0 pt-1">
-            <p class="card-text col">X: {{item.x}}</p>
-            <p class="card-text col">Y: {{item.y}}</p>
-          </div>
-          <div class="card-body row align-items-center" style="padding: 0 2rem;">
-            <span class="d-block" style="width: 20%;">电量:</span>
-            <div class="progress" style="width: 80%;">
-              <div class="progress-bar progress-bar-striped progress-bar-animated"
-                   :class="item.battery < 30 ? 'bg-danger' : ''" role="progressbar"
-                   :style="{width : item.battery + '%'}">
-                {{item.battery}} %
-              </div>
+          <div class="warning-tips row align-items-center pl-3 pr-3" v-if="item.warn !== 255">
+            <icon name="warning" scale="2.6"></icon>
+            <div class="tips-msg ml-3">
+              <p class="m-0">{{item.warnString}}</p>
             </div>
           </div>
-          <div class="dropdown-divider"></div>
-          <div class="card-body form-row justify-content-around">
-            <a class="btn col mr-1 text-white" :class="item.enabled === 2 ? 'btn-secondary' : 'btn-primary'"
-               @click.stop="setEnable(item.id, item.enabled)">{{item.enabled === 2 ? '点击禁用' : '点击启用'}}</a>
+        </div>
+        <img class="card-img-top" src="/static/img/robot.jpg">
+        <div class="card-body row pb-0 pt-1">
+          <p class="card-text col">ID: {{item.id}}</p>
+          <p class="card-text col">状态: {{item.statusString}}</p>
+        </div>
+        <!--<div class="card-body row pb-0 pt-1">-->
+        <!--<p class="card-text col">警告状态: {{item.warnString}}</p>-->
+        <!--<p class="card-text col">错误状态: {{item.errorString}}</p>-->
+        <!--</div>-->
+        <!--<div class="card-body row pb-3 pt-0">-->
+        <!--<p class="card-text col">运行状态: {{item.pauseString}}</p>-->
+        <!--<p class="card-text col">启停状态: {{item.enabledString}}</p>-->
+        <!--</div>-->
+        <div class="card-body row pb-0 pt-1">
+          <p class="card-text col">X: {{item.x}}</p>
+          <p class="card-text col">Y: {{item.y}}</p>
+        </div>
+        <div class="card-body row align-items-center" style="padding: 0 2rem;">
+          <span class="d-block" style="width: 20%;">电量:</span>
+          <div class="progress" style="width: 80%;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated"
+                 :class="item.battery < 30 ? 'bg-danger' : ''" role="progressbar"
+                 :style="{width : item.battery + '%'}">
+              {{item.battery}} %
+            </div>
           </div>
+        </div>
+        <div class="dropdown-divider"></div>
+        <div class="card-body form-row justify-content-around">
+          <a class="btn col mr-1 text-white" :class="item.enabled === 2 ? 'btn-secondary' : 'btn-primary'"
+             @click.stop="setEnable(item.id, item.enabled)">{{item.enabled === 2 ? '点击禁用' : '点击启用'}}</a>
+        </div>
 
 
       </div>
 
     </div>
-    <div class="row" v-else>
-      无结果
-    </div>
+
   </div>
 </template>
 
@@ -103,12 +105,7 @@
     name: "RobotDetails",
     data() {
       return {
-        robotData: [
-          {
-            id:'123',
-            pause: false
-          }
-        ],
+        robotData: "",
         isPending: false,
         checkedData: []
       }
@@ -254,7 +251,7 @@
       toggleSelected: function (id) {
         let index = this.checkedData.indexOf(id);
         if (index > -1) {
-         this.checkedData.splice(index,1)
+          this.checkedData.splice(index, 1)
         } else {
           this.checkedData.push(id)
         }
@@ -284,7 +281,7 @@
     margin: 20px;
   }
 
-  .card-board:hover, .card-board:active{
+  .card-board:hover, .card-board:active {
     box-shadow: 0 0 4px #007bff !important;
   }
 

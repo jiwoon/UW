@@ -7,7 +7,7 @@
     <global-tips :message="tipsComponentMsg" v-if="isTipsShow"/>
     <options/>
     <input type="text" title="scanner" id="material-check" v-model="scanText"
-           @blur="setFocus" autofocus="autofocus" autocomplete="off" @keyup.enter="scannerHandler" >
+           @blur="setFocus" autofocus="autofocus" autocomplete="off" @keyup.enter="scannerHandler">
 
     <div class="io-now mt-1 mb-3" v-if="tipsMessage !==''">
       <p class="d-block text-center mt-5">{{tipsMessage}}</p>
@@ -145,8 +145,12 @@
         };
         axiosPost(options).then(response => {
           if (response.data.result === 200) {
-            this.taskNowItems = response.data.data;
-            this.tipsMessage = ""
+            if (response.data.data) {
+              this.taskNowItems = response.data.data;
+              this.tipsMessage = ""
+            } else {
+              this.tipsMessage = "无数据"
+            }
           } else if (response.data.result === 412) {
             this.tipsMessage = response.data.data
           }
