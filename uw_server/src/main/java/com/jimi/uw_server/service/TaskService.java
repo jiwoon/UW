@@ -175,7 +175,7 @@ public class TaskService {
 		// 判断任务是否处于进行中状态，若是，则把相关的任务条目从til中剔除（线程同步方法），并更新任务状态为作废；
 		int state = task.getState();
 		if (state == 2) {
-			TaskItemRedisDAO.removeTaskItemByTaskId(id);
+			TaskItemRedisDAO.removeUnAssignedTaskItemByTaskId(id);
 		}
 		task.setState(4);
 		return task.update();

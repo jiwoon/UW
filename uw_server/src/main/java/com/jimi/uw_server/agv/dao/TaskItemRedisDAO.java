@@ -82,13 +82,13 @@ public class TaskItemRedisDAO {
 	
 	
 	/**
-	 * 删除指定任务id的条目，注意：只能删除未分配的条目<br>
+	 * 删除指定任务id的未分配的条目<br>
 	 */
-	public synchronized static void removeTaskItemByTaskId(int taskId) {
+	public synchronized static void removeUnAssignedTaskItemByTaskId(int taskId) {
 		for (int i = 0; i < cache.llen("til"); i++) {
 			byte[] item = cache.lindex("til", i);
 			AGVIOTaskItem agvioTaskItem = Json.getJson().parse(new String(item), AGVIOTaskItem.class);
-			if(agvioTaskItem.getTaskId().intValue() == taskId && agvioTaskItem.getState().intValue() != 1 && agvioTaskItem.getState().intValue() != 2){
+			if(agvioTaskItem.getTaskId().intValue() == taskId && agvioTaskItem.getState().intValue() == 0){
 				cache.lrem("til", 1, item);
 				i--;
 			}
@@ -96,6 +96,21 @@ public class TaskItemRedisDAO {
 	}
 	
 	
+	/**
+	 * 删除指定任务id的条目<br>
+	 */
+	public static void removeTaskItemByTaskId(int taskId) {
+		for (int i = 0; i < cache.llen("til"); i++) {
+			byte[] item = cache.lindex("til", i);
+			AGVIOTaskItem agvioTaskItem = Json.getJson().parse(new String(item), AGVIOTaskItem.class);
+			if(agvioTaskItem.getTaskId().intValue() == taskId){
+				cache.lrem("til", 1, item);
+				i--;
+			}
+		}
+	}
+
+
 	/**
 	 * 更新任务条目状态<br>
 	 */

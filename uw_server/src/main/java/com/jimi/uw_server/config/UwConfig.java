@@ -98,8 +98,13 @@ public class UwConfig extends JFinalConfig {
 	public void afterJFinalStart() {
 		try {
 			TokenBox.start(PropKit.use("properties.ini").getInt("sessionTimeout"));
-			AGVMainSocket.init(PropKit.use("properties.ini").get("agvServerURI"));
-			RobotInfoSocket.init(PropKit.use("properties.ini").get("robotInfoURI"));
+			if(isProductionEnvironment()) {
+				AGVMainSocket.init(PropKit.use("properties.ini").get("p_agvServerURI"));
+				RobotInfoSocket.init(PropKit.use("properties.ini").get("p_robotInfoURI"));
+			}else {
+				AGVMainSocket.init(PropKit.use("properties.ini").get("d_agvServerURI"));
+				RobotInfoSocket.init(PropKit.use("properties.ini").get("d_robotInfoURI"));
+			}
 			System.out.println("Uw Server is Running now...");
 		} catch (Exception e) {
 			ErrorLogWritter.save(e.getClass().getSimpleName() + ":" + e.getMessage());

@@ -86,7 +86,7 @@ public class MockMainSocket implements UncaughtExceptionHandler{
     	MockMainSocket.session = session;
     	System.out.println("["+ new Date().toString() +"]" + "receiver message:" + message);
     	
-    	Thread thread = new Thread(() -> {
+//    	Thread thread = new Thread(() -> {
 			//判断是否是ack指令
 			if(message.contains("\"cmdcode\":\"ack\"")) {//ack指令
 				ACKHandler.handleACK(message);
@@ -109,9 +109,9 @@ public class MockMainSocket implements UncaughtExceptionHandler{
 					}
 				}
 			}
-		});
-		thread.setUncaughtExceptionHandler(this);
-		thread.start();
+//		});
+//		thread.setUncaughtExceptionHandler(this);
+//		thread.start();
     }
 
     

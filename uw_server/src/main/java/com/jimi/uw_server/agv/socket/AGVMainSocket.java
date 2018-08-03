@@ -96,7 +96,7 @@ public class AGVMainSocket {
 	@OnMessage
 	public void onMessage(String message ,Session session) {
 		AGVMainSocket.session = session;
-		Thread thread = new Thread(() -> {
+//		Thread thread = new Thread(() -> {
 			try {
 				log(false, message);
 				//判断是否是ack指令
@@ -119,8 +119,8 @@ public class AGVMainSocket {
 				ErrorLogWritter.save(e.getClass().getSimpleName() + ":" + e.getMessage());
 				e.printStackTrace();
 			}
-		});
-		thread.start();
+//		});
+//		thread.start();
 	}
 
 	

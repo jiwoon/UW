@@ -1,7 +1,5 @@
 package com.jimi.agv_mock.constant;
 
-import com.jimi.agv_mock.map.Position;
-
 /**
  * 常量
  * <br>
@@ -15,10 +13,6 @@ public class Constant {
 	 * 叉车数组
 	 */
 	public static final int[] ROBOT_IDS = new int[] {2222, 3333, 4444, 1111};
-	/**
-	 * 仓口数组
-	 */
-	public static final Position[] STATIONS = new Position[] {new Position(8, 16)};
 	/**
 	 * 叉车实时信息发送周期
 	 */
