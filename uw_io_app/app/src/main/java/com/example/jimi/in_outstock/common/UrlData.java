@@ -13,6 +13,9 @@ public class UrlData {
     // 获取仓口任务条目接口
     private static final String URL_GETWINDOWTASKITEMS = URL+"/task/getWindowTaskItems";
 
+    //获取仓口停泊条目
+    private static final String UPL_GETWINDOWPARKINGITEM = URL+"/task/getWindowParkingItem";
+
     // 写入出入库任务日志接口
     private  static final String URL_WRITEIO = URL +"/task/io";
 
@@ -41,4 +44,6 @@ public class UrlData {
     public static String getUrlWriteio() {
         return URL_WRITEIO;
     }
+
+    public static String getUrlGetwindowparkingitem(){ return UPL_GETWINDOWPARKINGITEM; }
 }

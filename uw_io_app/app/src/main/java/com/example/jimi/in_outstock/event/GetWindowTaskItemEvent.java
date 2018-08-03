@@ -7,7 +7,7 @@ import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.example.jimi.in_outstock.activity.FinishTaskItemActivity;
+import com.example.jimi.in_outstock.activity.ShowActivity;
 import com.example.jimi.in_outstock.application.MyApplication;
 import com.example.jimi.in_outstock.common.UrlData;
 import com.example.jimi.in_outstock.entity.MaterialPlateInfo;
@@ -27,10 +27,26 @@ import java.util.ArrayList;
 public class GetWindowTaskItemEvent {
     // 仓口Id
     private String windowId;
-    private ArrayList<TaskInfo> taskInfos;
+    private ArrayList<TaskInfo> historyTaskInfos;
     // 任务条目
     private int index;
     private static final int SUCCESS_NUM = 200;
+
+    private Handler handler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            historyTaskInfos = (ArrayList<TaskInfo>) msg.obj;
+            if(historyTaskInfos!=null){
+                    MyApplication.setHistoryTaskInfos(historyTaskInfos);
+                    Intent intent = new Intent(MyApplication.getContext(), ShowActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    MyApplication.getContext().startActivity(intent);
+
+            }else{
+                Toast.makeText(MyApplication.getContext(), "获取仓口任务条目失败", Toast.LENGTH_SHORT).show();
+            }
+        }
+    };
 
     public void getWindowTaskItem(EditText editText){
         windowId = editText.getText().toString();
@@ -42,25 +58,6 @@ public class GetWindowTaskItemEvent {
         }
     }
 
-    private Handler handler = new Handler(){
-        @Override
-        public void handleMessage(Message msg) {
-            taskInfos = (ArrayList<TaskInfo>) msg.obj;
-            if(taskInfos!=null){
-                if(index>0) {
-                    MyApplication.setTaskInfos(taskInfos);
-                    Intent intent = new Intent(MyApplication.getContext(), FinishTaskItemActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    MyApplication.getContext().startActivity(intent);
-                }else{
-                    Toast.makeText(MyApplication.getContext(), "该仓口没有未完成任务，请选择其它仓口", Toast.LENGTH_SHORT).show();
-               }
-            }else{
-                Toast.makeText(MyApplication.getContext(), "获取仓口任务条目失败", Toast.LENGTH_SHORT).show();
-            }
-        }
-    };
-
     /**
      * 启用线程请求
      */
@@ -69,7 +66,7 @@ public class GetWindowTaskItemEvent {
         public void run() {
             RequestParams params = new RequestParams(UrlData.getUrlGetwindowtaskitems());
             params.addBodyParameter("id",windowId);
-            params.addBodyParameter("#TOKEN#",MyApplication.getToken());
+            params.addBodyParameter("#TOKEN#", MyApplication.getToken());
             x.http().post(params, new Callback.CacheCallback<String>() {
                 @Override
                 public void onCancelled(CancelledException cex) {
@@ -103,6 +100,19 @@ public class GetWindowTaskItemEvent {
 
         }
     }
+    public void setHandler(Handler handler) {
+        this.handler = handler;
+    }
+
+    public void startGetWindowTaskItemThread(){
+        new getWindowTaskItemThread().start();
+    }
+
+    public void setWindowId(String windowId) {
+        this.windowId = windowId;
+    }
+
+
 
     /**
      * 数据解析
@@ -110,7 +120,7 @@ public class GetWindowTaskItemEvent {
      * @return
      */
     private ArrayList<TaskInfo> pareJSON(String jsonData){
-        ArrayList<TaskInfo> taskInfos = new ArrayList<>();
+        ArrayList<TaskInfo> historyTaskInfos = new ArrayList<>();
         try{
             JSONObject jsonObject = new JSONObject(jsonData);
             int result = jsonObject.getInt("result");
@@ -127,14 +137,15 @@ public class GetWindowTaskItemEvent {
                     taskInfo.setActualQuantity(listItem.getInt("actualQuantity"));
                     taskInfo.setFinishTime(listItem.getString("finishTime"));
                     taskInfo.setTaskId(listItem.getInt("id"));
+                    taskInfo.setType(listItem.getString("type"));
                     taskInfo.setFileName(listItem.getString("fileName"));
                     taskInfo.setMaterialNo(listItem.getString("materialNo"));
                     String details = listItem.getString("details");
                     ArrayList<MaterialPlateInfo> materialPlateInfos = pareJsonMps(details);
                     taskInfo.setMaterialPlateInfos(materialPlateInfos);
-                    taskInfos.add(taskInfo);
+                    historyTaskInfos.add(taskInfo);
                 }
-                return taskInfos;
+                return historyTaskInfos;
             }
         }
         catch (Exception e){
@@ -142,6 +153,7 @@ public class GetWindowTaskItemEvent {
         }
         return null;
     }
+
 
     /**
      * 料盘信息解析

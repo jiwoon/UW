@@ -15,9 +15,11 @@ public class MyApplication extends Application{
     // 仓口码
     private static String windowId;
     // 任务条目列表
-    private static ArrayList<TaskInfo> taskInfos;
+    private static ArrayList<TaskInfo> historyTaskInfos;
     // 第一个未完成任务条目
     private static int position;
+
+    private static TaskInfo parkingTaskInfo;
 
     @Override
     public void onCreate() {
@@ -38,12 +40,12 @@ public class MyApplication extends Application{
         return position;
     }
 
-    public static void setTaskInfos(ArrayList<TaskInfo> taskInfos) {
-        MyApplication.taskInfos = taskInfos;
+    public static void setHistoryTaskInfos(ArrayList<TaskInfo> historyTaskInfos) {
+        MyApplication.historyTaskInfos = historyTaskInfos;
     }
 
-    public static ArrayList<TaskInfo> getTaskInfos() {
-        return taskInfos;
+    public static ArrayList<TaskInfo> getHistoryTaskInfos() {
+        return historyTaskInfos;
     }
 
     public static void setWindowId(String windowId) {
@@ -61,4 +63,8 @@ public class MyApplication extends Application{
     public static String getToken() {
         return token;
     }
+
+    public synchronized static TaskInfo getParkingTaskInfo() { return parkingTaskInfo; }
+
+    public synchronized static void setParkingTaskInfo(TaskInfo parkingTaskInfo) { MyApplication.parkingTaskInfo = parkingTaskInfo; }
 }
