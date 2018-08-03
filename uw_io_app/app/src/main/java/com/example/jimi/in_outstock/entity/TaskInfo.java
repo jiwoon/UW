@@ -12,6 +12,8 @@ public class TaskInfo implements Serializable{
     private int  planQuantity;
     // 实际数量
     private int actualQuantity;
+    //类型
+    private String type;
     // 料盘扫描信息
     private ArrayList<MaterialPlateInfo> materialPlateInfos;
     // 完成时间
@@ -28,6 +30,10 @@ public class TaskInfo implements Serializable{
     public int getActualQuantity() {
         return actualQuantity;
     }
+
+    public void setType(String type){ this.type = type;}
+
+    public String getType(){return this.type;}
 
     public void setPlanQuantity(int planQuantity) {
         this.planQuantity = planQuantity;

@@ -15,14 +15,15 @@
         android:theme="@style/AppTheme">
         <activity android:name=".LoginActivity">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
+                <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".GetWindowTaskItemActivity">
-        </activity>
-        <activity android:name=".FinishTaskItemActivity"  android:windowSoftInputMode="adjustResize|stateHidden">
-        </activity>
+        <activity android:name=".GetWindowTaskItemActivity"></activity>
+        <activity
+            android:name=".ShowActivity"
+            android:windowSoftInputMode="adjustResize|stateHidden"></activity>
     </application>
 
 </manifest>

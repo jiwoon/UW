@@ -26,27 +26,19 @@ public class RobotBackEvent {
     // 返回失败
     private static final int FAILL_NUM = 0;
 
-    private Timer timer = new Timer(true);
-
     public void robotBack(int myTaskId){
         Log.d("taskId",myTaskId+"");
         taskId = myTaskId;
         new RobotBackThread().start();
     }
 
-    private TimerTask timerTask = new TimerTask() {
-        @Override
-        public void run() {
-            new RefreshTaskEvent().refreshTask(timer);
-        }
-    };
 
     private Handler handler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what){
                 case SUCCESS_NUM:
-                    timer.schedule(timerTask,0,10000);
+                    Toast.makeText(MyApplication.getContext(),"叉车回库中",Toast.LENGTH_SHORT).show();
                     break;
                 case FAILL_NUM:
                     Toast.makeText(MyApplication.getContext(),"叉车回库失败",Toast.LENGTH_SHORT).show();

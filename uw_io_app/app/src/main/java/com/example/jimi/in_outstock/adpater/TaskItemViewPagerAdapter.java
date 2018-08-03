@@ -1,10 +1,12 @@
 package com.example.jimi.in_outstock.adpater;
 
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * ViewPager适配器
@@ -13,9 +15,12 @@ public class TaskItemViewPagerAdapter extends FragmentStatePagerAdapter {
     // 更新的碎片列表
     private ArrayList<Fragment> mFragmentList;
 
-    public TaskItemViewPagerAdapter(FragmentManager fm, ArrayList<Fragment> fragments) {
+    private List<String> titleList = new ArrayList<String>();
+
+    public TaskItemViewPagerAdapter(FragmentManager fm, ArrayList<Fragment> fragments, List<String> titleList) {
         super(fm);
         updateData(fragments);
+        this.titleList = titleList;
     }
 
     public void updateData(ArrayList<Fragment> fragments) {
@@ -32,6 +37,12 @@ public class TaskItemViewPagerAdapter extends FragmentStatePagerAdapter {
         }
         this.mFragmentList = fragmentList;
         notifyDataSetChanged();
+    }
+
+    @Nullable
+    @Override
+    public CharSequence getPageTitle(int position) {
+        return (titleList.size() > position) ? titleList.get(position) : "";
     }
 
     @Override

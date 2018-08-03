@@ -1,20 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<RelativeLayout
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.jimi.in_outstock.fragment.TaskFragment">
+    android:layout_marginRight="10dp"
+    android:layout_marginLeft="10dp"
+    android:padding="5dp"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:text="暂未有到站物料，请等候"
+        android:textSize="24dp"
+        android:gravity="center"
+        android:id="@+id/tv_no_robot"
+        android:layout_above="@+id/tv_isrunning"
+        android:background="@color/white"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true">
+        <EditText
+            android:id="@+id/edit_plateId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            />
+    </LinearLayout>
     <LinearLayout
         android:background="@drawable/input_shape"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:id="@+id/ly_robottask"
         >
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="18dp"
+            android:textSize="16dp"
+            android:id="@+id/tv_task_text"
             android:text="任务" />
         <TextView
             android:singleLine="true"
@@ -24,17 +48,19 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="18dp"
-            android:textColor="#333" />
+            android:textColor="#333"/>
     </LinearLayout>
     <LinearLayout
         android:background="@drawable/box_item_shape"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        >
+        android:id="@+id/ly_material_no"
+        android:layout_below="@+id/ly_robottask">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="18dp"
+            android:textSize="16dp"
+            android:id="@+id/tv_material_text"
             android:text="料号" />
         <TextView
             android:singleLine="true"
@@ -43,18 +69,21 @@
             android:layout_marginLeft="30dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="20dp"
+            android:textSize="18dp"
             android:textColor="#333" />
     </LinearLayout>
     <LinearLayout
         android:background="@drawable/box_item_shape"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/ly_material_no"
+        android:id="@+id/ly_type"
         >
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="18dp"
+            android:textSize="16dp"
+            android:id="@+id/tv_type_text"
             android:text="类型" />
         <TextView
             android:singleLine="true"
@@ -69,7 +98,9 @@
     <LinearLayout
         android:background="@drawable/box_item_shape"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/ly_type"
+        android:id="@+id/ly_number">
         <LinearLayout
             android:layout_width="0dp"
             android:layout_weight="1"
@@ -78,7 +109,8 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="18dp"
+                android:textSize="16dp"
+                android:id="@+id/tv_plan_text"
                 android:text="计划" />
             <TextView
                 android:singleLine="true"
@@ -88,7 +120,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="0"
-                android:textSize="20dp"
+                android:textSize="18dp"
                 android:textColor="#333" />
         </LinearLayout>
         <LinearLayout
@@ -99,7 +131,8 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="18dp"
+                android:textSize="16dp"
+                android:id="@+id/tv_actual_text"
                 android:text="实际" />
             <TextView
                 android:singleLine="true"
@@ -109,7 +142,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="0"
-                android:textSize="20dp"
+                android:textSize="18dp"
                 android:textColor="#333" />
         </LinearLayout>
     </LinearLayout>
@@ -117,8 +150,11 @@
         android:orientation="vertical"
         android:background="@drawable/box_item_shape"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:layout_weight="7"
+        android:layout_below="@+id/ly_number"
+        android:layout_above="@+id/btn_ok"
+        android:id="@+id/ly_list"
         >
         <LinearLayout
             android:layout_width="match_parent"
@@ -131,7 +167,8 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:textSize="16dp"
-                android:textColor="#333"/>
+                android:textColor="#333"
+                android:id="@+id/tv_plate_text"/>
             <TextView
                 android:background="@drawable/finish_icon_shape"
                 android:gravity="center"
@@ -140,37 +177,40 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:textSize="16dp"
-                android:textColor="#333"/>
+                android:textColor="#333"
+                android:id="@+id/tv_amount_text"/>
         </LinearLayout>
         <ListView
             android:id="@+id/listView_plate"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_weight="2">
         </ListView>
     </LinearLayout>
-    <LinearLayout
-        android:background="@drawable/box_item_shape"
+    <Button
+        android:id="@+id/btn_ok"
+        android:background="@drawable/btn_ok_shape"
+        android:layout_marginTop="2dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        >
-        <TextView
-            android:id="@+id/text_finishTime"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="00-00-00 00:00:00"
-            android:textSize="16dp"
-            android:textColor="#333"/>
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-        <TextView
-            android:background="@drawable/finish_icon_shape"
-            android:id="@+id/text_finishIcon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="已完成"
-            >
-        </TextView>
-    </LinearLayout>
-</LinearLayout>
+        android:text="操作完毕"
+        android:textSize="18dp"
+        android:layout_marginBottom="5dp"
+        android:layout_above="@+id/tv_isrunning"/>
+    <TextView
+        android:id="@+id/tv_isrunning"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="15dp"
+        android:text="到站物料"
+        android:textColor="@color/black"
+        android:gravity="center"
+        android:layout_above="@+id/bar_line"/>
+    <TextView
+        android:id="@+id/bar_line"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/black"
+        android:layout_alignParentBottom="true"/>
+
+</RelativeLayout>
