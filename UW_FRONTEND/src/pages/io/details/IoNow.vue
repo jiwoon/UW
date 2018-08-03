@@ -174,7 +174,7 @@
             url: taskIOUrl,
             data: {
               packListItemId: this.taskNowItems.id,
-              no: this.taskNowItems.materialNo,
+              //no: this.taskNowItems.materialNo,
               materialId: tempArray[2],
               quantity: tempArray[1]
             }

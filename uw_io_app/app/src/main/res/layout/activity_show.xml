@@ -37,7 +37,8 @@
                 android:gravity="center"
                 android:padding="0dp"
                 android:onClick="onClick"
-                android:layout_marginLeft="2dp" />
+                android:layout_marginLeft="2dp"
+                android:background="@drawable/tv_change_background"/>
         </LinearLayout>
 
         <FrameLayout

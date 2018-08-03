@@ -87,7 +87,7 @@ public class HistoryFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         viewPager_task.setPageMargin(10);
-        refleshFragment();
+        initFragment();
         handler.postDelayed(runnable, 0);
     }
 
