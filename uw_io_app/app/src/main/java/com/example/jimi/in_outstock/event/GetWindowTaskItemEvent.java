@@ -32,7 +32,8 @@ public class GetWindowTaskItemEvent {
     private int index;
     private static final int SUCCESS_NUM = 200;
 
-    private Handler handler = new Handler(){
+    private Handler handler;
+   /* private Handler handler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
             historyTaskInfos = (ArrayList<TaskInfo>) msg.obj;
@@ -46,17 +47,8 @@ public class GetWindowTaskItemEvent {
                 Toast.makeText(MyApplication.getContext(), "获取仓口任务条目失败", Toast.LENGTH_SHORT).show();
             }
         }
-    };
+    };*/
 
-    public void getWindowTaskItem(EditText editText){
-        windowId = editText.getText().toString();
-        if("".equals(windowId)){
-            Toast.makeText(MyApplication.getContext(), "仓口Id为空，请重新扫描仓口码", Toast.LENGTH_SHORT).show();
-            editText.requestFocus();
-        }else {
-            new getWindowTaskItemThread().start();
-        }
-    }
 
     /**
      * 启用线程请求
@@ -177,4 +169,6 @@ public class GetWindowTaskItemEvent {
         }
         return materialPlateInfos;
     }
+
+
 }

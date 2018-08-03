@@ -1,11 +1,13 @@
 package com.example.jimi.in_outstock.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.jimi.in_outstock.application.MyApplication;
 import com.example.jimi.in_outstock.editTextListener.MyTextWatcher;
@@ -38,10 +40,23 @@ public class GetWindowTaskItemActivity extends BaseActivity {
                             switch (textView.getId()){
                                 case R.id.edit_windowId:
                                     Log.d("windowId",strValue);
-                                    GetWindowTaskItemEvent getWindowTaskItemEvent = new GetWindowTaskItemEvent();
-                                    getWindowTaskItemEvent.getWindowTaskItem(edit_windowId);
-                                    MyApplication.setWindowId(strValue);
-                                    edit_windowId.setText("");
+                                    String windowId = edit_windowId.getText().toString();
+                                    if (!isNum(windowId)) {
+                                        Toast.makeText(MyApplication.getContext(), "仓口Id错误，请重新扫描仓口码", Toast.LENGTH_SHORT).show();
+                                        edit_windowId.setText("");
+                                        edit_windowId.requestFocus();
+                                        return false;
+                                    }
+                                    if("".equals(windowId)){
+                                        Toast.makeText(MyApplication.getContext(), "仓口Id为空，请重新扫描仓口码", Toast.LENGTH_SHORT).show();
+                                        edit_windowId.requestFocus();
+                                        return false;
+                                    }else {
+                                        MyApplication.setWindowId(strValue);
+                                        Intent intent = new Intent(MyApplication.getContext(), ShowActivity.class);
+                                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                        MyApplication.getContext().startActivity(intent);
+                                    }
                                     break;
                             }
                             break;
@@ -50,5 +65,14 @@ public class GetWindowTaskItemActivity extends BaseActivity {
                 return false;
             }
         });
+    }
+
+    private boolean isNum(String str){
+        try{
+            Integer i = Integer.parseInt(str);
+            return true;
+        }catch (Exception e){
+            return false;
+        }
     }
 }
