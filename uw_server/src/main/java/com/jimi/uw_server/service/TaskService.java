@@ -57,8 +57,6 @@ public class TaskService {
 	
 	private static final String GET_TASK_IN_REDIS_SQL = "SELECT * FROM task WHERE id = ?";
 	
-	private static final String GET_TASK_IN_PROCESS_SQL = "SELECT * FROM task WHERE state=2 AND window = ?";
-	
 	private static final String GET_MATERIAL_TYPE_SQL = "SELECT id FROM material_type WHERE no = ?";
 	
 	private static final String UNIQUE_MATERIAL_ID_CHECK_SQL = "SELECT * FROM task_log WHERE material_id = ? AND task_id = ?";
@@ -287,7 +285,7 @@ public class TaskService {
 			if(agvioTaskItem.getState().intValue() == 2) {
 				Task task = Task.dao.findFirst(GET_TASK_IN_REDIS_SQL, agvioTaskItem.getTaskId().intValue());
 				if (task.getWindow() == id) {
-					Integer packingListItemId = agvioTaskItem.getId().intValue();
+					Integer packingListItemId = agvioTaskItem.getId();
 					
 					// 先进行多表查询，查询出仓口id绑定的正在执行中的任务的套料单表的id,套料单文件名，物料类型表的料号no,套料单表的计划出入库数量quantity
 					Page<Record> windowParkingListItems = selectService.select(new String[] {"packing_list_item", "material_type", }, 
@@ -362,47 +360,49 @@ public class TaskService {
 
 
 	public Object getWindowTaskItems(Integer id, Integer pageNo, Integer pageSize) {
-		List<Task> tasks = Task.dao.find(GET_TASK_IN_PROCESS_SQL, id);
 		List<WindowTaskItemsVO> windowTaskItemsVOs = new ArrayList<WindowTaskItemsVO>();
-		
 		PagePaginate pagePaginate = new PagePaginate();
 		int totallyRow = 0;
-		for (Task t : tasks) {
-			Integer taskId = t.getId();
-			
-			// 先进行多表查询，查询出仓口id绑定的正在执行中的任务的套料单表的id,套料单文件名，物料类型表的料号no,套料单表的计划出入库数量quantity,套料单表对应任务的实际完成时间finish_time
-			Page<Record> windowTaskItems = selectService.select(new String[] {"packing_list_item", "material_type", "task"}, 
-					new String[] {"packing_list_item.task_id = " + taskId.toString(), "material_type.id = packing_list_item.material_type_id", 
-							"task.id = " + taskId.toString()}, pageNo, pageSize, null, null, null);
+		for (int i = 0; i < cache.llen("til"); i++) {
+			byte[] item = cache.lindex("til", i);
+			AGVIOTaskItem agvioTaskItem = Json.getJson().parse(new String(item), AGVIOTaskItem.class);
+			Task task = Task.dao.findFirst(GET_TASK_IN_REDIS_SQL, agvioTaskItem.getTaskId());
+			if (task.getWindow() == id) {
+				Integer packingListItemId = agvioTaskItem.getId();
+					
+				// 先进行多表查询，查询出仓口id绑定的正在执行中的任务的套料单表的id,套料单文件名，物料类型表的料号no,套料单表的计划出入库数量quantity
+				Page<Record> windowTaskItems = selectService.select(new String[] {"packing_list_item", "material_type", }, 
+						new String[] {"packing_list_item.id = " + packingListItemId, "material_type.id = packing_list_item.material_type_id", },
+						pageNo, pageSize, null, null, null);
+				
+				// 记录获取查询记录总行数
+				totallyRow += windowTaskItems.getTotalRow();
 
-			// 记录获取查询记录总行数
-			totallyRow += windowTaskItems.getTotalRow();
-
-			// 遍历同一个任务id的套料单数据
-			for (Record windowTaskItem : windowTaskItems.getList()) {
-				// 查询task_log中的material_id,quantity
-				// 这里在for循环中执行了sql查询，会影响执行效率，暂时还没想到两全其美的解决方案，争取这周(7.23-7.28)想出解决方案
-				List<TaskLog> taskLogs = TaskLog.dao.find(GET_ITEM_DETAILS_SQL, taskId.toString(), windowTaskItem.get("MaterialType_No"));
-				Integer actualQuantity = 0;
-				// 实际出入库数量要根据task_log中的出入库数量记录进行累加得到
-				for (TaskLog tl : taskLogs) {
-					actualQuantity += tl.getQuantity();
+				for (Record windowTaskItem : windowTaskItems.getList()) {
+					// 查询task_log中的material_id,quantity
+					// 这里在for循环中执行了sql查询，会影响执行效率，暂时还没想到两全其美的解决方案，争取这周(7.23-7.28)想出解决方案
+					List<TaskLog> taskLogs = TaskLog.dao.find(GET_ITEM_DETAILS_SQL, task.getId(), windowTaskItem.get("MaterialType_No"));
+					Integer actualQuantity = 0;
+					// 实际出入库数量要根据task_log中的出入库数量记录进行累加得到
+					for (TaskLog tl : taskLogs) {
+						actualQuantity += tl.getQuantity();
+					}
+					WindowTaskItemsVO wt = new WindowTaskItemsVO(windowTaskItem.get("PackingListItem_Id"), task.getFileName(), 
+							task.getType(), windowTaskItem.get("MaterialType_No"), windowTaskItem.get("PackingListItem_Quantity"), 
+							actualQuantity, windowTaskItem.get("PackingListItem_FinishTime"));
+					wt.setDetails(taskLogs);
+					windowTaskItemsVOs.add(wt);
 				}
-				WindowTaskItemsVO wt = new WindowTaskItemsVO(windowTaskItem.get("PackingListItem_Id"), windowTaskItem.get("Task_FileName"), 
-						windowTaskItem.get("Task_Type"), windowTaskItem.get("MaterialType_No"), windowTaskItem.get("PackingListItem_Quantity"), 
-						actualQuantity, windowTaskItem.get("PackingListItem_FinishTime"));
-				wt.setDetails(taskLogs);
-				windowTaskItemsVOs.add(wt);
 			}
-
 		}
+
 		// 分页，设置页码，每页显示条目等
 		pagePaginate.setPageSize(pageSize);
 		pagePaginate.setPageNumber(pageNo);
 		pagePaginate.setTotalRow(totallyRow);
 
 		pagePaginate.setList(windowTaskItemsVOs);
-		
+
 		return pagePaginate;
 	}
 
