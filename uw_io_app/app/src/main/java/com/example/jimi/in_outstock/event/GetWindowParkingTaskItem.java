@@ -1,13 +1,9 @@
 package com.example.jimi.in_outstock.event;
 
-import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
-import android.widget.EditText;
-import android.widget.Toast;
 
-import com.example.jimi.in_outstock.activity.ShowActivity;
 import com.example.jimi.in_outstock.application.MyApplication;
 import com.example.jimi.in_outstock.common.UrlData;
 import com.example.jimi.in_outstock.entity.MaterialPlateInfo;
@@ -21,42 +17,31 @@ import org.xutils.x;
 
 import java.util.ArrayList;
 
-/**
- * 获取仓口任务条目事件
- */
-public class GetWindowTaskItemEvent {
+public class GetWindowParkingTaskItem {
     // 仓口Id
     private String windowId;
-    private ArrayList<TaskInfo> historyTaskInfos;
+   // public  TaskInfo parkingTaskInfos;
+    private Handler handler;
     // 任务条目
-    private int index;
     private static final int SUCCESS_NUM = 200;
 
-    private Handler handler;
-   /* private Handler handler = new Handler(){
-        @Override
-        public void handleMessage(Message msg) {
-            historyTaskInfos = (ArrayList<TaskInfo>) msg.obj;
-            if(historyTaskInfos!=null){
-                    MyApplication.setHistoryTaskInfos(historyTaskInfos);
-                    Intent intent = new Intent(MyApplication.getContext(), ShowActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    MyApplication.getContext().startActivity(intent);
+    public  GetWindowParkingTaskItem(){
+        windowId = MyApplication.getWindowId();
+    }
 
-            }else{
-                Toast.makeText(MyApplication.getContext(), "获取仓口任务条目失败", Toast.LENGTH_SHORT).show();
-            }
-        }
-    };*/
+    public void setHandler(Handler handler){
 
+        this.handler = handler;
+    }
 
-    /**
-     * 启用线程请求
-     */
-    class getWindowTaskItemThread extends Thread{
+    public void startGetWindowParkingTaskItemThread(){
+        new GetWindowParkingTaskItemThread().start();
+    }
+
+    class GetWindowParkingTaskItemThread extends Thread{
         @Override
         public void run() {
-            RequestParams params = new RequestParams(UrlData.getUrlGetwindowtaskitems());
+            RequestParams params = new RequestParams(UrlData.getUrlGetwindowparkingitem());
             params.addBodyParameter("id",windowId);
             params.addBodyParameter("#TOKEN#", MyApplication.getToken());
             x.http().post(params, new Callback.CacheCallback<String>() {
@@ -70,7 +55,7 @@ public class GetWindowTaskItemEvent {
                     result= new String(result.trim());
                     Log.d("GetWindow--onSuccess",result);
                     Message message = new Message();
-                    message.obj = pareJSON(result);
+                    message.obj = paresParkingJSON(result);
                     handler.sendMessage(message);
                 }
 
@@ -92,52 +77,26 @@ public class GetWindowTaskItemEvent {
 
         }
     }
-    public void setHandler(Handler handler) {
-        this.handler = handler;
-    }
 
-    public void startGetWindowTaskItemThread(){
-        new getWindowTaskItemThread().start();
-    }
-
-    public void setWindowId(String windowId) {
-        this.windowId = windowId;
-    }
-
-
-
-    /**
-     * 数据解析
-     * @param jsonData
-     * @return
-     */
-    private ArrayList<TaskInfo> pareJSON(String jsonData){
-        ArrayList<TaskInfo> historyTaskInfos = new ArrayList<>();
+    private TaskInfo paresParkingJSON(String jsonData){
         try{
             JSONObject jsonObject = new JSONObject(jsonData);
             int result = jsonObject.getInt("result");
             if(result==SUCCESS_NUM){
                 String data = jsonObject.getString("data");
+                System.out.println("data" + data);
+                TaskInfo taskInfo = new TaskInfo();
                 JSONObject dataJson = new JSONObject(data);
-                String list = dataJson.getString("list");
-                JSONArray lists = new JSONArray(list);
-                index = lists.length();
-                for(int i=0;i<lists.length();i++){
-                    JSONObject listItem = lists.getJSONObject(i);
-                    TaskInfo taskInfo = new TaskInfo();
-                    taskInfo.setPlanQuantity(listItem.getInt("planQuantity"));
-                    taskInfo.setActualQuantity(listItem.getInt("actualQuantity"));
-                    taskInfo.setFinishTime(listItem.getString("finishTime"));
-                    taskInfo.setTaskId(listItem.getInt("id"));
-                    taskInfo.setType(listItem.getString("type"));
-                    taskInfo.setFileName(listItem.getString("fileName"));
-                    taskInfo.setMaterialNo(listItem.getString("materialNo"));
-                    String details = listItem.getString("details");
-                    ArrayList<MaterialPlateInfo> materialPlateInfos = pareJsonMps(details);
-                    taskInfo.setMaterialPlateInfos(materialPlateInfos);
-                    historyTaskInfos.add(taskInfo);
-                }
-                return historyTaskInfos;
+                taskInfo.setPlanQuantity(dataJson.getInt("planQuantity"));
+                taskInfo.setActualQuantity(dataJson.getInt("actualQuantity"));
+                taskInfo.setTaskId(dataJson.getInt("id"));
+                taskInfo.setType(dataJson.getString("type"));
+                taskInfo.setFileName(dataJson.getString("fileName"));
+                taskInfo.setMaterialNo(dataJson.getString("materialNo"));
+                String details = dataJson.getString("details");
+                ArrayList<MaterialPlateInfo> materialPlateInfos = pareJsonMps(details);
+                taskInfo.setMaterialPlateInfos(materialPlateInfos);
+                return taskInfo;
             }
         }
         catch (Exception e){
@@ -145,7 +104,6 @@ public class GetWindowTaskItemEvent {
         }
         return null;
     }
-
 
     /**
      * 料盘信息解析
@@ -169,6 +127,8 @@ public class GetWindowTaskItemEvent {
         }
         return materialPlateInfos;
     }
-
-
+/*
+    public void setParkingTaskInfos(TaskInfo parkingTaskInfos) {
+        this.parkingTaskInfos = parkingTaskInfos;
+    }*/
 }

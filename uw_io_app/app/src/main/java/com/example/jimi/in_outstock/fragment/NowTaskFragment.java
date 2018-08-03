@@ -39,6 +39,8 @@ public class NowTaskFragment extends Fragment{
     private TextView text_fileName;
     @ViewInject(R.id.text_materialNo)
     private TextView text_materialNo;
+    @ViewInject(R.id.text_type)
+    private TextView text_tpye;
 
     private TaskInfo taskInfo;
     private ArrayList<MaterialPlateInfo> materialPlateInfos = new ArrayList<>();
@@ -63,6 +65,7 @@ public class NowTaskFragment extends Fragment{
         text_actualQuantity.setText(taskInfo.getActualQuantity()+"");
         text_fileName.setText(taskInfo.getFileName());
         text_materialNo.setText(taskInfo.getMaterialNo());
+        text_tpye.setText(taskInfo.getType());
         materialPlateInfos = taskInfo.getMaterialPlateInfos();
         MaterialPlateListViewAdapter materialPlateListViewAdapter = new MaterialPlateListViewAdapter(MyApplication.getContext(),R.layout.material_plate_item,materialPlateInfos);
         listView_plate.setAdapter(materialPlateListViewAdapter);

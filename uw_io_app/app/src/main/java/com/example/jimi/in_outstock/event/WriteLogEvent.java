@@ -1,25 +1,17 @@
 package com.example.jimi.in_outstock.event;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.example.jimi.in_outstock.adpater.TaskItemViewPagerAdapter;
 import com.example.jimi.in_outstock.application.MyApplication;
 import com.example.jimi.in_outstock.common.UrlData;
-import com.example.jimi.in_outstock.entity.MaterialPlateInfo;
 import com.example.jimi.in_outstock.entity.TaskInfo;
-import com.example.jimi.in_outstock.fragment.NowTaskFragment;
 
 import org.json.JSONObject;
 import org.xutils.common.Callback;
 import org.xutils.http.RequestParams;
 import org.xutils.x;
-
-import java.util.ArrayList;
 
 /**
  * 出入库任务日志写入事件
@@ -29,33 +21,27 @@ public class WriteLogEvent {
     private int quantity;
     private String materialId;
     private String no;
-    private ViewPager viewPager_task;
-    private FragmentManager fragmentManager;
-    private ArrayList<Fragment> fragments;
     private TaskInfo taskInfo;
-    private static final int SUCCESS_NUM = 200;
-    private static final int FAILL_NUM = 0;
+    public static final int SUCCESS_NUM = 200;
+    public static final int FAILL_NUM = 0;
 
-    public void writeLog(TaskInfo myTaskInfo, String myMaterialId, int myQuantity, String myNo, ViewPager viewPager, FragmentManager fm, ArrayList<Fragment> myFragments){
-            taskId = myTaskInfo.getTaskId();
-            quantity = myQuantity;
-            materialId = myMaterialId;
-            no = myNo;
-            viewPager_task = viewPager;
-            taskInfo = myTaskInfo;
-            fragmentManager = fm;
-            fragments = myFragments;
-            if(taskId>=0&&!"".equals(materialId)&&quantity>=0){
-                new WriteLogThread().start();
-            }
+    public void writeLog(TaskInfo myTaskInfo, String myMaterialId, int myQuantity, String myNo){
+        taskId = myTaskInfo.getTaskId();
+        quantity = myQuantity;
+        materialId = myMaterialId;
+        no = myNo;
+        taskInfo = myTaskInfo;
+        if(taskId>=0&&!"".equals(materialId)&&quantity>=0){
+            new WriteLogThread().start();
+        }
     }
 
     private Handler handler = new Handler(){
         @Override
-        public void handleMessage(Message msg) {
+        public void handleMessage(Message msg){
             switch (msg.what){
                 case SUCCESS_NUM:
-                    updateList();
+                    Toast.makeText(MyApplication.getContext(),"料盘添加成功",Toast.LENGTH_SHORT).show();
                     break;
                 default:
                     Toast.makeText(MyApplication.getContext(),"未知错误，请联系管理员",Toast.LENGTH_SHORT).show();
@@ -63,6 +49,7 @@ public class WriteLogEvent {
             }
         }
     };
+
 
     /**
      * 启用线程请求
@@ -127,7 +114,7 @@ public class WriteLogEvent {
         return  result;
     }
 
-    //更新扫描后的列表信息
+  /*  //更新扫描后的列表信息
     private void updateList(){
         int position = MyApplication.getPosition();
         if(position != -1) {
@@ -142,10 +129,6 @@ public class WriteLogEvent {
             // 新的料盘信息添加
             taskInfo.getMaterialPlateInfos().add(materialPlateInfo);
             taskFragment.setTaskInfo(taskInfo);
-            fragments.set(MyApplication.getPosition(), taskFragment);
-            TaskItemViewPagerAdapter taskItemViewPagerAdapter = new TaskItemViewPagerAdapter(fragmentManager, fragments);
-            viewPager_task.setAdapter(taskItemViewPagerAdapter);
-            viewPager_task.setCurrentItem(MyApplication.getPosition());
         }
-    }
+    }*/
 }
