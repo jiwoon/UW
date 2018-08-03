@@ -179,6 +179,7 @@
             setTimeout(() => {
               this.isTipsShow = false;
             }, 3000);
+            this.scanText = "";
             return;
           } else {
             let options = {
