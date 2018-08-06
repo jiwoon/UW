@@ -86,32 +86,28 @@ public class MockMainSocket implements UncaughtExceptionHandler{
     	MockMainSocket.session = session;
     	System.out.println("["+ new Date().toString() +"]" + "receiver message:" + message);
     	
-//    	Thread thread = new Thread(() -> {
-			//判断是否是ack指令
-			if(message.contains("\"cmdcode\":\"ack\"")) {//ack指令
-				ACKHandler.handleACK(message);
-			}else if(message.contains("\"cmdcode\"")){//非ack指令
-				if(ACKHandler.handleNOTACK(message)) {
-					//交给对应命令处理器：
-					//判断是否是ls，sl指令
-					if(message.contains("\"cmdcode\":\"LS\"") || message.contains("\"cmdcode\":\"SL\"")) {
-						LSSLHandler.handleLSSL(message);
-					}
-					
-					//判断是启用禁用指令
-					if(message.contains("\"cmdcode\":\"enable\"") || message.contains("\"cmdcode\":\"disable\"")) {
-						SwitchHandler.handleEnableOrDisable(message);
-					}
-					
-					//判断是暂停继续指令
-					if(message.contains("\"cmdcode\":\"allpause\"") || message.contains("\"cmdcode\":\"allstart\"")) {
-						SwitchHandler.handlePasueOrStart(message);
-					}
+		//判断是否是ack指令
+		if(message.contains("\"cmdcode\":\"ack\"")) {//ack指令
+			ACKHandler.handleACK(message);
+		}else if(message.contains("\"cmdcode\"")){//非ack指令
+			if(ACKHandler.handleNOTACK(message)) {
+				//交给对应命令处理器：
+				//判断是否是ls，sl指令
+				if(message.contains("\"cmdcode\":\"LS\"") || message.contains("\"cmdcode\":\"SL\"")) {
+					LSSLHandler.handleLSSL(message);
+				}
+				
+				//判断是启用禁用指令
+				if(message.contains("\"cmdcode\":\"enable\"") || message.contains("\"cmdcode\":\"disable\"")) {
+					SwitchHandler.handleEnableOrDisable(message);
+				}
+				
+				//判断是暂停继续指令
+				if(message.contains("\"cmdcode\":\"allpause\"") || message.contains("\"cmdcode\":\"allstart\"")) {
+					SwitchHandler.handlePasueOrStart(message);
 				}
 			}
-//		});
-//		thread.setUncaughtExceptionHandler(this);
-//		thread.start();
+		}
     }
 
     

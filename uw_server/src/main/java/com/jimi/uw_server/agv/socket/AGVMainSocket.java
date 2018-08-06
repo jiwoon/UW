@@ -96,31 +96,28 @@ public class AGVMainSocket {
 	@OnMessage
 	public void onMessage(String message ,Session session) {
 		AGVMainSocket.session = session;
-//		Thread thread = new Thread(() -> {
-			try {
-				log(false, message);
-				//判断是否是ack指令
-				if(message.contains("\"cmdcode\":\"ack\"")) {//ack指令
-					ACKHandler.handleACK(message);
-				}else if(message.contains("\"cmdcode\"")){//非ack指令
-					if(ACKHandler.handleNOTACK(message)) {
-						//判断是否是status指令
-						if(message.contains("\"cmdcode\":\"status\"")) {
-							LSSLHandler.handleStatus(message);
-						}
-						
-						//判断是否是loadexception指令
-						if(message.contains("\"cmdcode\":\"loadexception\"")) {
-							ExceptionHandler.handleLoadException(message);
-						}
+		try {
+			log(false, message);
+			//判断是否是ack指令
+			if(message.contains("\"cmdcode\":\"ack\"")) {//ack指令
+				ACKHandler.handleACK(message);
+			}else if(message.contains("\"cmdcode\"")){//非ack指令
+				if(ACKHandler.handleNOTACK(message)) {
+					//判断是否是status指令
+					if(message.contains("\"cmdcode\":\"status\"")) {
+						LSSLHandler.handleStatus(message);
+					}
+					
+					//判断是否是loadexception指令
+					if(message.contains("\"cmdcode\":\"loadexception\"")) {
+						ExceptionHandler.handleLoadException(message);
 					}
 				}
-			} catch (Exception e) {
-				ErrorLogWritter.save(e.getClass().getSimpleName() + ":" + e.getMessage());
-				e.printStackTrace();
 			}
-//		});
-//		thread.start();
+		} catch (Exception e) {
+			ErrorLogWritter.save(e.getClass().getSimpleName() + ":" + e.getMessage());
+			e.printStackTrace();
+		}
 	}
 
 	
