@@ -23,7 +23,14 @@ public class WriteLogEvent {
     private String no;
     private TaskInfo taskInfo;
     public static final int SUCCESS_NUM = 200;
-    public static final int FAILL_NUM = 0;
+    //网络异常(自定义)
+    private static final int NETWORK_NUM = 0;
+    //权限不足
+    private static final int ACCESS_NUM = 401;
+    //服务器内部错误
+    private static final int SERVER_NUM = 500;
+    //未知错误
+    private static final int UNKNOW_NUM = 666666;
 
     public void writeLog(TaskInfo myTaskInfo, String myMaterialId, int myQuantity, String myNo){
         taskId = myTaskInfo.getTaskId();
@@ -42,6 +49,15 @@ public class WriteLogEvent {
             switch (msg.what){
                 case SUCCESS_NUM:
                     Toast.makeText(MyApplication.getContext(),"料盘添加成功",Toast.LENGTH_SHORT).show();
+                    break;
+                case NETWORK_NUM:
+                    Toast.makeText(MyApplication.getContext(),"料盘添加失败，网络异常",Toast.LENGTH_SHORT).show();
+                    break;
+                case ACCESS_NUM:
+                    Toast.makeText(MyApplication.getContext(),"料盘添加失败，权限不足，请重新登录",Toast.LENGTH_SHORT).show();
+                    break;
+                case SERVER_NUM:
+                    Toast.makeText(MyApplication.getContext(),"料盘添加失败，服务器内部原因",Toast.LENGTH_SHORT).show();
                     break;
                 default:
                     Toast.makeText(MyApplication.getContext(),"未知错误，请联系管理员",Toast.LENGTH_SHORT).show();
@@ -82,6 +98,9 @@ public class WriteLogEvent {
                 @Override
                 public void onError(Throwable ex, boolean isOnCallback) {
                     Log.d("WriteIO--onError",ex.getMessage());
+                    Message message = new Message();
+                    message.what = NETWORK_NUM;
+                    handler.sendMessage(message);
                 }
 
                 @Override
@@ -104,7 +123,7 @@ public class WriteLogEvent {
      * @return
      */
     private int  pareJSON(String jsonData){
-        int result = FAILL_NUM;
+        int result = UNKNOW_NUM;
         try{
             JSONObject jsonObject = new JSONObject(jsonData);
             result = jsonObject.getInt("result");

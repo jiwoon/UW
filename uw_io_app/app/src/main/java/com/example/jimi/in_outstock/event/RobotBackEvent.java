@@ -23,9 +23,14 @@ public class RobotBackEvent {
     private int taskId;
     // 返回成功
     private static final int SUCCESS_NUM = 200;
-    // 返回失败
-    private static final int FAILL_NUM = 0;
-
+    //网络异常(自定义)
+    private static final int NETWORK_NUM = 0;
+    //权限不足
+    private static final int ACCESS_NUM = 401;
+    //服务器内部错误
+    private static final int SERVER_NUM = 500;
+    //未知错误
+    private static final int UNKNOW_NUM = 666666;
     public void robotBack(int myTaskId){
         Log.d("taskId",myTaskId+"");
         taskId = myTaskId;
@@ -40,10 +45,17 @@ public class RobotBackEvent {
                 case SUCCESS_NUM:
                     Toast.makeText(MyApplication.getContext(),"叉车回库中",Toast.LENGTH_SHORT).show();
                     break;
-                case FAILL_NUM:
-                    Toast.makeText(MyApplication.getContext(),"叉车回库失败",Toast.LENGTH_SHORT).show();
+                case NETWORK_NUM:
+                    Toast.makeText(MyApplication.getContext(),"网络异常，叉车回库失败",Toast.LENGTH_SHORT).show();
+                    break;
+                case ACCESS_NUM:
+                    Toast.makeText(MyApplication.getContext(),"权限不足，叉车回库失败，请重新登录",Toast.LENGTH_SHORT).show();
+                    break;
+                case SERVER_NUM:
+                    Toast.makeText(MyApplication.getContext(),"服务器内部错误，叉车回库失败",Toast.LENGTH_SHORT).show();
                     break;
                 default:
+                    Toast.makeText(MyApplication.getContext(),"未知错误，请联系管理员",Toast.LENGTH_SHORT).show();
                     break;
             }
         }
@@ -78,6 +90,9 @@ public class RobotBackEvent {
                 @Override
                 public void onError(Throwable ex, boolean isOnCallback) {
                     Log.d("RobotBack--onError :",ex.getMessage());
+                    Message message = new Message();
+                    message.what = NETWORK_NUM;
+                    handler.sendMessage(message);
                 }
 
                 @Override
@@ -100,7 +115,7 @@ public class RobotBackEvent {
      * @return
      */
     private int pareJSON(String jsonData){
-        int result = FAILL_NUM;
+        int result = UNKNOW_NUM;
         try{
             JSONObject jsonObject = new JSONObject(jsonData);
             result = jsonObject.getInt("result");
