@@ -166,34 +166,47 @@
 
       /*扫码集中处理*/
       scannerHandler: function () {
+        /*若扫描结果为叉车返回的页面二维码，则调用叉车回库*/
         if (this.scanText === "###finished###") {
           this.setBack()
         } else {
+          /*sample: 03.01.0001@1000@1531817296428@A008@范例表@A-1@9@2018-07-17@*/
+          /*对比料号是否一致*/
           let tempArray = this.scanText.split("@");
-          let options = {
-            url: taskIOUrl,
-            data: {
-              packListItemId: this.taskNowItems.id,
-              //no: this.taskNowItems.materialNo,
-              materialId: tempArray[2],
-              quantity: tempArray[1]
-            }
-          };
-          axiosPost(options).then(response => {
-            if (response.data.result === 200) {
-              this.isTipsShow = true;
-              this.tipsComponentMsg = true;
-              setTimeout(() => {
-                this.isTipsShow = false;
-              }, 3000)
-            } else {
-              this.isTipsShow = true;
-              this.tipsComponentMsg = false;
-              setTimeout(() => {
-                this.isTipsShow = false;
-              }, 3000)
-            }
-          })
+          if (tempArray[0] !== this.taskNowItems.materialNo) {
+            this.isTipsShow = true;
+            this.tipsComponentMsg = false;
+            setTimeout(() => {
+              this.isTipsShow = false;
+            }, 3000);
+            this.scanText = "";
+            return;
+          } else {
+            let options = {
+              url: taskIOUrl,
+              data: {
+                packListItemId: this.taskNowItems.id,
+                materialId: tempArray[2],
+                quantity: tempArray[1]
+              }
+            };
+            axiosPost(options).then(response => {
+              if (response.data.result === 200) {
+                this.isTipsShow = true;
+                this.tipsComponentMsg = true;
+                setTimeout(() => {
+                  this.isTipsShow = false;
+                }, 3000)
+              } else {
+                this.isTipsShow = true;
+                this.tipsComponentMsg = false;
+                setTimeout(() => {
+                  this.isTipsShow = false;
+                }, 3000)
+              }
+            })
+          }
+
         }
         this.scanText = "";
       },

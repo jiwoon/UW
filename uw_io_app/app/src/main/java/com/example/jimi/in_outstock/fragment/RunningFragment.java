@@ -56,6 +56,8 @@ public class RunningFragment extends Fragment {
     private TextView text_type;
     @ViewInject(R.id.tv_no_robot)
     private TextView tv_no_robot;
+    @ViewInject(R.id.tv_isrunning)
+    private TextView tv_isrunning;
     @ViewInject(R.id.btn_ok)
     private Button btn_ok;
     private TaskInfo taskInfo;
@@ -88,6 +90,7 @@ public class RunningFragment extends Fragment {
                         tv_no_robot.setVisibility(View.GONE);
                         refleshData(parkingTaskInfos);
                     }else{
+                        MyApplication.setParkingTaskInfo(null );
                         initData();
                         btn_ok.setVisibility(View.GONE);
                         tv_no_robot.setVisibility(View.VISIBLE);
@@ -107,6 +110,7 @@ public class RunningFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         initData();
+        tv_isrunning.setText("仓口"+MyApplication.getWindowId()+"-到站物料");
         // 扫料盘
         edit_plateId.addTextChangedListener(new MyTextWatcher(edit_plateId));
         edit_plateId.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -129,6 +133,10 @@ public class RunningFragment extends Fragment {
                                         Log.d("strValue2", strValue);
                                         // 判断扫描的料号信息和任务条目任务信息是否相同
                                         taskInfo = MyApplication.getParkingTaskInfo();
+                                        if (taskInfo == null){
+                                            edit_plateId.setText("");
+                                            return false;
+                                        }
                                         if (!(strValue).equals(taskInfo.getMaterialNo())) {
                                             edit_plateId.setText("");
                                             Toast.makeText(getActivity(), "料盘扫描错误", Toast.LENGTH_SHORT).show();
@@ -136,7 +144,8 @@ public class RunningFragment extends Fragment {
                                             Toast.makeText(getActivity(), "料盘扫描正确", Toast.LENGTH_SHORT).show();
                                             new WriteLogEvent().writeLog(taskInfo, materialId, quantity, no);
                                         }
-                                    }else{
+
+                                    }else {
                                         edit_plateId.setText("");
                                         Toast.makeText(getActivity(), "料盘扫描错误", Toast.LENGTH_SHORT).show();
                                     }
