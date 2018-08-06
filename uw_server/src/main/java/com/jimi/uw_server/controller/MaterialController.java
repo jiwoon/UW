@@ -24,8 +24,8 @@ public class MaterialController extends Controller {
 	}
 
 	// 获取物料实体
-	public void getEntities(Integer type) {
-		renderJson(ResultUtil.succeed(materialService.getEntities(type)));
+	public void getEntities(Integer type, Integer pageNo, Integer pageSize) {
+		renderJson(ResultUtil.succeed(materialService.getEntities(type, pageNo, pageSize)));
 	}
 
 	// 添加物料类型#

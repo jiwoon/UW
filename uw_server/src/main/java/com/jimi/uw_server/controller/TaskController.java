@@ -111,6 +111,7 @@ public class TaskController extends Controller {
 
 
 	// 物料出入库
+	@Log("正在将id号为{packListItemId}的任务条目进行扫码出入库，料盘时间戳为{materialId}，出入库数量为{quantity}")
 	public void io(Integer packListItemId, String materialId, Integer quantity) {
 		// 获取当前使用系统的用户，以便获取操作员uid
 		String tokenId = getPara(TokenBox.TOKEN_ID_KEY_NAME);

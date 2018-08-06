@@ -22,12 +22,10 @@ public class LogService extends SelectService {
 
 
 	public Object selectTaskLog(String table, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
-		List<TaskLogVO> taskLogVOs = new ArrayList<TaskLogVO>();
 		Page<Record> result = selectService.select(new String[] {"task_log", "task", "material_type", "material", "user"},
 				new String[] {"task_log.task_id = task.id", "task_log.material_id = material.id", "material_type.id = material.type", 
 						"task_log.operator = user.uid"}, pageNo, pageSize, ascBy, descBy, filter);
-
-		int totallyRow =  result.getTotalRow();
+		List<TaskLogVO> taskLogVOs = new ArrayList<TaskLogVO>();
 		for (Record res : result.getList()) {
 			TaskLogVO t = new TaskLogVO(res.get("TaskLog_Id"), res.get("TaskLog_TaskId"), res.get("Task_Type"), res.get("TaskLog_MaterialId"), 
 					res.get("MaterialType_No"), res.get("TaskLog_Quantity"), res.get("User_Uid"), res.get("TaskLog_Auto"), 
@@ -37,7 +35,7 @@ public class LogService extends SelectService {
 		PagePaginate pagePaginate = new PagePaginate();
 		pagePaginate.setPageSize(pageSize);
 		pagePaginate.setPageNumber(pageNo);
-		pagePaginate.setTotalRow(totallyRow);
+		pagePaginate.setTotalRow(result.getTotalRow());
 
 		pagePaginate.setList(taskLogVOs);
 
@@ -46,18 +44,10 @@ public class LogService extends SelectService {
 
 
 	public Object selectPositionLog(String table, Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
-//		if (filter != null) {
-//			if (filter.contains("materialNo")) {
-//				filter = filter.replace("materialNo", "no");
-//			}
-//		}
-
-		List<PositionLogVO> positionLogVOs = new ArrayList<PositionLogVO>();
 		Page<Record> result = selectService.select(new String[] {"position_log", "material_type", "material"},
 				new String[] {"position_log.material_id = material.id", "material.type = material_type.id"}, 
 				pageNo, pageSize, ascBy, descBy, filter);
-
-		int totallyRow =  result.getTotalRow();
+		List<PositionLogVO> positionLogVOs = new ArrayList<PositionLogVO>();
 		for (Record res : result.getList()) {
 			PositionLogVO p = new PositionLogVO(res.get("PositionLog_Id"), res.get("PositionLog_TaskId"), res.get("PositionLog_MaterialId"), 
 					res.get("MaterialType_No"), res.get("PositionLog_OldArea"), res.get("PositionLog_OldRow"), res.get("PositionLog_OldCol"), 
@@ -68,8 +58,7 @@ public class LogService extends SelectService {
 		PagePaginate pagePaginate = new PagePaginate();
 		pagePaginate.setPageSize(pageSize);
 		pagePaginate.setPageNumber(pageNo);
-		pagePaginate.setTotalRow(totallyRow);
-
+		pagePaginate.setTotalRow(result.getTotalRow());
 		pagePaginate.setList(positionLogVOs);
 
 		return pagePaginate;

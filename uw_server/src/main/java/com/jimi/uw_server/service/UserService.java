@@ -80,10 +80,8 @@ public class UserService extends SelectService{
 
 
 	public Object select(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
-		List<UserVO> userVOs = new ArrayList<UserVO>();
 		Page<Record> result = selectService.select("user", pageNo, pageSize, ascBy, descBy, filter);
-
-		int totallyRow =  result.getTotalRow();
+		List<UserVO> userVOs = new ArrayList<UserVO>();
 		for (Record res : result.getList()) {
 			UserVO u = new UserVO(res.get("uid"), res.get("password"), res.get("name"), res.get("type"), res.get("enabled"));
 			userVOs.add(u);
@@ -92,8 +90,7 @@ public class UserService extends SelectService{
 		PagePaginate pagePaginate = new PagePaginate();
 		pagePaginate.setPageSize(pageSize);
 		pagePaginate.setPageNumber(pageNo);
-		pagePaginate.setTotalRow(totallyRow);
-
+		pagePaginate.setTotalRow(result.getTotalRow());
 		pagePaginate.setList(userVOs);
 
 		return pagePaginate;

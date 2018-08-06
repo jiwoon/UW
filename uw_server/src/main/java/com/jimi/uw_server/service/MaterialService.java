@@ -32,14 +32,11 @@ public class MaterialService extends SelectService{
 	private static final String UNIQUE_MATERIAL_TYPE_CHECK_SQL = "SELECT * FROM material_type WHERE no = ?";
 
 	public Object count(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
-		List<MaterialTypeVO> materialTypeVOs = new ArrayList<MaterialTypeVO>();
-
 		Page<Record> result = selectService.select(new String[] {"material_type"}, null,
 				pageNo, pageSize, ascBy, descBy, filter);
-
+		List<MaterialTypeVO> materialTypeVOs = new ArrayList<MaterialTypeVO>();
 		int totallyRow =  0;
 		for (Record res : result.getList()) {
-			// 在VO中，为获取quantity的值，进行了sql查询，相当于在for循环中执行了sql查询，会影响执行效率，暂时还没想到两全其美的解决方案，争取这周(7.23-7.28)想出解决方案
 			MaterialTypeVO m = new MaterialTypeVO(res.get("id"), res.get("no"), res.get("area"),
 					res.get("row"), res.get("col"), res.get("height"), res.get("enabled"));
 			if (res.get("enabled").equals(true)) {
@@ -52,39 +49,32 @@ public class MaterialService extends SelectService{
 		pagePaginate.setPageSize(pageSize);
 		pagePaginate.setPageNumber(pageNo);
 		pagePaginate.setTotalRow(totallyRow);
-
 		pagePaginate.setList(materialTypeVOs);
 
 		return pagePaginate;
 	}
 
-	public Object getEntities(Integer type) {
-		List<Material> materialEntities;
+	public Object getEntities(Integer type, Integer pageNo, Integer pageSize) {
 		// 判断该物料是否有库存
 		if(Material.dao.find(GET_SPECIFIC_ENTITY_SQL, type).size() == 0) {
 			return null;
 		}
-		materialEntities = Material.dao.find(GET_ENTITIES_SQL, type);
-
-		int pageSize = 20;
-		int pageNo = 1;
-		int totallyRow =  materialEntities.size();
+		List<Material> materialEntities = Material.dao.find(GET_ENTITIES_SQL, type);
 
 		PagePaginate pagePaginate = new PagePaginate();
 		pagePaginate.setPageSize(pageSize);
 		pagePaginate.setPageNumber(pageNo);
-		pagePaginate.setTotalRow(totallyRow);
-
+		pagePaginate.setTotalRow(materialEntities.size());
 		pagePaginate.setList(materialEntities);
 
 		return pagePaginate;
 	}
 
 	public boolean add(String no, Integer area, Integer row, Integer col, Integer height) {
-		MaterialType materialType = new MaterialType();
 		if(MaterialType.dao.find(UNIQUE_MATERIAL_TYPE_CHECK_SQL, no).size() != 0) {
 			return false;
 		}
+		MaterialType materialType = new MaterialType();
 		materialType.setNo(no);
 		materialType.setArea(area);
 		materialType.setRow(row);

@@ -57,12 +57,8 @@ public class TaskService {
 	
 	private static final String GET_TASK_IN_REDIS_SQL = "SELECT * FROM task WHERE id = ?";
 	
-	private static final String GET_MATERIAL_TYPE_SQL = "SELECT id FROM material_type WHERE no = ?";
-	
 	private static final String UNIQUE_MATERIAL_ID_CHECK_SQL = "SELECT * FROM task_log WHERE material_id = ? AND task_id = ?";
 	
-	private static final String GET_MATERIAL_NO_SQL = "SELECT no FROM material_type WHERE id IN(SELECT material_type_id FROM packing_list_item WHERE id = ?)";
-
 	private static final String DELETE_PACKING_LIST_ITEM_SQL = "DELETE FROM packing_list_item WHERE task_id = ?";
 
 	public String createIOTask(Integer type, String fileName, String fullFileName) throws Exception {
@@ -73,10 +69,9 @@ public class TaskService {
 			resultString = "创建任务失败，请检查套料单的文件格式是否正确！";
 			return resultString;
 		}
-		List<PackingListItemBO> items;
 		File file = new File(fullFileName);
 		ExcelHelper fileReader = ExcelHelper.from(file);
-		items = fileReader.unfill(PackingListItemBO.class, 2);
+		List<PackingListItemBO> items = fileReader.unfill(PackingListItemBO.class, 2);
 		// 如果套料单表头不对，则返回false，提示检查文件格式及内容格式
 		if (items == null) {
 			resultString = "创建任务失败，请检查套料单的内容格式是否正确！";
@@ -92,7 +87,6 @@ public class TaskService {
 				task.setCreateTime(new Date());
 				task.save();
 
-				
 				// 读取excel表格的套料单数据，将数据一条条写入到套料单表；如果任务类型为出/入库，还需要修改物料实体表中对应物料的库存数量
 				for (PackingListItemBO item : items) {
 					// 获取新任务id
@@ -156,9 +150,9 @@ public class TaskService {
 	public boolean start(Integer id, Integer window) {
 		Task task = Task.dao.findById(id);
 		task.setWindow(window);
-		List<PackingListItem> items = PackingListItem.dao.find(GET_TASK_ITEMS_SQL, id);
 		// 根据套料单、物料类型表生成任务条目
 		List<AGVIOTaskItem> taskItems = new ArrayList<AGVIOTaskItem>();
+		List<PackingListItem> items = PackingListItem.dao.find(GET_TASK_ITEMS_SQL, id);
 		for (PackingListItem item : items) {
 			AGVIOTaskItem a = new AGVIOTaskItem(item);
 			taskItems.add(a);
@@ -185,14 +179,12 @@ public class TaskService {
 	public Object check(Integer id, Integer pageSize, Integer pageNo) {
  		Task task = Task.dao.findById(id);
 		Integer type = task.getType();
-
 		// 如果任务类型为出入库
 		if (type == 0 || type == 1) {
 			// 先进行多表查询，查询出同一个任务id的套料单表的id,物料类型表的料号no,套料单表的计划出入库数量quantity,套料单表对应任务的实际完成时间finish_time
 			Page<Record> packingListItems = selectService.select(new String[] {"packing_list_item", "material_type"}, 
 					new String[] {"packing_list_item.task_id = " + id.toString(), "material_type.id = packing_list_item.material_type_id"}, 
 					pageNo, pageSize, null, null, null);
-
 			List<IOTaskDetailVO> ioTaskDetailVOs = new ArrayList<IOTaskDetailVO>();
 			// 遍历同一个任务id的套料单数据
 			for (Record packingListItem : packingListItems.getList()) {
@@ -216,7 +208,6 @@ public class TaskService {
 			pagePaginate.setPageSize(pageSize);
 			pagePaginate.setPageNumber(pageNo);
 			pagePaginate.setTotalRow(packingListItems.getTotalRow());
-
 			pagePaginate.setList(ioTaskDetailVOs);
 
 			return pagePaginate;
@@ -255,7 +246,6 @@ public class TaskService {
 		pagePaginate.setPageSize(pageSize);
 		pagePaginate.setPageNumber(pageNo);
 		pagePaginate.setTotalRow(result.getTotalRow());
-
 		pagePaginate.setList(taskVOs);
 
 		return pagePaginate;
@@ -294,7 +284,6 @@ public class TaskService {
 
 					for (Record windowParkingListItem : windowParkingListItems.getList()) {
 						// 查询task_log中的material_id,quantity
-						// 这里在for循环中执行了sql查询，会影响执行效率，暂时还没想到两全其美的解决方案，争取这周(7.23-7.28)想出解决方案
 						List<TaskLog> taskLogs = TaskLog.dao.find(GET_ITEM_DETAILS_SQL, task.getId(), windowParkingListItem.get("MaterialType_No"));
 						Integer actualQuantity = 0;
 						// 实际出入库数量要根据task_log中的出入库数量记录进行累加得到
@@ -318,7 +307,6 @@ public class TaskService {
 		// 根据套料单id，获取对应的任务记录
 		PackingListItem packingListItem = PackingListItem.dao.findById(packListItemId);
 		Task task = Task.dao.findById(packingListItem.getTaskId());
-		MaterialType getMaterialNo = MaterialType.dao.findFirst(GET_MATERIAL_NO_SQL, packListItemId);
 		// 若在同一个出入库任务中重复扫同一个料盘时间戳，则抛出OperationException，错误代码为412
 		if (Material.dao.find(UNIQUE_MATERIAL_ID_CHECK_SQL, materialId, task.getId()).size() != 0) {
 			throw new OperationException("时间戳为" + materialId + "的料盘已在同一个任务中被扫描过，请勿在同一个出入库任务中重复扫描同一个料盘！");
@@ -330,9 +318,7 @@ public class TaskService {
 		if (type == 0) {	//如果是入库，则新增一条记录
 			Material material = new Material();
 			material.setId(materialId);
-			// 根据料号获取物料类型
-			MaterialType getMaterialType = MaterialType.dao.findFirst(GET_MATERIAL_TYPE_SQL, getMaterialNo.getNo());
-			material.setType(getMaterialType.getId());
+			material.setType(packingListItem.getMaterialTypeId());
 			material.setRow(0);
 			material.setCol(0);
 			material.setRemainderQuantity(quantity);
@@ -400,7 +386,6 @@ public class TaskService {
 		pagePaginate.setPageSize(pageSize);
 		pagePaginate.setPageNumber(pageNo);
 		pagePaginate.setTotalRow(totallyRow);
-
 		pagePaginate.setList(windowTaskItemsVOs);
 
 		return pagePaginate;
