@@ -381,15 +381,14 @@ public class TaskService {
 							actualQuantity, windowTaskItem.get("PackingListItem_FinishTime"));
 					wt.setDetails(taskLogs);
 					windowTaskItemsVOs.add(wt);
-				}
-				// 分页，设置页码，每页显示条目等
-				pagePaginate.setPageSize(pageSize);
-				pagePaginate.setPageNumber(pageNo);
-				pagePaginate.setTotalRow(totallyRow);
-				pagePaginate.setList(windowTaskItemsVOs);
+				}	
 			}
-			
 		}
+		// 分页，设置页码，每页显示条目等
+		pagePaginate.setPageSize(pageSize);
+		pagePaginate.setPageNumber(pageNo);
+		pagePaginate.setTotalRow(totallyRow);
+		pagePaginate.setList(windowTaskItemsVOs);
 
 		return pagePaginate;
 	}
