@@ -24,12 +24,12 @@ public class MaterialService extends SelectService{
 	private static final String GET_SPECIFIED_POSITION_MATERIAL_TYEP_SQL = "SELECT * FROM material_type WHERE row = ? AND col = ? AND height = ?";
 
 	private	static final String GET_ENTITIES_SQL = "SELECT material.id, material.type, material.row, material.col, "
-			+ "material.remainder_quantity as remainderQuantity FROM material, material_type WHERE type=? "
-			+ "AND material_type.id=material.type AND material_type.enabled=1";
+			+ "material.remainder_quantity as remainderQuantity FROM material, material_type WHERE type = ? "
+			+ "AND material_type.id = material.type AND material_type.enabled = 1";
 
-	private	static final String GET_SPECIFIC_ENTITY_SQL = "SELECT * FROM material WHERE type=? ";
+	private	static final String GET_SPECIFIC_ENTITY_SQL = "SELECT * FROM material WHERE type = ?";
 
-	private static final String UNIQUE_MATERIAL_TYPE_CHECK_SQL = "SELECT * FROM material_type WHERE no = ?";
+	private static final String UNIQUE_MATERIAL_TYPE_CHECK_SQL = "SELECT * FROM material_type WHERE no = ? AND enabled = 1";
 
 	public Object count(Integer pageNo, Integer pageSize, String ascBy, String descBy, String filter) {
 		Page<Record> result = selectService.select(new String[] {"material_type"}, null,

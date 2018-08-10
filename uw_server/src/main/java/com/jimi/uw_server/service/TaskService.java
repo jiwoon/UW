@@ -49,6 +49,8 @@ public class TaskService {
 	private static final String GET_Material_NO_SQL = "SELECT * FROM material_type WHERE no = ?";
 
 	private static final String DELETE_PACKING_LIST_ITEM_SQL = "DELETE FROM packing_list_item WHERE task_id = ?";
+	
+	private static final String GET_MATERIAL_TYPE_ID_SQL = "SELECT material_type_id FROM packing_list_item WHERE material_type_id = ? AND task_id = ?";
 
 	private static final String GET_TASK_ITEMS_SQL = "SELECT * FROM packing_list_item WHERE task_id = ?";
 
@@ -93,29 +95,38 @@ public class TaskService {
 				// 读取excel表格的套料单数据，将数据一条条写入到套料单表；如果任务类型为出/入库，还需要修改物料实体表中对应物料的库存数量
 				for (PackingListItemBO item : items) {
 					// 获取新任务id
-					Task getNewTaskId = Task.dao.findFirst(GET_NEW_TASK_ID_SQL);
-					Integer newTaskId = getNewTaskId.get("newId");
+					Task newTaskIdDao = Task.dao.findFirst(GET_NEW_TASK_ID_SQL);
+					Integer newTaskId = newTaskIdDao.get("newId");
 					// 根据料号找到对应的物料类型id
-					MaterialType getNo = MaterialType.dao.findFirst(GET_Material_NO_SQL, item.getNo());
+					MaterialType noDao = MaterialType.dao.findFirst(GET_Material_NO_SQL, item.getNo());
 					// 判断物料类型表中是否存在对应的料号，若不存在，则将对应的任务记录删除掉，并提示操作员检查套料单、新增对应的物料类型
-					if (getNo == null) {
+					if (noDao == null) {
 						Db.update(DELETE_PACKING_LIST_ITEM_SQL, newTaskId);
 						Task.dao.deleteById(newTaskId);
 						resultString = "插入套料单失败，料号为" + item.getNo() + "的物料没有记录在物料类型表中！";
 						return resultString;
 					}
 					// 判断物料是否已被禁用，若已被禁用，则将对应的任务记录删除掉，并提示操作员检查套料单
-					if (!getNo.getEnabled()) {
+					if (!noDao.getEnabled()) {
 						Db.update(DELETE_PACKING_LIST_ITEM_SQL, newTaskId);
 						Task.dao.deleteById(newTaskId);
 						resultString = "插入套料单失败，料号为" + item.getNo() + "的物料已被禁用！";
 						return resultString;
 					}
+					// 判断套料单中是否存在相同的料号
+					MaterialType materialTypeIdDao = MaterialType.dao.findFirst(GET_MATERIAL_TYPE_ID_SQL, noDao.getId(), newTaskId);
+					if (materialTypeIdDao != null) {
+						Db.update(DELETE_PACKING_LIST_ITEM_SQL, newTaskId);
+						Task.dao.deleteById(newTaskId);
+						resultString = "插入套料单失败，料号为" + item.getNo() + "的物料在套料单中重复出现！";
+						return resultString;
+					}
 
+					
 					PackingListItem packingListItem = new PackingListItem();
 
 					// 若物料类型表中存在对应的料号，且该物料未被禁用，不论物料实体表中是否有库存，都允许插入套料单；若库存不足，则在「物料出入库」那里进行处理
-					Integer materialTypeId = getNo.getId();
+					Integer materialTypeId = noDao.getId();
 					// 添加物料类型id
 					packingListItem.setMaterialTypeId(materialTypeId);
 					// 获取计划出库数量
@@ -278,7 +289,7 @@ public class TaskService {
 				Task task = Task.dao.findFirst(GET_TASK_IN_REDIS_SQL, agvioTaskItem.getTaskId());
 				if (task.getWindow() == id) {
 					Integer packingListItemId = agvioTaskItem.getId();
-					
+
 					// 先进行多表查询，查询出仓口id绑定的正在执行中的任务的套料单表的id,套料单文件名，物料类型表的料号no,套料单表的计划出入库数量quantity
 					Page<Record> windowParkingListItems = selectService.select(new String[] {"packing_list_item", "material_type", }, 
 							new String[] {"packing_list_item.id = " + packingListItemId, "material_type.id = packing_list_item.material_type_id", },
