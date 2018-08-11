@@ -2,7 +2,7 @@ package com.example.jimi.in_outstock.common;
 
 public class UrlData {
     // ip地址
-    private static final  String IP_ADRESS ="http://10.10.11.115:8080";
+    private static final  String IP_ADRESS ="http://192.168.2.110:8080";
 
     // 程序路径
     private static final String URL = IP_ADRESS+"/uw_server";

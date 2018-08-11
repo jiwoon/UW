@@ -3,6 +3,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 
+import com.example.jimi.in_outstock.common.CheckPermissionUtils;
 import com.example.jimi.in_outstock.editTextListener.LoginEditText;
 import com.example.jimi.in_outstock.event.LoginEvent;
 
@@ -24,6 +25,7 @@ public class LoginActivity extends BaseActivity {
         edit_userName.addTextChangedListener(new LoginEditText(edit_userName,edit_password));
         // 监听密码输入框
         edit_password.addTextChangedListener(new LoginEditText(edit_password,null));
+        CheckPermissionUtils.checkPermission(this);
     }
 
     /**

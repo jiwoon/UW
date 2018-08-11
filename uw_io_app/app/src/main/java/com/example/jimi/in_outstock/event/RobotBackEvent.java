@@ -2,10 +2,10 @@ package com.example.jimi.in_outstock.event;
 
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.example.jimi.in_outstock.application.MyApplication;
+import com.example.jimi.in_outstock.common.Log;
 import com.example.jimi.in_outstock.common.UrlData;
 
 import org.json.JSONObject;

@@ -30,24 +30,19 @@ public class GetWindowTaskItemEvent {
     private ArrayList<TaskInfo> historyTaskInfos;
     // 任务条目
     private int index;
+    // 返回成功
     private static final int SUCCESS_NUM = 200;
+    //网络异常(自定义)
+    private static final int NETWORK_NUM = 0;
+    //权限不足
+    private static final int ACCESS_NUM = 401;
+    //服务器内部错误
+    private static final int SERVER_NUM = 500;
+    //未知错误
+    private static final int UNKNOW_NUM = 666666;
 
     private Handler handler;
-   /* private Handler handler = new Handler(){
-        @Override
-        public void handleMessage(Message msg) {
-            historyTaskInfos = (ArrayList<TaskInfo>) msg.obj;
-            if(historyTaskInfos!=null){
-                    MyApplication.setHistoryTaskInfos(historyTaskInfos);
-                    Intent intent = new Intent(MyApplication.getContext(), ShowActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    MyApplication.getContext().startActivity(intent);
 
-            }else{
-                Toast.makeText(MyApplication.getContext(), "获取仓口任务条目失败", Toast.LENGTH_SHORT).show();
-            }
-        }
-    };*/
 
 
     /**
@@ -68,15 +63,19 @@ public class GetWindowTaskItemEvent {
                 @Override
                 public void onSuccess(String result) {
                     result= new String(result.trim());
-                    Log.d("GetWindow--onSuccess",result);
+                    Log.d("GetTask--onSuccess",result);
                     Message message = new Message();
                     message.obj = pareJSON(result);
+                    message.what = getCode(result);
                     handler.sendMessage(message);
                 }
 
                 @Override
                 public void onError(Throwable ex, boolean isOnCallback) {
-                    Log.d("GetWindow--onError",ex.getMessage());
+                    com.example.jimi.in_outstock.common.Log.d("GetTask--onError",ex.getMessage());
+                    Message message = new Message();
+                    message.what = NETWORK_NUM;
+                    handler.sendMessage(message);
                 }
 
                 @Override
@@ -146,6 +145,16 @@ public class GetWindowTaskItemEvent {
         return null;
     }
 
+    private int getCode(String jsonData){
+        int code = UNKNOW_NUM;
+        try{
+            JSONObject jsonObject = new JSONObject(jsonData);
+            code = jsonObject.getInt("result");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return  code;
+    }
 
     /**
      * 料盘信息解析

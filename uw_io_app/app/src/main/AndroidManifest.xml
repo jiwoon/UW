@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="Manifest.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:name="com.example.jimi.in_outstock.application.MyApplication"
@@ -23,7 +24,7 @@
         <activity android:name=".GetWindowTaskItemActivity"></activity>
         <activity
             android:name=".ShowActivity"
-            android:windowSoftInputMode="adjustResize|stateHidden"></activity>
+            android:windowSoftInputMode="adjustPan|stateHidden"></activity>
     </application>
 
 </manifest>

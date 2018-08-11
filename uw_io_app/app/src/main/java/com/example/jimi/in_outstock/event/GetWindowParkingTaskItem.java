@@ -22,8 +22,17 @@ public class GetWindowParkingTaskItem {
     private String windowId;
    // public  TaskInfo parkingTaskInfos;
     private Handler handler;
-    // 任务条目
+
+    //成功
     private static final int SUCCESS_NUM = 200;
+    //网络异常(自定义)
+    private static final int NETWORK_NUM = 0;
+    //权限不足
+    private static final int ACCESS_NUM = 401;
+    //服务器内部错误
+    private static final int SERVER_NUM = 500;
+    //未知错误
+    private static final int UNKNOW_NUM = 666666;
 
     public  GetWindowParkingTaskItem(){
         windowId = MyApplication.getWindowId();
@@ -53,15 +62,19 @@ public class GetWindowParkingTaskItem {
                 @Override
                 public void onSuccess(String result) {
                     result= new String(result.trim());
-                    Log.d("GetWindow--onSuccess",result);
+                    Log.d("GetParkTask--onSuccess",result);
                     Message message = new Message();
                     message.obj = paresParkingJSON(result);
+                    message.what = getCode(result);
                     handler.sendMessage(message);
                 }
 
                 @Override
                 public void onError(Throwable ex, boolean isOnCallback) {
-                    Log.d("GetWindow--onError",ex.getMessage());
+                    com.example.jimi.in_outstock.common.Log.d("GetParkTask--onError",ex.getMessage());
+                    Message message = new Message();
+                    message.what = NETWORK_NUM;
+                    handler.sendMessage(message);
                 }
 
                 @Override
@@ -78,6 +91,16 @@ public class GetWindowParkingTaskItem {
         }
     }
 
+    private int getCode(String jsonData){
+        int code = UNKNOW_NUM;
+        try{
+            JSONObject jsonObject = new JSONObject(jsonData);
+            code = jsonObject.getInt("result");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return code;
+    }
     private TaskInfo paresParkingJSON(String jsonData){
         try{
             JSONObject jsonObject = new JSONObject(jsonData);

@@ -3,13 +3,13 @@ package com.example.jimi.in_outstock.event;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.jimi.in_outstock.activity.GetWindowTaskItemActivity;
 import com.example.jimi.in_outstock.application.MyApplication;
 import com.example.jimi.in_outstock.common.UrlData;
+import com.example.jimi.in_outstock.common.Log;
 
 import org.json.JSONObject;
 import org.xutils.common.Callback;
@@ -24,6 +24,7 @@ public class LoginEvent {
     private EditText edit_password;
     private String userName;
     private String password;
+
     // 返回成功
     private static final int SUCCESS_NUM = 200;
     // 用户操作错误

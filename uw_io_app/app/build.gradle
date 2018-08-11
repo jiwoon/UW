@@ -1,21 +1,30 @@
 apply plugin: 'com.android.application'
-
 android {
+    signingConfigs {
+        config {
+            keyAlias 'jimi_uw'
+            keyPassword 'jimijimi'
+            storeFile file('D:/Android/key/jimi_uw.jks')
+            storePassword 'jimijimi'
+        }
+    }
     compileSdkVersion 28
     defaultConfig {
         applicationId "com.example.jimi.in_outstock.activity"
         minSdkVersion 22
         targetSdkVersion 28
         versionCode 1
-        versionName "1.0"
+        versionName "UW移动客户端-V1.0.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
         }
     }
+
 }
 
 dependencies {
